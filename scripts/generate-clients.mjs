@@ -9,13 +9,17 @@ const kinobi = k.createFromIdls(getAllProgramIdls());
 // Update accounts.
 kinobi.update(
   k.updateAccountsVisitor({
-    counter: {
+    addressLookupTable: {
       seeds: [
-        k.constantPdaSeedNodeFromString("counter"),
         k.variablePdaSeedNode(
           "authority",
           k.publicKeyTypeNode(),
-          "The authority of the counter account"
+          "The address of the LUT's authority"
+        ),
+        k.variablePdaSeedNode(
+          "recentSlot",
+          k.numberTypeNode("u64"),
+          "The recent slot associated with the LUT"
         ),
       ],
     },
@@ -25,29 +29,41 @@ kinobi.update(
 // Update instructions.
 kinobi.update(
   k.updateInstructionsVisitor({
-    create: {
-      byteDeltas: [k.instructionByteDeltaNode(k.accountLinkNode("counter"))],
+    createLookupTable: {
+      byteDeltas: [k.instructionByteDeltaNode(k.numberValueNode(56))],
       accounts: {
-        counter: { defaultValue: k.pdaValueNode("counter") },
+        address: { defaultValue: k.pdaValueNode("addressLookupTable") },
         payer: { defaultValue: k.accountValueNode("authority") },
       },
-    },
-    increment: {
-      accounts: {
-        counter: { defaultValue: k.pdaValueNode("counter") },
-      },
       arguments: {
-        amount: { defaultValue: k.noneValueNode() },
+        bump: { defaultValue: k.accountBumpValueNode("address") },
       },
+    },
+    extendLookupTable: {
+      byteDeltas: [
+        k.instructionByteDeltaNode(
+          k.resolverValueNode("resolveExtendLookupTableBytes", {
+            dependsOn: [k.argumentValueNode("addresses")],
+          })
+        ),
+      ],
     },
   })
 );
 
-// Set ShankAccount discriminator.
-const key = (name) => ({ field: "key", value: k.enumValueNode("Key", name) });
+// Set account discriminators.
 kinobi.update(
   k.setAccountDiscriminatorFromFieldVisitor({
-    counter: key("counter"),
+    addressLookupTable: { field: "discriminator", value: k.numberValueNode(1) },
+  })
+);
+
+// Set default values for structs.
+kinobi.update(
+  k.setStructDefaultValuesVisitor({
+    addressLookupTable: {
+      padding: { value: k.numberValueNode(0), strategy: "omitted" },
+    },
   })
 );
 

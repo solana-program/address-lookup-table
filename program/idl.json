@@ -1,176 +1,196 @@
 {
-  "version": "0.1.0",
-  "name": "acme_counter",
+  "version": "0.0.1",
+  "name": "address_lookup_table",
   "instructions": [
     {
-      "name": "Create",
+      "name": "CreateLookupTable",
       "accounts": [
         {
-          "name": "counter",
+          "name": "address",
           "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The program derived address of the counter account to create (seeds: ['counter', authority])"
-          ]
+          "isSigner": false
         },
         {
           "name": "authority",
           "isMut": false,
-          "isSigner": true,
-          "docs": ["The authority of the counter"]
+          "isSigner": true
         },
         {
           "name": "payer",
           "isMut": true,
-          "isSigner": true,
-          "docs": ["The account paying for the storage fees"]
+          "isSigner": true
         },
         {
           "name": "systemProgram",
           "isMut": false,
-          "isSigner": false,
-          "docs": ["The system program"]
+          "isSigner": false
         }
       ],
-      "args": [],
       "discriminant": {
-        "type": "u8",
-        "value": 0
-      }
+        "value": 0,
+        "type": "u32"
+      },
+      "args": [
+        {
+          "name": "recentSlot",
+          "type": "u64"
+        },
+        {
+          "name": "bump",
+          "type": "u8"
+        }
+      ]
     },
     {
-      "name": "Increment",
+      "name": "FreezeLookupTable",
       "accounts": [
         {
-          "name": "counter",
+          "name": "address",
           "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The program derived address of the counter account to increment (seeds: ['counter', authority])"
-          ]
+          "isSigner": false
         },
         {
           "name": "authority",
           "isMut": false,
-          "isSigner": true,
-          "docs": ["The authority of the counter"]
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": {
-            "option": "u32"
-          }
+          "isSigner": true
         }
       ],
       "discriminant": {
-        "type": "u8",
-        "value": 1
-      }
+        "value": 1,
+        "type": "u32"
+      },
+      "args": []
+    },
+    {
+      "name": "ExtendLookupTable",
+      "accounts": [
+        {
+          "name": "address",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "discriminant": {
+        "value": 2,
+        "type": "u32"
+      },
+      "args": [
+        {
+          "name": "addresses",
+          "type": {
+            "vec": "publicKey",
+            "size": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeactivateLookupTable",
+      "accounts": [
+        {
+          "name": "address",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "discriminant": {
+        "value": 3,
+        "type": "u32"
+      },
+      "args": []
+    },
+    {
+      "name": "CloseLookupTable",
+      "accounts": [
+        {
+          "name": "address",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "recipient",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "discriminant": {
+        "value": 4,
+        "type": "u32"
+      },
+      "args": []
     }
   ],
   "accounts": [
     {
-      "name": "Counter",
+      "name": "AddressLookupTable",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
+            "name": "discriminator",
+            "type": "u32"
+          },
+          {
+            "name": "deactivationSlot",
+            "type": "u64"
+          },
+          {
+            "name": "lastExtendedSlot",
+            "type": "u64"
+          },
+          {
+            "name": "lastExtendedSlotStartIndex",
+            "type": "u8"
           },
           {
             "name": "authority",
-            "type": "publicKey"
+            "type": {
+              "option": "publicKey",
+              "fixed": true
+            }
           },
           {
-            "name": "value",
-            "type": "u32"
+            "name": "padding",
+            "type": "u16"
+          },
+          {
+            "name": "addresses",
+            "type": {
+              "vec": "publicKey",
+              "size": "remainder"
+            }
           }
         ]
       }
-    }
-  ],
-  "types": [
-    {
-      "name": "Key",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Uninitialized"
-          },
-          {
-            "name": "Counter"
-          }
-        ]
-      }
-    }
-  ],
-  "errors": [
-    {
-      "code": 0,
-      "name": "DeserializationError",
-      "msg": "Error deserializing an account"
-    },
-    {
-      "code": 1,
-      "name": "SerializationError",
-      "msg": "Error serializing an account"
-    },
-    {
-      "code": 2,
-      "name": "InvalidProgramOwner",
-      "msg": "Invalid program owner. This likely mean the provided account does not exist"
-    },
-    {
-      "code": 3,
-      "name": "InvalidPda",
-      "msg": "Invalid PDA derivation"
-    },
-    {
-      "code": 4,
-      "name": "ExpectedEmptyAccount",
-      "msg": "Expected empty account"
-    },
-    {
-      "code": 5,
-      "name": "ExpectedNonEmptyAccount",
-      "msg": "Expected non empty account"
-    },
-    {
-      "code": 6,
-      "name": "ExpectedSignerAccount",
-      "msg": "Expected signer account"
-    },
-    {
-      "code": 7,
-      "name": "ExpectedWritableAccount",
-      "msg": "Expected writable account"
-    },
-    {
-      "code": 8,
-      "name": "AccountMismatch",
-      "msg": "Account mismatch"
-    },
-    {
-      "code": 9,
-      "name": "InvalidAccountKey",
-      "msg": "Invalid account key"
-    },
-    {
-      "code": 10,
-      "name": "NumericalOverflow",
-      "msg": "Numerical overflow"
     }
   ],
   "metadata": {
-    "origin": "shank",
     "address": "AddressLookupTab1e1111111111111111111111111",
-    "binaryVersion": "0.4.2",
-    "libVersion": "^0.4.2"
+    "origin": "shank"
   }
 }

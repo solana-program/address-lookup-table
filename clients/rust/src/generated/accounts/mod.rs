@@ -5,6 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod r#counter;
+pub(crate) mod r#address_lookup_table;
 
-pub use self::r#counter::*;
+pub use self::r#address_lookup_table::*;

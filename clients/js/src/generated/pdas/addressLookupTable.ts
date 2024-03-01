@@ -12,25 +12,27 @@ import {
   getAddressEncoder,
   getProgramDerivedAddress,
 } from '@solana/addresses';
-import { getStringEncoder } from '@solana/codecs-strings';
+import { getU64Encoder } from '@solana/codecs-numbers';
 
-export type CounterSeeds = {
-  /** The authority of the counter account */
+export type AddressLookupTableSeeds = {
+  /** The address of the LUT's authority */
   authority: Address;
+  /** The recent slot associated with the LUT */
+  recentSlot: number | bigint;
 };
 
-export async function findCounterPda(
-  seeds: CounterSeeds,
+export async function findAddressLookupTablePda(
+  seeds: AddressLookupTableSeeds,
   config: { programAddress?: Address | undefined } = {}
 ): Promise<ProgramDerivedAddress> {
   const {
-    programAddress = 'MyProgram1111111111111111111111111111111111' as Address<'MyProgram1111111111111111111111111111111111'>,
+    programAddress = 'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>,
   } = config;
   return getProgramDerivedAddress({
     programAddress,
     seeds: [
-      getStringEncoder({ size: 'variable' }).encode('counter'),
       getAddressEncoder().encode(seeds.authority),
+      getU64Encoder().encode(seeds.recentSlot),
     ],
   });
 }

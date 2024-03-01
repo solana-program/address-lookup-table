@@ -7,7 +7,7 @@
  */
 
 import { BASE_ACCOUNT_SIZE } from '@solana/accounts';
-import { Address } from '@solana/addresses';
+import { Address, ProgramDerivedAddress } from '@solana/addresses';
 import {
   Codec,
   Decoder,
@@ -19,7 +19,14 @@ import {
   getStructDecoder,
   getStructEncoder,
 } from '@solana/codecs-data-structures';
-import { getU8Decoder, getU8Encoder } from '@solana/codecs-numbers';
+import {
+  getU32Decoder,
+  getU32Encoder,
+  getU64Decoder,
+  getU64Encoder,
+  getU8Decoder,
+  getU8Encoder,
+} from '@solana/codecs-numbers';
 import {
   AccountRole,
   IAccountMeta,
@@ -32,20 +39,20 @@ import {
   WritableSignerAccount,
 } from '@solana/instructions';
 import { IAccountSignerMeta, TransactionSigner } from '@solana/signers';
-import { getCounterSize } from '../accounts';
-import { findCounterPda } from '../pdas';
+import { findAddressLookupTablePda } from '../pdas';
 import {
   IInstructionWithByteDelta,
   ResolvedAccount,
   accountMetaWithDefault,
   expectAddress,
+  expectProgramDerivedAddress,
   expectSome,
   getAccountMetasWithSigners,
 } from '../shared';
 
-export type CreateInstruction<
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111',
-  TAccountCounter extends string | IAccountMeta<string> = string,
+export type CreateLookupTableInstruction<
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountPayer extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
@@ -56,9 +63,9 @@ export type CreateInstruction<
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
     [
-      TAccountCounter extends string
-        ? WritableAccount<TAccountCounter>
-        : TAccountCounter,
+      TAccountAddress extends string
+        ? WritableAccount<TAccountAddress>
+        : TAccountAddress,
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority>
         : TAccountAuthority,
@@ -72,9 +79,9 @@ export type CreateInstruction<
     ]
   >;
 
-export type CreateInstructionWithSigners<
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111',
-  TAccountCounter extends string | IAccountMeta<string> = string,
+export type CreateLookupTableInstructionWithSigners<
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountPayer extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
@@ -85,9 +92,9 @@ export type CreateInstructionWithSigners<
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
     [
-      TAccountCounter extends string
-        ? WritableAccount<TAccountCounter>
-        : TAccountCounter,
+      TAccountAddress extends string
+        ? WritableAccount<TAccountAddress>
+        : TAccountAddress,
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
@@ -103,118 +110,129 @@ export type CreateInstructionWithSigners<
     ]
   >;
 
-export type CreateInstructionData = { discriminator: number };
+export type CreateLookupTableInstructionData = {
+  discriminator: number;
+  recentSlot: bigint;
+  bump: number;
+};
 
-export type CreateInstructionDataArgs = {};
+export type CreateLookupTableInstructionDataArgs = {
+  recentSlot: number | bigint;
+  bump: number;
+};
 
-export function getCreateInstructionDataEncoder(): Encoder<CreateInstructionDataArgs> {
+export function getCreateLookupTableInstructionDataEncoder(): Encoder<CreateLookupTableInstructionDataArgs> {
   return mapEncoder(
-    getStructEncoder([['discriminator', getU8Encoder()]]),
+    getStructEncoder([
+      ['discriminator', getU32Encoder()],
+      ['recentSlot', getU64Encoder()],
+      ['bump', getU8Encoder()],
+    ]),
     (value) => ({ ...value, discriminator: 0 })
   );
 }
 
-export function getCreateInstructionDataDecoder(): Decoder<CreateInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+export function getCreateLookupTableInstructionDataDecoder(): Decoder<CreateLookupTableInstructionData> {
+  return getStructDecoder([
+    ['discriminator', getU32Decoder()],
+    ['recentSlot', getU64Decoder()],
+    ['bump', getU8Decoder()],
+  ]);
 }
 
-export function getCreateInstructionDataCodec(): Codec<
-  CreateInstructionDataArgs,
-  CreateInstructionData
+export function getCreateLookupTableInstructionDataCodec(): Codec<
+  CreateLookupTableInstructionDataArgs,
+  CreateLookupTableInstructionData
 > {
   return combineCodec(
-    getCreateInstructionDataEncoder(),
-    getCreateInstructionDataDecoder()
+    getCreateLookupTableInstructionDataEncoder(),
+    getCreateLookupTableInstructionDataDecoder()
   );
 }
 
-export type CreateAsyncInput<
-  TAccountCounter extends string,
+export type CreateLookupTableAsyncInput<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string
 > = {
-  /** The program derived address of the counter account to create (seeds: ['counter', authority]) */
-  counter?: Address<TAccountCounter>;
-  /** The authority of the counter */
+  address?: ProgramDerivedAddress<TAccountAddress>;
   authority: Address<TAccountAuthority>;
-  /** The account paying for the storage fees */
   payer?: Address<TAccountPayer>;
-  /** The system program */
   systemProgram?: Address<TAccountSystemProgram>;
+  recentSlot: CreateLookupTableInstructionDataArgs['recentSlot'];
+  bump?: CreateLookupTableInstructionDataArgs['bump'];
 };
 
-export type CreateAsyncInputWithSigners<
-  TAccountCounter extends string,
+export type CreateLookupTableAsyncInputWithSigners<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string
 > = {
-  /** The program derived address of the counter account to create (seeds: ['counter', authority]) */
-  counter?: Address<TAccountCounter>;
-  /** The authority of the counter */
+  address?: ProgramDerivedAddress<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
-  /** The account paying for the storage fees */
   payer?: TransactionSigner<TAccountPayer>;
-  /** The system program */
   systemProgram?: Address<TAccountSystemProgram>;
+  recentSlot: CreateLookupTableInstructionDataArgs['recentSlot'];
+  bump?: CreateLookupTableInstructionDataArgs['bump'];
 };
 
-export async function getCreateInstructionAsync<
-  TAccountCounter extends string,
+export async function getCreateLookupTableInstructionAsync<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
 >(
-  input: CreateAsyncInputWithSigners<
-    TAccountCounter,
+  input: CreateLookupTableAsyncInputWithSigners<
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
   >
 ): Promise<
-  CreateInstructionWithSigners<
+  CreateLookupTableInstructionWithSigners<
     TProgram,
-    TAccountCounter,
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
   > &
     IInstructionWithByteDelta
 >;
-export async function getCreateInstructionAsync<
-  TAccountCounter extends string,
+export async function getCreateLookupTableInstructionAsync<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
 >(
-  input: CreateAsyncInput<
-    TAccountCounter,
+  input: CreateLookupTableAsyncInput<
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
   >
 ): Promise<
-  CreateInstruction<
+  CreateLookupTableInstruction<
     TProgram,
-    TAccountCounter,
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
   > &
     IInstructionWithByteDelta
 >;
-export async function getCreateInstructionAsync<
-  TAccountCounter extends string,
+export async function getCreateLookupTableInstructionAsync<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
 >(
-  input: CreateAsyncInput<
-    TAccountCounter,
+  input: CreateLookupTableAsyncInput<
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
@@ -222,29 +240,33 @@ export async function getCreateInstructionAsync<
 ): Promise<IInstruction & IInstructionWithByteDelta> {
   // Program address.
   const programAddress =
-    'MyProgram1111111111111111111111111111111111' as Address<'MyProgram1111111111111111111111111111111111'>;
+    'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
 
   // Original accounts.
   type AccountMetas = Parameters<
-    typeof getCreateInstructionRaw<
+    typeof getCreateLookupTableInstructionRaw<
       TProgram,
-      TAccountCounter,
+      TAccountAddress,
       TAccountAuthority,
       TAccountPayer,
       TAccountSystemProgram
     >
   >[0];
   const accounts: Record<keyof AccountMetas, ResolvedAccount> = {
-    counter: { value: input.counter ?? null, isWritable: true },
+    address: { value: input.address ?? null, isWritable: true },
     authority: { value: input.authority ?? null, isWritable: false },
     payer: { value: input.payer ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
 
+  // Original args.
+  const args = { ...input };
+
   // Resolve default values.
-  if (!accounts.counter.value) {
-    accounts.counter.value = await findCounterPda({
+  if (!accounts.address.value) {
+    accounts.address.value = await findAddressLookupTablePda({
       authority: expectAddress(accounts.authority.value),
+      recentSlot: expectSome(args.recentSlot),
     });
   }
   if (!accounts.payer.value) {
@@ -254,12 +276,12 @@ export async function getCreateInstructionAsync<
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
   }
+  if (!args.bump) {
+    args.bump = expectProgramDerivedAddress(accounts.address.value)[1];
+  }
 
   // Bytes created or reallocated by the instruction.
-  const byteDelta: number = [getCounterSize() + BASE_ACCOUNT_SIZE].reduce(
-    (a, b) => a + b,
-    0
-  );
+  const byteDelta: number = [56 + BASE_ACCOUNT_SIZE].reduce((a, b) => a + b, 0);
 
   // Get account metas and signers.
   const accountMetas = getAccountMetasWithSigners(
@@ -268,97 +290,94 @@ export async function getCreateInstructionAsync<
     programAddress
   );
 
-  const instruction = getCreateInstructionRaw(
+  const instruction = getCreateLookupTableInstructionRaw(
     accountMetas as Record<keyof AccountMetas, IAccountMeta>,
+    args as CreateLookupTableInstructionDataArgs,
     programAddress
   );
 
   return Object.freeze({ ...instruction, byteDelta });
 }
 
-export type CreateInput<
-  TAccountCounter extends string,
+export type CreateLookupTableInput<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string
 > = {
-  /** The program derived address of the counter account to create (seeds: ['counter', authority]) */
-  counter: Address<TAccountCounter>;
-  /** The authority of the counter */
+  address: ProgramDerivedAddress<TAccountAddress>;
   authority: Address<TAccountAuthority>;
-  /** The account paying for the storage fees */
   payer?: Address<TAccountPayer>;
-  /** The system program */
   systemProgram?: Address<TAccountSystemProgram>;
+  recentSlot: CreateLookupTableInstructionDataArgs['recentSlot'];
+  bump?: CreateLookupTableInstructionDataArgs['bump'];
 };
 
-export type CreateInputWithSigners<
-  TAccountCounter extends string,
+export type CreateLookupTableInputWithSigners<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string
 > = {
-  /** The program derived address of the counter account to create (seeds: ['counter', authority]) */
-  counter: Address<TAccountCounter>;
-  /** The authority of the counter */
+  address: ProgramDerivedAddress<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
-  /** The account paying for the storage fees */
   payer?: TransactionSigner<TAccountPayer>;
-  /** The system program */
   systemProgram?: Address<TAccountSystemProgram>;
+  recentSlot: CreateLookupTableInstructionDataArgs['recentSlot'];
+  bump?: CreateLookupTableInstructionDataArgs['bump'];
 };
 
-export function getCreateInstruction<
-  TAccountCounter extends string,
+export function getCreateLookupTableInstruction<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
 >(
-  input: CreateInputWithSigners<
-    TAccountCounter,
+  input: CreateLookupTableInputWithSigners<
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
   >
-): CreateInstructionWithSigners<
+): CreateLookupTableInstructionWithSigners<
   TProgram,
-  TAccountCounter,
+  TAccountAddress,
   TAccountAuthority,
   TAccountPayer,
   TAccountSystemProgram
 > &
   IInstructionWithByteDelta;
-export function getCreateInstruction<
-  TAccountCounter extends string,
+export function getCreateLookupTableInstruction<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
 >(
-  input: CreateInput<
-    TAccountCounter,
+  input: CreateLookupTableInput<
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
   >
-): CreateInstruction<
+): CreateLookupTableInstruction<
   TProgram,
-  TAccountCounter,
+  TAccountAddress,
   TAccountAuthority,
   TAccountPayer,
   TAccountSystemProgram
 > &
   IInstructionWithByteDelta;
-export function getCreateInstruction<
-  TAccountCounter extends string,
+export function getCreateLookupTableInstruction<
+  TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
 >(
-  input: CreateInput<
-    TAccountCounter,
+  input: CreateLookupTableInput<
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
@@ -366,24 +385,27 @@ export function getCreateInstruction<
 ): IInstruction & IInstructionWithByteDelta {
   // Program address.
   const programAddress =
-    'MyProgram1111111111111111111111111111111111' as Address<'MyProgram1111111111111111111111111111111111'>;
+    'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
 
   // Original accounts.
   type AccountMetas = Parameters<
-    typeof getCreateInstructionRaw<
+    typeof getCreateLookupTableInstructionRaw<
       TProgram,
-      TAccountCounter,
+      TAccountAddress,
       TAccountAuthority,
       TAccountPayer,
       TAccountSystemProgram
     >
   >[0];
   const accounts: Record<keyof AccountMetas, ResolvedAccount> = {
-    counter: { value: input.counter ?? null, isWritable: true },
+    address: { value: input.address ?? null, isWritable: true },
     authority: { value: input.authority ?? null, isWritable: false },
     payer: { value: input.payer ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
+
+  // Original args.
+  const args = { ...input };
 
   // Resolve default values.
   if (!accounts.payer.value) {
@@ -393,12 +415,12 @@ export function getCreateInstruction<
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
   }
+  if (!args.bump) {
+    args.bump = expectProgramDerivedAddress(accounts.address.value)[1];
+  }
 
   // Bytes created or reallocated by the instruction.
-  const byteDelta: number = [getCounterSize() + BASE_ACCOUNT_SIZE].reduce(
-    (a, b) => a + b,
-    0
-  );
+  const byteDelta: number = [56 + BASE_ACCOUNT_SIZE].reduce((a, b) => a + b, 0);
 
   // Get account metas and signers.
   const accountMetas = getAccountMetasWithSigners(
@@ -407,17 +429,18 @@ export function getCreateInstruction<
     programAddress
   );
 
-  const instruction = getCreateInstructionRaw(
+  const instruction = getCreateLookupTableInstructionRaw(
     accountMetas as Record<keyof AccountMetas, IAccountMeta>,
+    args as CreateLookupTableInstructionDataArgs,
     programAddress
   );
 
   return Object.freeze({ ...instruction, byteDelta });
 }
 
-export function getCreateInstructionRaw<
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111',
-  TAccountCounter extends string | IAccountMeta<string> = string,
+export function getCreateLookupTableInstructionRaw<
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountPayer extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
@@ -426,9 +449,9 @@ export function getCreateInstructionRaw<
   TRemainingAccounts extends Array<IAccountMeta<string>> = []
 >(
   accounts: {
-    counter: TAccountCounter extends string
-      ? Address<TAccountCounter>
-      : TAccountCounter;
+    address: TAccountAddress extends string
+      ? Address<TAccountAddress>
+      : TAccountAddress;
     authority: TAccountAuthority extends string
       ? Address<TAccountAuthority>
       : TAccountAuthority;
@@ -439,12 +462,13 @@ export function getCreateInstructionRaw<
       ? Address<TAccountSystemProgram>
       : TAccountSystemProgram;
   },
-  programAddress: Address<TProgram> = 'MyProgram1111111111111111111111111111111111' as Address<TProgram>,
+  args: CreateLookupTableInstructionDataArgs,
+  programAddress: Address<TProgram> = 'AddressLookupTab1e1111111111111111111111111' as Address<TProgram>,
   remainingAccounts?: TRemainingAccounts
 ) {
   return {
     accounts: [
-      accountMetaWithDefault(accounts.counter, AccountRole.WRITABLE),
+      accountMetaWithDefault(accounts.address, AccountRole.WRITABLE),
       accountMetaWithDefault(accounts.authority, AccountRole.READONLY_SIGNER),
       accountMetaWithDefault(accounts.payer, AccountRole.WRITABLE_SIGNER),
       accountMetaWithDefault(
@@ -454,11 +478,11 @@ export function getCreateInstructionRaw<
       ),
       ...(remainingAccounts ?? []),
     ],
-    data: getCreateInstructionDataEncoder().encode({}),
+    data: getCreateLookupTableInstructionDataEncoder().encode(args),
     programAddress,
-  } as CreateInstruction<
+  } as CreateLookupTableInstruction<
     TProgram,
-    TAccountCounter,
+    TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram,
@@ -466,32 +490,28 @@ export function getCreateInstructionRaw<
   >;
 }
 
-export type ParsedCreateInstruction<
-  TProgram extends string = 'MyProgram1111111111111111111111111111111111',
+export type ParsedCreateLookupTableInstruction<
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[]
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    /** The program derived address of the counter account to create (seeds: ['counter', authority]) */
-    counter: TAccountMetas[0];
-    /** The authority of the counter */
+    address: TAccountMetas[0];
     authority: TAccountMetas[1];
-    /** The account paying for the storage fees */
     payer: TAccountMetas[2];
-    /** The system program */
     systemProgram: TAccountMetas[3];
   };
-  data: CreateInstructionData;
+  data: CreateLookupTableInstructionData;
 };
 
-export function parseCreateInstruction<
+export function parseCreateLookupTableInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[]
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
-): ParsedCreateInstruction<TProgram, TAccountMetas> {
+): ParsedCreateLookupTableInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 4) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
@@ -505,11 +525,11 @@ export function parseCreateInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      counter: getNextAccount(),
+      address: getNextAccount(),
       authority: getNextAccount(),
       payer: getNextAccount(),
       systemProgram: getNextAccount(),
     },
-    data: getCreateInstructionDataDecoder().decode(instruction.data),
+    data: getCreateLookupTableInstructionDataDecoder().decode(instruction.data),
   };
 }

@@ -6,5 +6,8 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './create';
-export * from './increment';
+export * from './closeLookupTable';
+export * from './createLookupTable';
+export * from './deactivateLookupTable';
+export * from './extendLookupTable';
+export * from './freezeLookupTable';

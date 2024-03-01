@@ -3,10 +3,8 @@ import {
   Commitment,
   CompilableTransaction,
   ITransactionWithBlockhashLifetime,
-  ProgramDerivedAddress,
   TransactionSigner,
   airdropFactory,
-  appendTransactionInstruction,
   createDefaultRpcSubscriptionsTransport,
   createDefaultRpcTransport,
   createSolanaRpc,
@@ -21,7 +19,6 @@ import {
   setTransactionLifetimeUsingBlockhash,
   signTransactionWithSigners,
 } from '@solana/web3.js';
-import { findCounterPda, getCreateInstructionAsync } from '../src';
 
 type Client = {
   rpc: ReturnType<typeof createSolanaRpc>;
@@ -84,20 +81,3 @@ export const signAndSendTransaction = async (
 export const getBalance = async (client: Client, address: Address) =>
   (await client.rpc.getBalance(address, { commitment: 'confirmed' }).send())
     .value;
-
-export const createCounterForAuthority = async (
-  client: Client,
-  authority: TransactionSigner
-): Promise<ProgramDerivedAddress> => {
-  const [transaction, counterPda, createIx] = await Promise.all([
-    createDefaultTransaction(client, authority),
-    findCounterPda({ authority: authority.address }),
-    getCreateInstructionAsync({ authority }),
-  ]);
-  await pipe(
-    transaction,
-    (tx) => appendTransactionInstruction(createIx, tx),
-    (tx) => signAndSendTransaction(client, tx)
-  );
-  return counterPda;
-};

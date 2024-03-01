@@ -9,18 +9,15 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Create {
-    /// The program derived address of the counter account to create (seeds: ['counter', authority])
-    pub counter: solana_program::pubkey::Pubkey,
-    /// The authority of the counter
+pub struct CloseLookupTable {
+    pub address: solana_program::pubkey::Pubkey,
+
     pub authority: solana_program::pubkey::Pubkey,
-    /// The account paying for the storage fees
-    pub payer: solana_program::pubkey::Pubkey,
-    /// The system program
-    pub system_program: solana_program::pubkey::Pubkey,
+
+    pub recipient: solana_program::pubkey::Pubkey,
 }
 
-impl Create {
+impl CloseLookupTable {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
@@ -29,9 +26,9 @@ impl Create {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.counter,
+            self.address,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -39,17 +36,14 @@ impl Create {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.payer, true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.system_program,
+            self.recipient,
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = CreateInstructionData::new().try_to_vec().unwrap();
+        let data = CloseLookupTableInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
-            program_id: crate::ACME_COUNTER_ID,
+            program_id: crate::ADDRESS_LOOKUP_TABLE_ID,
             accounts,
             data,
         }
@@ -57,60 +51,48 @@ impl Create {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct CreateInstructionData {
-    discriminator: u8,
+struct CloseLookupTableInstructionData {
+    discriminator: u32,
 }
 
-impl CreateInstructionData {
+impl CloseLookupTableInstructionData {
     fn new() -> Self {
-        Self { discriminator: 0 }
+        Self { discriminator: 4 }
     }
 }
 
-/// Instruction builder for `Create`.
+/// Instruction builder for `CloseLookupTable`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` counter
+///   0. `[writable]` address
 ///   1. `[signer]` authority
-///   2. `[writable, signer]` payer
-///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   2. `[writable]` recipient
 #[derive(Default)]
-pub struct CreateBuilder {
-    counter: Option<solana_program::pubkey::Pubkey>,
+pub struct CloseLookupTableBuilder {
+    address: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
-    payer: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
+    recipient: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl CreateBuilder {
+impl CloseLookupTableBuilder {
     pub fn new() -> Self {
         Self::default()
     }
-    /// The program derived address of the counter account to create (seeds: ['counter', authority])
     #[inline(always)]
-    pub fn counter(&mut self, counter: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.counter = Some(counter);
+    pub fn address(&mut self, address: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.address = Some(address);
         self
     }
-    /// The authority of the counter
     #[inline(always)]
     pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
         self.authority = Some(authority);
         self
     }
-    /// The account paying for the storage fees
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.payer = Some(payer);
-        self
-    }
-    /// `[optional account, default to '11111111111111111111111111111111']`
-    /// The system program
-    #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.system_program = Some(system_program);
+    pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.recipient = Some(recipient);
         self
     }
     /// Add an aditional account to the instruction.
@@ -133,56 +115,47 @@ impl CreateBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Create {
-            counter: self.counter.expect("counter is not set"),
+        let accounts = CloseLookupTable {
+            address: self.address.expect("address is not set"),
             authority: self.authority.expect("authority is not set"),
-            payer: self.payer.expect("payer is not set"),
-            system_program: self
-                .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            recipient: self.recipient.expect("recipient is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
     }
 }
 
-/// `create` CPI accounts.
-pub struct CreateCpiAccounts<'a, 'b> {
-    /// The program derived address of the counter account to create (seeds: ['counter', authority])
-    pub counter: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The authority of the counter
+/// `close_lookup_table` CPI accounts.
+pub struct CloseLookupTableCpiAccounts<'a, 'b> {
+    pub address: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The account paying for the storage fees
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The system program
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `create` CPI instruction.
-pub struct CreateCpi<'a, 'b> {
+/// `close_lookup_table` CPI instruction.
+pub struct CloseLookupTableCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The program derived address of the counter account to create (seeds: ['counter', authority])
-    pub counter: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The authority of the counter
+
+    pub address: &'b solana_program::account_info::AccountInfo<'a>,
+
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The account paying for the storage fees
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The system program
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+
+    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-impl<'a, 'b> CreateCpi<'a, 'b> {
+impl<'a, 'b> CloseLookupTableCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: CreateCpiAccounts<'a, 'b>,
+        accounts: CloseLookupTableCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
-            counter: accounts.counter,
+            address: accounts.address,
             authority: accounts.authority,
-            payer: accounts.payer,
-            system_program: accounts.system_program,
+            recipient: accounts.recipient,
         }
     }
     #[inline(always)]
@@ -218,9 +191,9 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.counter.key,
+            *self.address.key,
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -228,11 +201,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.payer.key,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.system_program.key,
+            *self.recipient.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -242,19 +211,18 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = CreateInstructionData::new().try_to_vec().unwrap();
+        let data = CloseLookupTableInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
-            program_id: crate::ACME_COUNTER_ID,
+            program_id: crate::ADDRESS_LOOKUP_TABLE_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.counter.clone());
+        account_infos.push(self.address.clone());
         account_infos.push(self.authority.clone());
-        account_infos.push(self.payer.clone());
-        account_infos.push(self.system_program.clone());
+        account_infos.push(self.recipient.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -267,40 +235,36 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `Create` via CPI.
+/// Instruction builder for `CloseLookupTable` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` counter
+///   0. `[writable]` address
 ///   1. `[signer]` authority
-///   2. `[writable, signer]` payer
-///   3. `[]` system_program
-pub struct CreateCpiBuilder<'a, 'b> {
-    instruction: Box<CreateCpiBuilderInstruction<'a, 'b>>,
+///   2. `[writable]` recipient
+pub struct CloseLookupTableCpiBuilder<'a, 'b> {
+    instruction: Box<CloseLookupTableCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
+impl<'a, 'b> CloseLookupTableCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(CreateCpiBuilderInstruction {
+        let instruction = Box::new(CloseLookupTableCpiBuilderInstruction {
             __program: program,
-            counter: None,
+            address: None,
             authority: None,
-            payer: None,
-            system_program: None,
+            recipient: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
     }
-    /// The program derived address of the counter account to create (seeds: ['counter', authority])
     #[inline(always)]
-    pub fn counter(
+    pub fn address(
         &mut self,
-        counter: &'b solana_program::account_info::AccountInfo<'a>,
+        address: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.counter = Some(counter);
+        self.instruction.address = Some(address);
         self
     }
-    /// The authority of the counter
     #[inline(always)]
     pub fn authority(
         &mut self,
@@ -309,19 +273,12 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.authority = Some(authority);
         self
     }
-    /// The account paying for the storage fees
     #[inline(always)]
-    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.payer = Some(payer);
-        self
-    }
-    /// The system program
-    #[inline(always)]
-    pub fn system_program(
+    pub fn recipient(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        recipient: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.system_program = Some(system_program);
+        self.instruction.recipient = Some(recipient);
         self
     }
     /// Add an additional account to the instruction.
@@ -365,19 +322,14 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = CreateCpi {
+        let instruction = CloseLookupTableCpi {
             __program: self.instruction.__program,
 
-            counter: self.instruction.counter.expect("counter is not set"),
+            address: self.instruction.address.expect("address is not set"),
 
             authority: self.instruction.authority.expect("authority is not set"),
 
-            payer: self.instruction.payer.expect("payer is not set"),
-
-            system_program: self
-                .instruction
-                .system_program
-                .expect("system_program is not set"),
+            recipient: self.instruction.recipient.expect("recipient is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -386,12 +338,11 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
     }
 }
 
-struct CreateCpiBuilderInstruction<'a, 'b> {
+struct CloseLookupTableCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    counter: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

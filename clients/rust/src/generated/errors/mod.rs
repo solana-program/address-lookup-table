@@ -4,7 +4,3 @@
 //!
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
-
-pub(crate) mod acme_counter;
-
-pub use self::acme_counter::AcmeCounterError;

@@ -7,5 +7,5 @@
 
 use solana_program::{pubkey, pubkey::Pubkey};
 
-/// `acme_counter` program ID.
-pub const ACME_COUNTER_ID: Pubkey = pubkey!("MyProgram1111111111111111111111111111111111");
+/// `address_lookup_table` program ID.
+pub const ADDRESS_LOOKUP_TABLE_ID: Pubkey = pubkey!("AddressLookupTab1e1111111111111111111111111");
