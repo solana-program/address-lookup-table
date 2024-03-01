@@ -11,10 +11,9 @@ import {
 
 // Options and arguments.
 const force = argv["force"];
-const cliLogs = path.join(os.tmpdir(), "validator-cli.log");
-const isValidatorRunning = (await $`lsof -t -i:8899`.quiet().exitCode) === 0;
 
 // Keep the validator running when not using the force flag.
+const isValidatorRunning = (await $`lsof -t -i:8899`.quiet().exitCode) === 0;
 if (!force && isValidatorRunning) {
   echo(chalk.yellow("Local validator is already running."));
   process.exit();
@@ -43,6 +42,7 @@ programs.forEach(({ programId, deployPath }) => {
 });
 
 // Start the validator in detached mode.
+const cliLogs = path.join(os.tmpdir(), "validator-cli.log");
 fs.writeFileSync(cliLogs, "", () => {});
 const out = fs.openSync(cliLogs, "a");
 const err = fs.openSync(cliLogs, "a");
@@ -53,22 +53,31 @@ const validator = spawn("solana-test-validator", args, {
 validator.unref();
 
 // Wait for the validator to stabilize.
-await spinner(
+const waitForValidator = spinner(
   "Waiting for local validator to stabilize...",
   () =>
-    new Promise((resolve) => {
+    new Promise((resolve, reject) => {
       setInterval(() => {
         const logs = fs.readFileSync(cliLogs, "utf8");
-        if (logs.includes("Confirmed Slot: 1")) {
-          fs.rmSync(cliLogs);
+        if (validator.exitCode !== null) {
+          reject(logs);
+        } else if (logs.includes("Confirmed Slot: 1")) {
           resolve();
         }
       }, 1000);
     })
 );
 
-echo(chalk.green("Local validator is up and running!"));
-process.exit();
+try {
+  await waitForValidator;
+  echo(chalk.green("Local validator is up and running!"));
+} catch (error) {
+  echo(error);
+  echo(chalk.red("Could not start local validator."));
+} finally {
+  fs.rmSync(cliLogs);
+  process.exit();
+}
 
 function getPrograms() {
   const binaryDir = path.join(__dirname, "..", "target", "deploy");
