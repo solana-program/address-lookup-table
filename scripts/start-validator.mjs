@@ -34,7 +34,7 @@ if (isValidatorRunning) {
 }
 
 // Global validator arguments.
-const args = [/* Reset ledget */ "-r"];
+const args = [/* Reset ledger */ "-r"];
 
 // Load programs.
 programs.forEach(({ programId, deployPath }) => {
