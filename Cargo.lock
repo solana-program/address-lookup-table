@@ -3175,6 +3175,7 @@ dependencies = [
 name = "scbpf-address-lookup-table"
 version = "0.1.0"
 dependencies = [
+ "assert_matches",
  "bincode",
  "bytemuck",
  "log",
@@ -3183,6 +3184,7 @@ dependencies = [
  "solana-frozen-abi",
  "solana-frozen-abi-macro",
  "solana-program",
+ "solana-program-test",
  "solana-sdk",
  "spl-program-error",
  "test-case",
