@@ -1,6 +1,7 @@
 use {
     crate::error::AddressLookupError,
     serde::{Deserialize, Serialize},
+    shank::ShankAccount,
     solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample},
     solana_program::{
         clock::Slot, program_error::ProgramError, pubkey::Pubkey, slot_hashes::MAX_ENTRIES,
@@ -41,7 +42,12 @@ pub enum LookupTableStatus {
 }
 
 /// Address lookup table metadata
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, AbiExample)]
+#[rustfmt::skip]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, AbiExample, ShankAccount)]
+#[seeds(
+    authority("Account used to derive and control the new address lookup table", Pubkey),
+    recent_slot("A recent block-producing slot", u64),
+)]
 pub struct LookupTableMeta {
     // [Core BPF]: TODO: `Clock` instead of `SlotHashes`.
     /// Lookup tables cannot be closed until the deactivation slot is

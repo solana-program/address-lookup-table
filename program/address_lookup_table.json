@@ -1,0 +1,228 @@
+{
+  "version": "0.1.0",
+  "name": "address_lookup_table",
+  "instructions": [
+    {
+      "name": "CreateLookupTable",
+      "accounts": [
+        {
+          "name": "lookupTable",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Uninitialized address lookup table account (seeds: [authority, recent_slot])"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Account used to derive and control the new address lookup table"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program for CPI"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "recentSlot",
+          "type": {
+            "defined": "Slot"
+          }
+        },
+        {
+          "name": "bumpSeed",
+          "type": "u8"
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
+      "name": "FreezeLookupTable",
+      "accounts": [
+        {
+          "name": "lookupTable",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Address lookup table account to freeze (seeds: [authority, recent_slot])"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
+      "name": "ExtendLookupTable",
+      "accounts": [
+        {
+          "name": "lookupTable",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Address lookup table account to extend (seeds: [authority, recent_slot])"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "Account that will fund the table reallocation"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "System program for CPI"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "newAddresses",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
+    },
+    {
+      "name": "DeactivateLookupTable",
+      "accounts": [
+        {
+          "name": "lookupTable",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Address lookup table account to deactivate (seeds: [authority, recent_slot])"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 3
+      }
+    },
+    {
+      "name": "CloseLookupTable",
+      "accounts": [
+        {
+          "name": "lookupTable",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Address lookup table account to close (seeds: [authority, recent_slot])"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        },
+        {
+          "name": "recipient",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Recipient of closed account lamports"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 4
+      }
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LookupTableMeta",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "deactivationSlot",
+            "type": {
+              "defined": "Slot"
+            }
+          },
+          {
+            "name": "lastExtendedSlot",
+            "type": {
+              "defined": "Slot"
+            }
+          },
+          {
+            "name": "lastExtendedSlotStartIndex",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "padding",
+            "type": "u16"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "AaoNx79M6YE3DcXfrRN4nmBcQvQPqdpowi6uEESuJdnm"
+  }
+}

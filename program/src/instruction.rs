@@ -2,6 +2,7 @@
 
 use {
     serde::{Deserialize, Serialize},
+    shank::{ShankContext, ShankInstruction},
     solana_program::{
         clock::Slot,
         instruction::{AccountMeta, Instruction},
@@ -10,7 +11,7 @@ use {
     },
 };
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, ShankContext, ShankInstruction)]
 pub enum AddressLookupTableInstruction {
     /// Create an address lookup table
     ///
@@ -21,6 +22,19 @@ pub enum AddressLookupTableInstruction {
     ///   2. `[SIGNER, WRITE]` Account that will fund the new address lookup
     ///      table.
     ///   3. `[]` System program for CPI.
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        desc = "Uninitialized address lookup table account (seeds: [authority, recent_slot])"
+    )]
+    #[account(
+        1,
+        signer,
+        name = "authority",
+        desc = "Account used to derive and control the new address lookup table"
+    )]
+    #[account(2, name = "system_program", desc = "System program for CPI")]
     CreateLookupTable {
         /// A recent slot must be used in the derivation path
         /// for each initialized table. When closing table accounts,
@@ -39,6 +53,13 @@ pub enum AddressLookupTableInstruction {
     /// # Account references
     ///   0. `[WRITE]` Address lookup table account to freeze
     ///   1. `[SIGNER]` Current authority
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        desc = "Address lookup table account to freeze (seeds: [authority, recent_slot])"
+    )]
+    #[account(1, signer, name = "authority", desc = "Current authority")]
     FreezeLookupTable,
 
     /// Extend an address lookup table with new addresses. Funding account and
@@ -52,6 +73,22 @@ pub enum AddressLookupTableInstruction {
     ///   2. `[SIGNER, WRITE, OPTIONAL]` Account that will fund the table
     ///      reallocation
     ///   3. `[OPTIONAL]` System program for CPI.
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        desc = "Address lookup table account to extend (seeds: [authority, recent_slot])"
+    )]
+    #[account(1, signer, name = "authority", desc = "Current authority")]
+    #[account(
+        2,
+        signer,
+        writable,
+        optional,
+        name = "payer",
+        desc = "Account that will fund the table reallocation"
+    )]
+    #[account(3, optional, name = "system_program", desc = "System program for CPI")]
     ExtendLookupTable { new_addresses: Vec<Pubkey> },
 
     /// Deactivate an address lookup table, making it unusable and
@@ -60,6 +97,13 @@ pub enum AddressLookupTableInstruction {
     /// # Account references
     ///   0. `[WRITE]` Address lookup table account to deactivate
     ///   1. `[SIGNER]` Current authority
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        desc = "Address lookup table account to deactivate (seeds: [authority, recent_slot])"
+    )]
+    #[account(1, signer, name = "authority", desc = "Current authority")]
     DeactivateLookupTable,
 
     /// Close an address lookup table account
@@ -68,6 +112,19 @@ pub enum AddressLookupTableInstruction {
     ///   0. `[WRITE]` Address lookup table account to close
     ///   1. `[SIGNER]` Current authority
     ///   2. `[WRITE]` Recipient of closed account lamports
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        desc = "Address lookup table account to close (seeds: [authority, recent_slot])"
+    )]
+    #[account(1, signer, name = "authority", desc = "Current authority")]
+    #[account(
+        2,
+        writable,
+        name = "recipient",
+        desc = "Recipient of closed account lamports"
+    )]
     CloseLookupTable,
 }
 
@@ -190,4 +247,10 @@ pub fn close_lookup_table(
             AccountMeta::new(recipient_address, false),
         ],
     )
+}
+
+#[test]
+fn test_joe() {
+    let (instruction, _) = create_lookup_table(Pubkey::new_unique(), Pubkey::new_unique(), 0);
+    println!("Instruction data: {:?}", instruction.data);
 }
