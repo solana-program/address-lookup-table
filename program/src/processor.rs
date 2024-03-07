@@ -212,7 +212,7 @@ fn process_extend_lookup_table(
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    let (lookup_table_meta, old_table_data_len, new_table_data_len) = {
+    let (lookup_table_meta, new_addresses_start_index, new_table_data_len) = {
         let lookup_table_data = lookup_table_info.try_borrow_data()?;
         let mut lookup_table = AddressLookupTable::deserialize(&lookup_table_data)?;
 
@@ -265,14 +265,15 @@ fn process_extend_lookup_table(
                 })?;
         }
 
-        let old_table_data_len = LOOKUP_TABLE_META_SIZE
-            .checked_add(old_table_addresses_len.saturating_mul(PUBKEY_BYTES))
-            .ok_or(ProgramError::ArithmeticOverflow)?;
         let new_table_data_len = LOOKUP_TABLE_META_SIZE
             .checked_add(new_table_addresses_len.saturating_mul(PUBKEY_BYTES))
             .ok_or(ProgramError::ArithmeticOverflow)?;
 
-        (lookup_table.meta, old_table_data_len, new_table_data_len)
+        (
+            lookup_table.meta,
+            old_table_addresses_len,
+            new_table_data_len,
+        )
     };
 
     AddressLookupTable::overwrite_meta_data(
@@ -286,7 +287,7 @@ fn process_extend_lookup_table(
         let mut lookup_table_data = lookup_table_info.try_borrow_mut_data()?;
         let uninitialized_addresses = AddressLookupTable::deserialize_addresses_from_index_mut(
             &mut lookup_table_data,
-            old_table_data_len,
+            new_addresses_start_index,
         )?;
         uninitialized_addresses.copy_from_slice(&new_addresses);
     }
