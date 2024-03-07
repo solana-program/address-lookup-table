@@ -11,7 +11,7 @@ use {
 };
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-pub enum ProgramInstruction {
+pub enum AddressLookupTableInstruction {
     /// Create an address lookup table
     ///
     /// # Account references
@@ -100,7 +100,7 @@ pub fn create_lookup_table(
 
     let instruction = Instruction::new_with_bincode(
         crate::id(),
-        &ProgramInstruction::CreateLookupTable {
+        &AddressLookupTableInstruction::CreateLookupTable {
             recent_slot,
             bump_seed,
         },
@@ -121,7 +121,7 @@ pub fn create_lookup_table(
 pub fn freeze_lookup_table(lookup_table_address: Pubkey, authority_address: Pubkey) -> Instruction {
     Instruction::new_with_bincode(
         crate::id(),
-        &ProgramInstruction::FreezeLookupTable,
+        &AddressLookupTableInstruction::FreezeLookupTable,
         vec![
             AccountMeta::new(lookup_table_address, false),
             AccountMeta::new_readonly(authority_address, true),
@@ -151,7 +151,7 @@ pub fn extend_lookup_table(
 
     Instruction::new_with_bincode(
         crate::id(),
-        &ProgramInstruction::ExtendLookupTable { new_addresses },
+        &AddressLookupTableInstruction::ExtendLookupTable { new_addresses },
         accounts,
     )
 }
@@ -165,7 +165,7 @@ pub fn deactivate_lookup_table(
 ) -> Instruction {
     Instruction::new_with_bincode(
         crate::id(),
-        &ProgramInstruction::DeactivateLookupTable,
+        &AddressLookupTableInstruction::DeactivateLookupTable,
         vec![
             AccountMeta::new(lookup_table_address, false),
             AccountMeta::new_readonly(authority_address, true),
@@ -183,7 +183,7 @@ pub fn close_lookup_table(
 ) -> Instruction {
     Instruction::new_with_bincode(
         crate::id(),
-        &ProgramInstruction::CloseLookupTable,
+        &AddressLookupTableInstruction::CloseLookupTable,
         vec![
             AccountMeta::new(lookup_table_address, false),
             AccountMeta::new_readonly(authority_address, true),
