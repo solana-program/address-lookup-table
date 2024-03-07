@@ -142,7 +142,7 @@ fn process_create_lookup_table(
     )?;
 
     ProgramState::serialize_new_lookup_table(
-        *lookup_table_info.try_borrow_mut_data()?,
+        &mut lookup_table_info.try_borrow_mut_data()?[..],
         authority_info.key,
     )?;
 
@@ -193,7 +193,7 @@ fn process_freeze_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) ->
 
     lookup_table_meta.authority = None;
     AddressLookupTable::overwrite_meta_data(
-        *lookup_table_info.try_borrow_mut_data()?,
+        &mut lookup_table_info.try_borrow_mut_data()?[..],
         lookup_table_meta,
     )?;
 
@@ -282,7 +282,7 @@ fn process_extend_lookup_table(
     };
 
     AddressLookupTable::overwrite_meta_data(
-        *lookup_table_info.try_borrow_mut_data()?,
+        &mut lookup_table_info.try_borrow_mut_data()?[..],
         lookup_table_meta,
     )?;
 
@@ -363,7 +363,7 @@ fn process_deactivate_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]
     lookup_table_meta.deactivation_slot = clock.slot;
 
     AddressLookupTable::overwrite_meta_data(
-        *lookup_table_info.try_borrow_mut_data()?,
+        &mut lookup_table_info.try_borrow_mut_data()?[..],
         lookup_table_meta,
     )?;
 
