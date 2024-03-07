@@ -91,11 +91,15 @@ async fn test_extend_lookup_table() {
             (0, 0, Err(InstructionError::InvalidInstructionData)),
             (0, 1, Ok(())),
             (0, 10, Ok(())),
+            (0, 38, Ok(())), // Max new addresses allowed by `limited_deserialize`
+            (0, 39, Err(InstructionError::InvalidInstructionData)),
             (1, 1, Ok(())),
             (1, 10, Ok(())),
-            (255, 1, Ok(())),
-            (255, 2, Err(InstructionError::InvalidInstructionData)),
+            (218, 38, Ok(())), // 38 less than maximum, 38 brings it to the maximum
+            (219, 38, Err(InstructionError::InvalidInstructionData)),
             (246, 10, Ok(())),
+            (255, 1, Ok(())), // One less than maximum, 1 brings it to the maximum
+            (255, 2, Err(InstructionError::InvalidInstructionData)),
             (256, 1, Err(InstructionError::InvalidArgument)),
         ] {
             let mut lookup_table =
