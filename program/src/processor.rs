@@ -82,14 +82,12 @@ fn process_create_lookup_table(
 
     // Use a derived address to ensure that an address table can never be
     // initialized more than once at the same address.
-    let derived_table_key = Pubkey::create_program_address(
-        &[
-            authority_info.key.as_ref(),
-            &derivation_slot.to_le_bytes(),
-            &[bump_seed],
-        ],
-        program_id,
-    )?;
+    let derived_table_seeds = &[
+        authority_info.key.as_ref(),
+        &derivation_slot.to_le_bytes(),
+        &[bump_seed],
+    ];
+    let derived_table_key = Pubkey::create_program_address(derived_table_seeds, program_id)?;
 
     if lookup_table_info.key != &derived_table_key {
         msg!(
@@ -124,21 +122,13 @@ fn process_create_lookup_table(
     invoke_signed(
         &system_instruction::allocate(lookup_table_info.key, lookup_table_data_len as u64),
         &[lookup_table_info.clone()],
-        &[&[
-            authority_info.key.as_ref(),
-            &derivation_slot.to_le_bytes(),
-            &[bump_seed],
-        ]],
+        &[derived_table_seeds],
     )?;
 
     invoke_signed(
         &system_instruction::assign(lookup_table_info.key, program_id),
         &[lookup_table_info.clone()],
-        &[&[
-            authority_info.key.as_ref(),
-            &derivation_slot.to_le_bytes(),
-            &[bump_seed],
-        ]],
+        &[derived_table_seeds],
     )?;
 
     ProgramState::serialize_new_lookup_table(
