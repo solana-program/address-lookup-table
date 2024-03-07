@@ -156,6 +156,7 @@ fn process_freeze_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) ->
     let authority_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
+        msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
 
@@ -175,6 +176,7 @@ fn process_freeze_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) ->
             return Err(ProgramError::Custom(0));
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
+            msg!("Incorrect lookup table authority");
             // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
             // See https://github.com/solana-labs/solana/pull/35113
             return Err(ProgramError::Custom(0));
@@ -211,6 +213,7 @@ fn process_extend_lookup_table(
     let authority_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
+        msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
 
@@ -230,6 +233,7 @@ fn process_extend_lookup_table(
             return Err(ProgramError::Custom(0));
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
+            msg!("Incorrect lookup table authority");
             // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
             // See https://github.com/solana-labs/solana/pull/35113
             return Err(ProgramError::Custom(0));
@@ -328,6 +332,7 @@ fn process_deactivate_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]
     let authority_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
+        msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
 
@@ -347,6 +352,7 @@ fn process_deactivate_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]
             return Err(ProgramError::Custom(0));
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
+            msg!("Incorrect lookup table authority");
             // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
             // See https://github.com/solana-labs/solana/pull/35113
             return Err(ProgramError::Custom(0));
@@ -378,6 +384,7 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
     let recipient_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
+        msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
 
@@ -409,6 +416,7 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
             return Err(ProgramError::Custom(0));
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
+            msg!("Incorrect lookup table authority");
             // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
             // See https://github.com/solana-labs/solana/pull/35113
             return Err(ProgramError::Custom(0));
