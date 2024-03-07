@@ -3,7 +3,7 @@
 use {
     crate::{
         check_id,
-        instruction::ProgramInstruction,
+        instruction::AddressLookupTableInstruction,
         state::{
             AddressLookupTable, LookupTableStatus, ProgramState, LOOKUP_TABLE_MAX_ADDRESSES,
             LOOKUP_TABLE_META_SIZE,
@@ -454,30 +454,30 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
 }
 
 /// Processes a
-/// `solana_programs_address_lookup_table::instruction::ProgramInstruction`
+/// `solana_programs_address_lookup_table::instruction::AddressLookupTableInstruction`
 pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> ProgramResult {
     let instruction = limited_deserialize(input)?;
     match instruction {
-        ProgramInstruction::CreateLookupTable {
+        AddressLookupTableInstruction::CreateLookupTable {
             recent_slot,
             bump_seed,
         } => {
             msg!("Instruction: CreateLookupTable");
             process_create_lookup_table(program_id, accounts, recent_slot, bump_seed)
         }
-        ProgramInstruction::FreezeLookupTable => {
+        AddressLookupTableInstruction::FreezeLookupTable => {
             msg!("Instruction: FreezeLookupTable");
             process_freeze_lookup_table(program_id, accounts)
         }
-        ProgramInstruction::ExtendLookupTable { new_addresses } => {
+        AddressLookupTableInstruction::ExtendLookupTable { new_addresses } => {
             msg!("Instruction: ExtendLookupTable");
             process_extend_lookup_table(program_id, accounts, new_addresses)
         }
-        ProgramInstruction::DeactivateLookupTable => {
+        AddressLookupTableInstruction::DeactivateLookupTable => {
             msg!("Instruction: DeactivateLookupTable");
             process_deactivate_lookup_table(program_id, accounts)
         }
-        ProgramInstruction::CloseLookupTable => {
+        AddressLookupTableInstruction::CloseLookupTable => {
             msg!("Instruction: CloseLookupTable");
             process_close_lookup_table(program_id, accounts)
         }
