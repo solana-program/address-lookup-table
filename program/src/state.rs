@@ -134,6 +134,8 @@ pub enum ProgramState {
 }
 
 impl ProgramState {
+    // [Core BPF]: This is a new function that was not present in the legacy
+    // built-in implementation.
     /// Serialize a new lookup table into uninitialized account data.
     pub fn serialize_new_lookup_table(
         data: &mut [u8],
@@ -144,6 +146,18 @@ impl ProgramState {
         // serialization errors to `InstructionError::GenericError`, but this
         // error is deprecated. The error code for failed serialization has
         // changed.
+        let serialized_size = bincode::serialized_size(&lookup_table)
+            .map_err(|_| ProgramError::InvalidAccountData)?;
+        // [Core BPF]: Although this check may seem unnecessary, since
+        // `bincode::serialize_into` will throw
+        // `ProgramError::InvalidAccountData` if the data is not large enough,
+        // `AccountDataTooSmall` is the error thrown by the original built-in
+        // through `BorrowedAccount::set_state`, which employs this check.
+        // Note the original implementation did not check for data that was
+        // too large, nor did it check to make sure the data was all `0`.
+        if serialized_size > data.len() as u64 {
+            return Err(ProgramError::AccountDataTooSmall);
+        }
         bincode::serialize_into(data, &lookup_table).map_err(|_| ProgramError::InvalidAccountData)
     }
 }
@@ -224,15 +238,21 @@ impl<'a> AddressLookupTable<'a> {
         Ok(data)
     }
 
-    /// Mutably deserialize addresses from a lookup table's data.
+    // [Core BPF]: This is a new function that was not present in the legacy
+    // built-in implementation.
+    /// Mutably deserialize addresses from a lookup table's data. This function
+    /// accepts an index in the list of addresses to start deserializing from.
     pub fn deserialize_addresses_from_index_mut(
         data: &mut [u8],
-        start_index: usize,
+        index: usize,
     ) -> Result<&mut [Pubkey], ProgramError> {
-        if start_index < LOOKUP_TABLE_META_SIZE || start_index >= data.len() {
+        let offset = LOOKUP_TABLE_META_SIZE
+            .checked_add(index.saturating_mul(std::mem::size_of::<Pubkey>()))
+            .ok_or(ProgramError::ArithmeticOverflow)?;
+        if offset >= data.len() {
             return Err(ProgramError::InvalidArgument);
         }
-        bytemuck::try_cast_slice_mut(&mut data[start_index..]).map_err(|_| {
+        bytemuck::try_cast_slice_mut(&mut data[offset..]).map_err(|_| {
             // Should be impossible because raw address data
             // should be aligned and sized in multiples of 32 bytes
             ProgramError::InvalidAccountData
@@ -433,6 +453,77 @@ mod tests {
             lookup_table.lookup(0, &[0]),
             Err(AddressLookupError::InvalidLookupIndex)
         );
+    }
+
+    #[test]
+    fn test_serialize_new_lookup_table() {
+        let authority_key = Pubkey::new_unique();
+        let check_meta = LookupTableMeta::new(authority_key);
+
+        // Success proper data size.
+        let mut data = vec![0; LOOKUP_TABLE_META_SIZE];
+        assert_eq!(
+            ProgramState::serialize_new_lookup_table(&mut data, &authority_key),
+            Ok(())
+        );
+        let deserialized = AddressLookupTable::deserialize(&data).unwrap();
+        assert_eq!(deserialized.meta, check_meta);
+        assert!(deserialized.addresses.is_empty());
+
+        // Will overwrite existing data
+        let mut data = vec![7; LOOKUP_TABLE_META_SIZE];
+        assert_eq!(
+            ProgramState::serialize_new_lookup_table(&mut data, &authority_key),
+            Ok(())
+        );
+        let deserialized = AddressLookupTable::deserialize(&data).unwrap();
+        assert_eq!(deserialized.meta, check_meta);
+        assert!(deserialized.addresses.is_empty());
+
+        // Fail data too small.
+        let mut data = vec![0; 5];
+        assert_eq!(
+            ProgramState::serialize_new_lookup_table(&mut data, &authority_key),
+            Err(ProgramError::AccountDataTooSmall)
+        );
+    }
+
+    #[test]
+    fn test_deserialize_addresses_from_index_mut() {
+        let authority_key = Pubkey::new_unique();
+
+        // Alloc space for no addresses.
+        let mut data = vec![0; LOOKUP_TABLE_META_SIZE];
+        ProgramState::serialize_new_lookup_table(&mut data, &authority_key).unwrap();
+
+        // Cannot deserialize from the addresses offset if there are no
+        // addresses.
+        // Note the program will realloc first, before attempting this.
+        assert_eq!(
+            AddressLookupTable::deserialize_addresses_from_index_mut(&mut data, 0),
+            Err(ProgramError::InvalidArgument)
+        );
+
+        // Alloc space for two addresses.
+        let mut data = vec![0; LOOKUP_TABLE_META_SIZE + 64];
+        ProgramState::serialize_new_lookup_table(&mut data, &authority_key).unwrap();
+
+        // Try to deserialize from an index out of range.
+        assert_eq!(
+            AddressLookupTable::deserialize_addresses_from_index_mut(&mut data, 2),
+            Err(ProgramError::InvalidArgument)
+        );
+
+        // Deserialize from the first index.
+        let addresses =
+            AddressLookupTable::deserialize_addresses_from_index_mut(&mut data, 0).unwrap();
+
+        // Add two new unique addresses.
+        let pubkey1 = Pubkey::new_unique();
+        let pubkey2 = Pubkey::new_unique();
+        addresses[0] = pubkey1;
+        addresses[1] = pubkey2;
+        assert_eq!(&addresses, &[pubkey1, pubkey2]);
     }
 
     #[test]
