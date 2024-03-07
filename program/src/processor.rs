@@ -72,7 +72,7 @@ fn process_create_lookup_table(
     let derivation_slot = {
         let clock = <Clock as Sysvar>::get()?;
         let oldest_possible_slot = clock.slot.saturating_sub(MAX_ENTRIES as u64);
-        if untrusted_recent_slot > oldest_possible_slot && untrusted_recent_slot <= clock.slot {
+        if untrusted_recent_slot >= oldest_possible_slot && untrusted_recent_slot < clock.slot {
             Ok(untrusted_recent_slot)
         } else {
             msg!("{} is not a recent slot", untrusted_recent_slot);
