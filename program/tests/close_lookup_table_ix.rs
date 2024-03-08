@@ -11,8 +11,7 @@ use {
         instruction::InstructionError,
         pubkey::Pubkey,
         signature::{Keypair, Signer},
-        slot_hashes::SlotHashes,
-        sysvar::Sysvar,
+        slot_hashes::MAX_ENTRIES,
         transaction::Transaction,
     },
 };
@@ -21,10 +20,9 @@ mod common;
 
 #[tokio::test]
 async fn test_close_lookup_table() {
+    // Succesfully close a deactived lookup table.
     let mut context = setup_test_context().await;
-    context
-        .warp_to_slot(SlotHashes::size_of() as u64 + 1)
-        .unwrap();
+    context.warp_to_slot(MAX_ENTRIES as u64 + 1).unwrap();
 
     let lookup_table_address = Pubkey::new_unique();
     let authority_keypair = Keypair::new();
@@ -62,6 +60,9 @@ async fn test_close_lookup_table() {
 
 #[tokio::test]
 async fn test_close_lookup_table_not_deactivated() {
+    // Try to close a lookup table that hasn't first been deactivated.
+    // No matter the slot, this will fail, since the lookup table must first
+    // be deactived before it can be closed.
     let mut context = setup_test_context().await;
 
     let authority_keypair = Keypair::new();
@@ -78,7 +79,7 @@ async fn test_close_lookup_table_not_deactivated() {
     // The ix should fail because the table hasn't been deactivated yet
     assert_ix_error(
         &mut context,
-        ix,
+        ix.clone(),
         Some(&authority_keypair),
         InstructionError::InvalidArgument,
     )
@@ -87,6 +88,9 @@ async fn test_close_lookup_table_not_deactivated() {
 
 #[tokio::test]
 async fn test_close_lookup_table_deactivated_in_current_slot() {
+    // Try to close a lookup table that was deactivated in the current slot.
+    // This should fail because the table must be deactivated in a previous
+    // slot and the cooldown period must expire before it can be closed.
     let mut context = setup_test_context().await;
 
     let clock = context.banks_client.get_sysvar::<Clock>().await.unwrap();
@@ -106,9 +110,24 @@ async fn test_close_lookup_table_deactivated_in_current_slot() {
     );
 
     // [Core BPF]: This still holds true while using `Clock`.
-    // Context sets up the slot hashes sysvar to have an entry
-    // for slot 0 which is when the table was deactivated.
-    // Because that slot is present, the ix should fail.
+    // Context sets up the slot hashes sysvar to _not_ have an entry for the
+    // current slot, which is when the table was deactivated.
+    // The original builtin implementation provides the current slot from the
+    // `Clock` sysvar as well as the `SlotHashes` to
+    // `LookupTableMeta::status()`, which produces the following status result:
+    //
+    // ```rust
+    // else if self.deactivation_slot == current_slot {
+    //     LookupTableStatus::Deactivating {
+    //         remaining_blocks: MAX_ENTRIES.saturating_add(1),
+    //     }
+    // ````
+    //
+    // The Core BPF version is using only the current slot from the clock to
+    // calculate cooldown, as well as keeping this check in tact.
+    //
+    // Because the response is not `LookupTableStatus::Deactivated`, the ix
+    // should fail.
     assert_ix_error(
         &mut context,
         ix,
@@ -120,34 +139,60 @@ async fn test_close_lookup_table_deactivated_in_current_slot() {
 
 #[tokio::test]
 async fn test_close_lookup_table_recently_deactivated() {
+    // Try to close a lookup table that was deactivated in a previous slot,
+    // but the cooldown period hasn't expired yet.
+    // This should fail because the table must be deactivated in a previous
+    // slot and the cooldown period must expire before it can be closed.
     let mut context = setup_test_context().await;
 
     let authority_keypair = Keypair::new();
-    let initialized_table = {
-        let mut table = new_address_lookup_table(Some(authority_keypair.pubkey()), 0);
-        table.meta.deactivation_slot = 0;
-        table
-    };
-    let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
 
-    let ix = close_lookup_table(
-        lookup_table_address,
-        authority_keypair.pubkey(),
-        context.payer.pubkey(),
-    );
+    // [Core BPF]: The original builtin implementation was relying on the fact
+    // that the `SlotHashes` sysvar is initialized to have an entry for slot 0.
+    // Program-Test does this to provide a more realistic test environment.
+    // That means this test was running with the `Clock` current slot at 1.
+    // In this implementation, we adapt the deactivation slot as well as the
+    // current slot into tweakable test case values.
+    for (deactivation_slot, current_slot) in [
+        (0, 1),
+        (0, 40),  // Arbitrary number within cooldown (ie. 41 slot hashes 0..40).
+        (0, 511), // At the very edge of cooldown (ie. 512 slot hashes 0..511).
+        (512, 512 + 1),
+        (512, 512 + 19),  // Arbitrary number within cooldown.
+        (512, 512 + 511), // At the very edge of cooldown.
+        (10_000, 10_000 + 1),
+        (10_000, 10_000 + 115), // Arbitrary number within cooldown.
+        (10_000, 10_000 + 511), // At the very edge of cooldown.
+    ] {
+        // Unfortunately, Program-Test's `warp_to_slot` causes an accounts hash
+        // mismatch if you try to warp after setting an account, so we have to just
+        // manipulate the `Clock` directly here.
+        let mut clock = context.banks_client.get_sysvar::<Clock>().await.unwrap();
+        clock.slot = current_slot;
+        context.set_sysvar::<Clock>(&clock);
 
-    // [Core BPF]: This still holds true while using `Clock`.
-    // Context sets up the slot hashes sysvar to have an entry
-    // for slot 0 which is when the table was deactivated.
-    // Because that slot is present, the ix should fail.
-    assert_ix_error(
-        &mut context,
-        ix,
-        Some(&authority_keypair),
-        InstructionError::InvalidArgument,
-    )
-    .await;
+        let initialized_table = {
+            let mut table = new_address_lookup_table(Some(authority_keypair.pubkey()), 0);
+            table.meta.deactivation_slot = deactivation_slot;
+            table
+        };
+        let lookup_table_address = Pubkey::new_unique();
+        add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
+
+        let ix = close_lookup_table(
+            lookup_table_address,
+            authority_keypair.pubkey(),
+            context.payer.pubkey(),
+        );
+
+        assert_ix_error(
+            &mut context,
+            ix,
+            Some(&authority_keypair),
+            InstructionError::InvalidArgument,
+        )
+        .await;
+    }
 }
 
 #[tokio::test]

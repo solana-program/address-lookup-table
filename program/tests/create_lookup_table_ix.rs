@@ -88,6 +88,31 @@ async fn test_create_lookup_table_idempotent() {
 }
 
 #[tokio::test]
+async fn test_create_lookup_table_use_payer_as_authority() {
+    let mut context = setup_test_context().await;
+
+    let test_recent_slot = 123;
+    // [Core BPF]: Warping to slot instead of overwriting `SlotHashes`.
+    context.warp_to_slot(test_recent_slot + 1).unwrap();
+
+    let client = &mut context.banks_client;
+    let payer = &context.payer;
+    let recent_blockhash = context.last_blockhash;
+    let authority_address = payer.pubkey();
+    let transaction = Transaction::new_signed_with_payer(
+        &[create_lookup_table(authority_address, payer.pubkey(), test_recent_slot).0],
+        Some(&payer.pubkey()),
+        &[payer],
+        recent_blockhash,
+    );
+
+    assert!(matches!(
+        client.process_transaction(transaction).await,
+        Ok(())
+    ));
+}
+
+#[tokio::test]
 async fn test_create_lookup_table_not_recent_slot() {
     let mut context = setup_test_context().await;
     let payer = &context.payer;
