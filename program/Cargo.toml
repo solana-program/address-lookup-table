@@ -10,7 +10,7 @@ publish = false
 program-id = "AddressLookupTab1e1111111111111111111111111"
 
 [features]
-no-entrypoint = []
+bpf-entrypoint = []
 test-sbf = []
 
 [dependencies]
