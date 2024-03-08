@@ -3175,7 +3175,6 @@ dependencies = [
 name = "scbpf-address-lookup-table"
 version = "0.1.0"
 dependencies = [
- "assert_matches",
  "bincode",
  "bytemuck",
  "log",

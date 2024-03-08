@@ -1,7 +1,6 @@
 #![cfg(feature = "test-sbf")]
 
 use {
-    assert_matches::assert_matches,
     common::{
         add_lookup_table_account, assert_ix_error, new_address_lookup_table, setup_test_context,
     },
@@ -44,7 +43,10 @@ async fn test_deactivate_lookup_table() {
         recent_blockhash,
     );
 
-    assert_matches!(client.process_transaction(transaction).await, Ok(()));
+    assert!(matches!(
+        client.process_transaction(transaction).await,
+        Ok(())
+    ));
     let table_account = client
         .get_account(lookup_table_address)
         .await
