@@ -1,5 +1,5 @@
 [package]
-name = "address-lookup-table"
+name = "scbpf-address-lookup-table"
 version = "0.1.0"
 edition = "2021"
 readme = "./README.md"

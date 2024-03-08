@@ -22,22 +22,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "address-lookup-table"
-version = "0.1.0"
-dependencies = [
- "bincode",
- "bytemuck",
- "log",
- "rustc_version",
- "serde",
- "solana-frozen-abi",
- "solana-frozen-abi-macro",
- "solana-program",
- "solana-sdk",
- "spl-program-error",
-]
-
-[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3185,6 +3169,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "scbpf-address-lookup-table"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "bytemuck",
+ "log",
+ "rustc_version",
+ "serde",
+ "solana-frozen-abi",
+ "solana-frozen-abi-macro",
+ "solana-program",
+ "solana-sdk",
+ "spl-program-error",
 ]
 
 [[package]]
