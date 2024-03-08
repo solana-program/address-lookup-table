@@ -1,19 +1,19 @@
 {
   "private": true,
   "scripts": {
-    "programs:build": "./scripts/program/build.mjs",
-    "programs:test": "./scripts/program/test.mjs",
-    "programs:debug": "./scripts/program/test.mjs",
-    "programs:clean": "./scripts/program/clean.mjs",
-    "programs:format": "./scripts/program/format.mjs",
-    "programs:lint": "./scripts/program/lint.mjs",
-    "clients:js:test": "./scripts/client/test-js.mjs",
-    "clients:rust:test": "./scripts/client/test-rust.mjs",
+    "programs:build": "zx ./scripts/program/build.mjs",
+    "programs:test": "zx ./scripts/program/test.mjs",
+    "programs:clean": "zx ./scripts/program/clean.mjs",
+    "programs:format": "zx ./scripts/program/format.mjs",
+    "programs:lint": "zx ./scripts/program/lint.mjs",
+    "generate:idls": "zx ./scripts/generate-idls.mjs",
     "generate": "pnpm generate:idls && pnpm generate:clients",
-    "generate:idls": "./scripts/generate-idls.mjs",
-    "generate:clients": "./scripts/generate-clients.mjs",
-    "validator": "./scripts/start-validator.mjs",
-    "validator:stop": "./scripts/stop-validator.mjs"
+    "generate:clients": "zx ./scripts/generate-clients.mjs",
+    "validator:start": "zx ./scripts/start-validator.mjs",
+    "validator:restart": "pnpm validator:start --restart",
+    "validator:stop": "zx ./scripts/stop-validator.mjs",
+    "clients:js:test": "zx ./scripts/client/test-js.mjs",
+    "clients:rust:test": "zx ./scripts/client/test-rust.mjs"
   },
   "devDependencies": {
     "@iarna/toml": "^2.2.5",

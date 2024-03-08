@@ -3,10 +3,12 @@ import {
   Commitment,
   CompilableTransaction,
   ITransactionWithBlockhashLifetime,
+  Rpc,
+  RpcSubscriptions,
+  SolanaRpcApi,
+  SolanaRpcSubscriptionsApi,
   TransactionSigner,
   airdropFactory,
-  createDefaultRpcSubscriptionsTransport,
-  createDefaultRpcTransport,
   createSolanaRpc,
   createSolanaRpcSubscriptions,
   createTransaction,
@@ -21,20 +23,13 @@ import {
 } from '@solana/web3.js';
 
 type Client = {
-  rpc: ReturnType<typeof createSolanaRpc>;
-  rpcSubscriptions: ReturnType<typeof createSolanaRpcSubscriptions>;
+  rpc: Rpc<SolanaRpcApi>;
+  rpcSubscriptions: RpcSubscriptions<SolanaRpcSubscriptionsApi>;
 };
 
 export const createDefaultSolanaClient = (): Client => {
-  const rpc = createSolanaRpc({
-    transport: createDefaultRpcTransport({ url: 'http://127.0.0.1:8899' }),
-  });
-  const rpcSubscriptions = createSolanaRpcSubscriptions({
-    transport: createDefaultRpcSubscriptionsTransport({
-      url: 'ws://127.0.0.1:8900',
-    }),
-  });
-
+  const rpc = createSolanaRpc('http://127.0.0.1:8899');
+  const rpcSubscriptions = createSolanaRpcSubscriptions('ws://127.0.0.1:8900');
   return { rpc, rpcSubscriptions };
 };
 

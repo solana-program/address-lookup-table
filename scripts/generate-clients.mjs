@@ -6,6 +6,13 @@ import { getAllProgramIdls } from "./utils.mjs";
 // Instanciate Kinobi.
 const kinobi = k.createFromIdls(getAllProgramIdls());
 
+// Update programs.
+kinobi.update(
+  k.updateProgramsVisitor({
+    solanaProgramAddressLookupTable: { name: "addressLookupTable" },
+  })
+);
+
 // Update accounts.
 kinobi.update(
   k.updateAccountsVisitor({
