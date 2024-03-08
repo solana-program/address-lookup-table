@@ -1,7 +1,6 @@
 #![cfg(feature = "test-sbf")]
 
 use {
-    assert_matches::assert_matches,
     common::{assert_ix_error, setup_test_context},
     scbpf_address_lookup_table::{
         instruction::create_lookup_table,
@@ -45,7 +44,10 @@ async fn test_create_lookup_table_idempotent() {
             recent_blockhash,
         );
 
-        assert_matches!(client.process_transaction(transaction).await, Ok(()));
+        assert!(matches!(
+            client.process_transaction(transaction).await,
+            Ok(())
+        ));
         let lookup_table_account = client
             .get_account(lookup_table_address)
             .await
@@ -78,7 +80,10 @@ async fn test_create_lookup_table_idempotent() {
             recent_blockhash,
         );
 
-        assert_matches!(client.process_transaction(transaction).await, Ok(()));
+        assert!(matches!(
+            client.process_transaction(transaction).await,
+            Ok(())
+        ));
     }
 }
 

@@ -1,7 +1,6 @@
 #![cfg(feature = "test-sbf")]
 
 use {
-    assert_matches::assert_matches,
     common::{
         add_lookup_table_account, assert_ix_error, new_address_lookup_table, setup_test_context,
     },
@@ -57,7 +56,7 @@ async fn run_test_case(context: &mut ProgramTestContext, test_case: TestCase<'_>
 
     match test_case.expected_result {
         Ok(expected_account) => {
-            assert_matches!(process_result, Ok(()));
+            assert!(matches!(process_result, Ok(())));
 
             let table_account = client
                 .get_account(test_case.lookup_table_address)
