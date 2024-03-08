@@ -1,7 +1,5 @@
 //! Program error types
 
-#[cfg(not(target_os = "solana"))]
-use solana_program::message::AddressLoaderError;
 use spl_program_error::*;
 
 #[spl_program_error]
@@ -18,16 +16,4 @@ pub enum AddressLookupError {
     /// Address lookup contains an invalid index
     #[error("Address lookup contains an invalid index")]
     InvalidLookupIndex,
-}
-
-#[cfg(not(target_os = "solana"))]
-impl From<AddressLookupError> for AddressLoaderError {
-    fn from(err: AddressLookupError) -> Self {
-        match err {
-            AddressLookupError::LookupTableAccountNotFound => Self::LookupTableAccountNotFound,
-            AddressLookupError::InvalidAccountOwner => Self::InvalidAccountOwner,
-            AddressLookupError::InvalidAccountData => Self::InvalidAccountData,
-            AddressLookupError::InvalidLookupIndex => Self::InvalidLookupIndex,
-        }
-    }
 }
