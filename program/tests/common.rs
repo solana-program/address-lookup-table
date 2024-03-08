@@ -16,7 +16,7 @@ use {
 
 pub async fn setup_test_context() -> ProgramTestContext {
     let mut program_test = ProgramTest::default();
-    program_test.prefer_bpf(false);
+    program_test.prefer_bpf(true);
     program_test.add_program(
         "scbpf_address_lookup_table",
         scbpf_address_lookup_table::id(),
