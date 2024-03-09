@@ -242,8 +242,10 @@ fn process_extend_lookup_table(
             return Err(ProgramError::InvalidInstructionData);
         }
 
-        let old_table_addresses_len = lookup_table.addresses.len();
-        let new_table_addresses_len = old_table_addresses_len.saturating_add(new_addresses.len());
+        let new_table_addresses_len = lookup_table
+            .addresses
+            .len()
+            .saturating_add(new_addresses.len());
 
         if new_table_addresses_len > LOOKUP_TABLE_MAX_ADDRESSES {
             msg!(
@@ -254,15 +256,16 @@ fn process_extend_lookup_table(
             return Err(ProgramError::InvalidInstructionData);
         }
 
+        let old_table_addresses_len = u8::try_from(lookup_table.addresses.len()).map_err(|_| {
+            // This is impossible as long as the length of new_addresses
+            // is non-zero and LOOKUP_TABLE_MAX_ADDRESSES == u8::MAX + 1.
+            ProgramError::InvalidAccountData
+        })?;
+
         let clock = <Clock as Sysvar>::get()?;
         if clock.slot != lookup_table.meta.last_extended_slot {
             lookup_table.meta.last_extended_slot = clock.slot;
-            lookup_table.meta.last_extended_slot_start_index =
-                u8::try_from(old_table_addresses_len).map_err(|_| {
-                    // This is impossible as long as the length of new_addresses
-                    // is non-zero and LOOKUP_TABLE_MAX_ADDRESSES == u8::MAX + 1.
-                    ProgramError::InvalidAccountData
-                })?;
+            lookup_table.meta.last_extended_slot_start_index = old_table_addresses_len;
         }
 
         let new_table_data_len = LOOKUP_TABLE_META_SIZE
