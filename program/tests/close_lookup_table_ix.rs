@@ -87,60 +87,9 @@ async fn test_close_lookup_table_not_deactivated() {
 }
 
 #[tokio::test]
-async fn test_close_lookup_table_deactivated_in_current_slot() {
-    // Try to close a lookup table that was deactivated in the current slot.
-    // This should fail because the table must be deactivated in a previous
-    // slot and the cooldown period must expire before it can be closed.
-    let mut context = setup_test_context().await;
-
-    let clock = context.banks_client.get_sysvar::<Clock>().await.unwrap();
-    let authority_keypair = Keypair::new();
-    let initialized_table = {
-        let mut table = new_address_lookup_table(Some(authority_keypair.pubkey()), 0);
-        table.meta.deactivation_slot = clock.slot;
-        table
-    };
-    let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
-
-    let ix = close_lookup_table(
-        lookup_table_address,
-        authority_keypair.pubkey(),
-        context.payer.pubkey(),
-    );
-
-    // [Core BPF]: This still holds true while using `Clock`.
-    // Context sets up the slot hashes sysvar to _not_ have an entry for the
-    // current slot, which is when the table was deactivated.
-    // The original builtin implementation provides the current slot from the
-    // `Clock` sysvar as well as the `SlotHashes` to
-    // `LookupTableMeta::status()`, which produces the following status result:
-    //
-    // ```rust
-    // else if self.deactivation_slot == current_slot {
-    //     LookupTableStatus::Deactivating {
-    //         remaining_blocks: MAX_ENTRIES.saturating_add(1),
-    //     }
-    // ````
-    //
-    // The Core BPF version is using only the current slot from the clock to
-    // calculate cooldown, as well as keeping this check in tact.
-    //
-    // Because the response is not `LookupTableStatus::Deactivated`, the ix
-    // should fail.
-    assert_ix_error(
-        &mut context,
-        ix,
-        Some(&authority_keypair),
-        InstructionError::InvalidArgument,
-    )
-    .await;
-}
-
-#[tokio::test]
-async fn test_close_lookup_table_recently_deactivated() {
-    // Try to close a lookup table that was deactivated in a previous slot,
-    // but the cooldown period hasn't expired yet.
+async fn test_close_lookup_table_deactivated() {
+    // Try to close a lookup table that was deactivated, but the cooldown
+    // period hasn't expired yet.
     // This should fail because the table must be deactivated in a previous
     // slot and the cooldown period must expire before it can be closed.
     let mut context = setup_test_context().await;
@@ -154,13 +103,16 @@ async fn test_close_lookup_table_recently_deactivated() {
     // In this implementation, we adapt the deactivation slot as well as the
     // current slot into tweakable test case values.
     for (deactivation_slot, current_slot) in [
-        (0, 1),
-        (0, 40),  // Arbitrary number within cooldown (ie. 41 slot hashes 0..40).
-        (0, 511), // At the very edge of cooldown (ie. 512 slot hashes 0..511).
-        (512, 512 + 1),
-        (512, 512 + 19),  // Arbitrary number within cooldown.
-        (512, 512 + 511), // At the very edge of cooldown.
-        (10_000, 10_000 + 1),
+        (1, 1),                 // Deactivated in the same slot
+        (1, 2),                 // Deactivated one slot earlier
+        (1, 40),                // Arbitrary number within cooldown (ie. 40 slot hashes 1..40).
+        (1, 512),               // At the very edge of cooldown (ie. 512 slot hashes 1..512).
+        (512, 512),             // Deactivated in the same slot
+        (512, 512 + 1),         // Deactivated one slot earlier
+        (512, 512 + 19),        // Arbitrary number within cooldown.
+        (512, 512 + 511),       // At the very edge of cooldown.
+        (10_000, 10_000),       // Deactivated in the same slot
+        (10_000, 10_000 + 1),   // Deactivated one slot earlier
         (10_000, 10_000 + 115), // Arbitrary number within cooldown.
         (10_000, 10_000 + 511), // At the very edge of cooldown.
     ] {
@@ -185,6 +137,35 @@ async fn test_close_lookup_table_recently_deactivated() {
             context.payer.pubkey(),
         );
 
+        // [Core BPF]: This still holds true while using `Clock`.
+        // Context sets up the slot hashes sysvar to _not_ have an entry for
+        // the current slot, which is when the table was deactivated.
+        //
+        // When the curent slot from `Clock` is the same as the deactivation
+        // slot, `LookupTableMeta::status()` should evaluate to this branch:
+        //
+        // ```rust
+        // else if self.deactivation_slot == current_slot {
+        //     LookupTableStatus::Deactivating {
+        //         remaining_blocks: MAX_ENTRIES.saturating_add(1),
+        //     }
+        // ````
+        //
+        // When the deactivation slot is a prior slot, but the cooldown period
+        // hasn't expired yet,`LookupTableMeta::status()` should evaluate to
+        // this branch:
+        //
+        // ```rust
+        // else if let Some(slot_position) =
+        //     calculate_slot_position(&self.deactivation_slot, &current_slot)
+        // {
+        //     LookupTableStatus::Deactivating {
+        //         remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
+        //     }
+        // ````
+        //
+        // Because the response is not `LookupTableStatus::Deactivated`, the ix
+        // should fail.
         assert_ix_error(
             &mut context,
             ix,
