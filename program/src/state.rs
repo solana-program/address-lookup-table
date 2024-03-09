@@ -244,10 +244,10 @@ impl<'a> AddressLookupTable<'a> {
     /// accepts an index in the list of addresses to start deserializing from.
     pub fn deserialize_addresses_from_index_mut(
         data: &mut [u8],
-        index: usize,
+        index: u8,
     ) -> Result<&mut [Pubkey], ProgramError> {
         let offset = LOOKUP_TABLE_META_SIZE
-            .checked_add(index.saturating_mul(std::mem::size_of::<Pubkey>()))
+            .checked_add((index as usize).saturating_mul(std::mem::size_of::<Pubkey>()))
             .ok_or(ProgramError::ArithmeticOverflow)?;
         if offset >= data.len() {
             return Err(ProgramError::InvalidArgument);
