@@ -7,8 +7,15 @@
  */
 
 import { Address } from '@solana/addresses';
-import { getU32Encoder } from '@solana/codecs-numbers';
+import { getU32Encoder } from '@solana/codecs';
 import { Program } from '@solana/programs';
+import {
+  ParsedCloseLookupTableInstruction,
+  ParsedCreateLookupTableInstruction,
+  ParsedDeactivateLookupTableInstruction,
+  ParsedExtendLookupTableInstruction,
+  ParsedFreezeLookupTableInstruction,
+} from '../instructions';
 import { memcmp } from '../shared';
 
 export const ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS =
@@ -72,3 +79,22 @@ export function identifyAddressLookupTableInstruction(
     'The provided instruction could not be identified as a addressLookupTable instruction.'
   );
 }
+
+export type ParsedAddressLookupTableInstruction<
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+> =
+  | ({
+      instructionType: AddressLookupTableInstruction.CreateLookupTable;
+    } & ParsedCreateLookupTableInstruction<TProgram>)
+  | ({
+      instructionType: AddressLookupTableInstruction.FreezeLookupTable;
+    } & ParsedFreezeLookupTableInstruction<TProgram>)
+  | ({
+      instructionType: AddressLookupTableInstruction.ExtendLookupTable;
+    } & ParsedExtendLookupTableInstruction<TProgram>)
+  | ({
+      instructionType: AddressLookupTableInstruction.DeactivateLookupTable;
+    } & ParsedDeactivateLookupTableInstruction<TProgram>)
+  | ({
+      instructionType: AddressLookupTableInstruction.CloseLookupTable;
+    } & ParsedCloseLookupTableInstruction<TProgram>);

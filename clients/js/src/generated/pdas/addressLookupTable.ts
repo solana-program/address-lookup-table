@@ -12,7 +12,7 @@ import {
   getAddressEncoder,
   getProgramDerivedAddress,
 } from '@solana/addresses';
-import { getU64Encoder } from '@solana/codecs-numbers';
+import { getU64Encoder } from '@solana/codecs';
 
 export type AddressLookupTableSeeds = {
   /** The address of the LUT's authority */
