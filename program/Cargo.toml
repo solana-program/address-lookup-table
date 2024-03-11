@@ -25,6 +25,7 @@ spl-program-error = "0.3.1"
 
 [dev-dependencies]
 solana-sdk = "1.18.2"
+test-case = "3.3.1"
 
 [lib]
 crate-type = ["cdylib", "lib"]

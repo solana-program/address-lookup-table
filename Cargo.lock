@@ -3185,6 +3185,7 @@ dependencies = [
  "solana-program",
  "solana-sdk",
  "spl-program-error",
+ "test-case",
 ]
 
 [[package]]
