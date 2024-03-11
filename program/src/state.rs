@@ -16,8 +16,15 @@ pub const LOOKUP_TABLE_META_SIZE: usize = 56;
 
 // [Core BPF]: Newly-implemented logic for calculating slot position relative
 // to the current slot on the `Clock`.
+// In the original implementation, `slot_hashes.position()` can return
+// `Some(position)` where `position` is in the range `0..511`.
+// Position `0` means `MAX_ENTRIES - 0 = 512` blocks remaining.
+// Position `511` means `MAX_ENTRIES - 511 = 1` block remaining.
+// To account for that range, considering the current slot would not be present
+// in the `SlotHashes` sysvar, we need to first subtract `1` from the current
+// slot, and then subtract the target slot from the result.
 fn calculate_slot_position(target_slot: &Slot, current_slot: &Slot) -> Option<usize> {
-    let position = current_slot.saturating_sub(*target_slot);
+    let position = current_slot.saturating_sub(1).saturating_sub(*target_slot);
 
     if position >= (MAX_ENTRIES as u64) {
         return None;
@@ -290,10 +297,7 @@ impl<'a> AddressLookupTable<'a> {
 
 #[cfg(test)]
 mod tests {
-    use {
-        super::*,
-        solana_sdk::{hash::Hash, slot_hashes::SlotHashes},
-    };
+    use {super::*, test_case::test_case};
 
     impl AddressLookupTable<'_> {
         fn new_for_tests(meta: LookupTableMeta, num_addresses: usize) -> Self {
@@ -328,74 +332,159 @@ mod tests {
         assert_eq!(meta_size as usize, 24);
     }
 
-    #[test]
-    fn test_lookup_table_meta_status() {
-        let mut slot_hashes = SlotHashes::default();
-        for slot in 1..=MAX_ENTRIES as Slot {
-            slot_hashes.add(slot, Hash::new_unique());
-        }
-
-        let most_recent_slot = slot_hashes.first().unwrap().0;
-        let least_recent_slot = slot_hashes.last().unwrap().0;
-        assert!(least_recent_slot < most_recent_slot);
-
-        // 10 was chosen because the current slot isn't necessarily the next
-        // slot after the most recent block
-        let current_slot = most_recent_slot + 10;
-
-        let active_table = LookupTableMeta {
-            deactivation_slot: Slot::MAX,
+    // [Core BPF]: This test has been rewritten to test the new
+    // `calculate_slot_position` status functionality based on `Clock` rather
+    // than `SlotHashes`.
+    // Written intentionally verbose.
+    // rustfmt-ignore
+    #[test_case(
+        Slot::MAX,
+        0,
+        LookupTableStatus::Activated;
+        "activated"
+    )]
+    #[test_case(
+        Slot::MAX,
+        511,
+        LookupTableStatus::Activated;
+        "activated_current_slot_doesnt_matter"
+    )]
+    // Here we hit branch `self.deactivation_slot == current_slot`.
+    #[test_case(
+        0,
+        0,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES + 1 }; // 513
+        "d0::deactivated_in_current_slot"
+    )]
+    // Here `calculate_slot_position` returns `Some(0)`.
+    #[test_case(
+        0,
+        0 + 1,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES }; // 512
+        "d0::deactivated_one_slot_ago"
+    )]
+    // Here `calculate_slot_position` returns `Some(1)`.
+    #[test_case(
+        0,
+        0 + 2,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES - 1 }; // 511
+        "d0::deactivated_two_slots_ago"
+    )]
+    // Here `calculate_slot_position` returns `Some(510)`.
+    #[test_case(
+        0,
+        0 + MAX_ENTRIES as u64 - 1,
+        LookupTableStatus::Deactivating { remaining_blocks: 2 };
+        "d0::two_slots_left_in_cooldown"
+    )]
+    // Here `calculate_slot_position` returns `Some(511)`.
+    #[test_case(
+        0,
+        0 + MAX_ENTRIES as u64,
+        LookupTableStatus::Deactivating { remaining_blocks: 1 };
+        "d0::one_slot_left_in_cooldown"
+    )]
+    // Here `calculate_slot_position` returns `None`. Position would be `512`.
+    #[test_case(
+        0,
+        0 + MAX_ENTRIES as u64 + 1,
+        LookupTableStatus::Deactivated;
+        "d0::cooldown_expired"
+    )]
+    // Here we hit branch `self.deactivation_slot == current_slot`.
+    #[test_case(
+        1,
+        1,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES + 1 }; // 513
+        "d1::deactivated_in_current_slot"
+    )]
+    // Here `calculate_slot_position` returns `Some(0)`.
+    #[test_case(
+        1,
+        1 + 1,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES }; // 512
+        "d1::deactivated_one_slot_ago"
+    )]
+    // Here `calculate_slot_position` returns `Some(1)`.
+    #[test_case(
+        1,
+        1 + 2,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES - 1 }; // 511
+        "d1::deactivated_two_slots_ago"
+    )]
+    // Here `calculate_slot_position` returns `Some(510)`.
+    #[test_case(
+        1,
+        1 + MAX_ENTRIES as u64 - 1,
+        LookupTableStatus::Deactivating { remaining_blocks: 2 };
+        "d1::two_slots_left_in_cooldown"
+    )]
+    // Here `calculate_slot_position` returns `Some(511)`.
+    #[test_case(
+        1,
+        1 + MAX_ENTRIES as u64,
+        LookupTableStatus::Deactivating { remaining_blocks: 1 };
+        "d1::one_slot_left_in_cooldown"
+    )]
+    // Here `calculate_slot_position` returns `None`. Position would be `512`.
+    #[test_case(
+        1,
+        1 + MAX_ENTRIES as u64 + 1,
+        LookupTableStatus::Deactivated;
+        "d1::cooldown_expired"
+    )]
+    // Here we hit branch `self.deactivation_slot == current_slot`.
+    #[test_case(
+        512,
+        512,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES + 1 }; // 513
+        "d512::deactivated_in_current_slot"
+    )]
+    // Here `calculate_slot_position` returns `Some(0)`.
+    #[test_case(
+        512,
+        512 + 1,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES }; // 512
+        "d512::deactivated_one_slot_ago"
+    )]
+    // Here `calculate_slot_position` returns `Some(1)`.
+    #[test_case(
+        512,
+        512 + 2,
+        LookupTableStatus::Deactivating { remaining_blocks: MAX_ENTRIES - 1 }; // 511
+        "d512::deactivated_two_slots_ago"
+    )]
+    // Here `calculate_slot_position` returns `Some(510)`.
+    #[test_case(
+        512,
+        512 + MAX_ENTRIES as u64 - 1,
+        LookupTableStatus::Deactivating { remaining_blocks: 2 };
+        "d512::two_slots_left_in_cooldown"
+    )]
+    // Here `calculate_slot_position` returns `Some(511)`.
+    #[test_case(
+        512,
+        512 + MAX_ENTRIES as u64,
+        LookupTableStatus::Deactivating { remaining_blocks: 1 };
+        "d512::one_slot_left_in_cooldown"
+    )]
+    // Here `calculate_slot_position` returns `None`. Position would be `512`.
+    #[test_case(
+        512,
+        512 + MAX_ENTRIES as u64 + 1,
+        LookupTableStatus::Deactivated;
+        "d512::cooldown_expired"
+    )]
+    fn test_lookup_table_meta_status(
+        deactivation_slot: Slot,
+        current_slot: Slot,
+        expected_status: LookupTableStatus,
+    ) {
+        let meta = LookupTableMeta {
+            deactivation_slot,
             ..LookupTableMeta::default()
         };
-
-        let just_started_deactivating_table = LookupTableMeta {
-            deactivation_slot: current_slot,
-            ..LookupTableMeta::default()
-        };
-
-        let _recently_started_deactivating_table = LookupTableMeta {
-            deactivation_slot: most_recent_slot,
-            ..LookupTableMeta::default()
-        };
-
-        let _almost_deactivated_table = LookupTableMeta {
-            deactivation_slot: least_recent_slot,
-            ..LookupTableMeta::default()
-        };
-
-        let deactivated_table = LookupTableMeta {
-            deactivation_slot: least_recent_slot - 1,
-            ..LookupTableMeta::default()
-        };
-
-        assert_eq!(
-            active_table.status(current_slot),
-            LookupTableStatus::Activated
-        );
-        assert_eq!(
-            just_started_deactivating_table.status(current_slot),
-            LookupTableStatus::Deactivating {
-                remaining_blocks: MAX_ENTRIES.saturating_add(1),
-            }
-        );
-        // [Core BPF]: TODO: These tests relies on specifically slot hashes
-        // being divergent from the current slot.
-        // assert_eq!(
-        //     recently_started_deactivating_table.status(current_slot),
-        //     LookupTableStatus::Deactivating {
-        //         remaining_blocks: MAX_ENTRIES,
-        //     }
-        // );
-        // assert_eq!(
-        //     almost_deactivated_table.status(current_slot),
-        //     LookupTableStatus::Deactivating {
-        //         remaining_blocks: 1,
-        //     }
-        // );
-        assert_eq!(
-            deactivated_table.status(current_slot),
-            LookupTableStatus::Deactivated
-        );
+        assert_eq!(meta.status(current_slot), expected_status,);
     }
 
     #[test]
