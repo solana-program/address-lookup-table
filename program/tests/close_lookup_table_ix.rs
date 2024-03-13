@@ -22,7 +22,7 @@ mod common;
 async fn test_close_lookup_table() {
     // Succesfully close a deactived lookup table.
     let mut context = setup_test_context().await;
-    context.warp_to_slot(MAX_ENTRIES as u64 + 1).unwrap();
+    context.warp_to_slot(MAX_ENTRIES as u64).unwrap();
 
     let lookup_table_address = Pubkey::new_unique();
     let authority_keypair = Keypair::new();
