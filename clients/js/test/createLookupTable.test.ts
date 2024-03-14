@@ -10,13 +10,13 @@ import {
   fetchAddressLookupTable,
   findAddressLookupTablePda,
   getCreateLookupTableInstructionAsync,
-} from '../src';
+} from '../src/index.js';
 import {
   createDefaultSolanaClient,
   createDefaultTransaction,
   generateKeyPairSignerWithSol,
   signAndSendTransaction,
-} from './_setup';
+} from './_setup.js';
 
 test('it creates a new empty address lookup table', async (t) => {
   // Given an authority wallet with SOL and a recent slot.

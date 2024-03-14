@@ -1,11 +1,12 @@
 {
   "name": "@solana-program/address-lookup-table",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The Solana Address Lookup Table program and its clients",
   "sideEffects": false,
   "module": "./dist/src/index.mjs",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/types/src/index.d.ts",
