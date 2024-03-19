@@ -54,7 +54,7 @@ export type ExtendLookupTableInstruction<
   TAccountSystemProgram extends
     | string
     | IAccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -71,7 +71,7 @@ export type ExtendLookupTableInstruction<
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -83,7 +83,7 @@ export type ExtendLookupTableInstructionWithSigners<
   TAccountSystemProgram extends
     | string
     | IAccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -102,7 +102,7 @@ export type ExtendLookupTableInstructionWithSigners<
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -152,7 +152,7 @@ export type ExtendLookupTableInput<
   TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
-  TAccountSystemProgram extends string
+  TAccountSystemProgram extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: Address<TAccountAuthority>;
@@ -165,7 +165,7 @@ export type ExtendLookupTableInputWithSigners<
   TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountPayer extends string,
-  TAccountSystemProgram extends string
+  TAccountSystemProgram extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
@@ -179,7 +179,7 @@ export function getExtendLookupTableInstruction<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: ExtendLookupTableInputWithSigners<
     TAccountAddress,
@@ -200,7 +200,7 @@ export function getExtendLookupTableInstruction<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: ExtendLookupTableInput<
     TAccountAddress,
@@ -221,7 +221,7 @@ export function getExtendLookupTableInstruction<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: ExtendLookupTableInput<
     TAccountAddress,
@@ -292,7 +292,7 @@ export function getExtendLookupTableInstructionRaw<
   TAccountSystemProgram extends
     | string
     | IAccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 >(
   accounts: {
     address: TAccountAddress extends string
@@ -338,7 +338,7 @@ export function getExtendLookupTableInstructionRaw<
 
 export type ParsedExtendLookupTableInstruction<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -352,7 +352,7 @@ export type ParsedExtendLookupTableInstruction<
 
 export function parseExtendLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &

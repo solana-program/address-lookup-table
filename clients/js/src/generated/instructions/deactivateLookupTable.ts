@@ -38,7 +38,7 @@ export type DeactivateLookupTableInstruction<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -49,7 +49,7 @@ export type DeactivateLookupTableInstruction<
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority>
         : TAccountAuthority,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -57,7 +57,7 @@ export type DeactivateLookupTableInstructionWithSigners<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -69,7 +69,7 @@ export type DeactivateLookupTableInstructionWithSigners<
         ? ReadonlySignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -100,7 +100,7 @@ export function getDeactivateLookupTableInstructionDataCodec(): Codec<
 
 export type DeactivateLookupTableInput<
   TAccountAddress extends string,
-  TAccountAuthority extends string
+  TAccountAuthority extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: Address<TAccountAuthority>;
@@ -108,7 +108,7 @@ export type DeactivateLookupTableInput<
 
 export type DeactivateLookupTableInputWithSigners<
   TAccountAddress extends string,
-  TAccountAuthority extends string
+  TAccountAuthority extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
@@ -117,7 +117,7 @@ export type DeactivateLookupTableInputWithSigners<
 export function getDeactivateLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: DeactivateLookupTableInputWithSigners<
     TAccountAddress,
@@ -131,7 +131,7 @@ export function getDeactivateLookupTableInstruction<
 export function getDeactivateLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: DeactivateLookupTableInput<TAccountAddress, TAccountAuthority>
 ): DeactivateLookupTableInstruction<
@@ -142,7 +142,7 @@ export function getDeactivateLookupTableInstruction<
 export function getDeactivateLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: DeactivateLookupTableInput<TAccountAddress, TAccountAuthority>
 ): IInstruction {
@@ -182,7 +182,7 @@ export function getDeactivateLookupTableInstructionRaw<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 >(
   accounts: {
     address: TAccountAddress extends string
@@ -213,7 +213,7 @@ export function getDeactivateLookupTableInstructionRaw<
 
 export type ParsedDeactivateLookupTableInstruction<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -225,7 +225,7 @@ export type ParsedDeactivateLookupTableInstruction<
 
 export function parseDeactivateLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &

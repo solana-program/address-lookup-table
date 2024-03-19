@@ -141,7 +141,7 @@ export async function fetchAddressLookupTable<TAddress extends string = string>(
 }
 
 export async function fetchMaybeAddressLookupTable<
-  TAddress extends string = string
+  TAddress extends string = string,
 >(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,

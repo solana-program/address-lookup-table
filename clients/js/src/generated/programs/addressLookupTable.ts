@@ -81,7 +81,7 @@ export function identifyAddressLookupTableInstruction(
 }
 
 export type ParsedAddressLookupTableInstruction<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 > =
   | ({
       instructionType: AddressLookupTableInstruction.CreateLookupTable;

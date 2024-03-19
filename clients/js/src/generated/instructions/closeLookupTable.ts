@@ -39,7 +39,7 @@ export type CloseLookupTableInstruction<
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountRecipient extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -53,7 +53,7 @@ export type CloseLookupTableInstruction<
       TAccountRecipient extends string
         ? WritableAccount<TAccountRecipient>
         : TAccountRecipient,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -62,7 +62,7 @@ export type CloseLookupTableInstructionWithSigners<
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountRecipient extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -77,7 +77,7 @@ export type CloseLookupTableInstructionWithSigners<
       TAccountRecipient extends string
         ? WritableAccount<TAccountRecipient>
         : TAccountRecipient,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -109,7 +109,7 @@ export function getCloseLookupTableInstructionDataCodec(): Codec<
 export type CloseLookupTableInput<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TAccountRecipient extends string
+  TAccountRecipient extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: Address<TAccountAuthority>;
@@ -119,7 +119,7 @@ export type CloseLookupTableInput<
 export type CloseLookupTableInputWithSigners<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TAccountRecipient extends string
+  TAccountRecipient extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
@@ -130,7 +130,7 @@ export function getCloseLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountRecipient extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: CloseLookupTableInputWithSigners<
     TAccountAddress,
@@ -147,7 +147,7 @@ export function getCloseLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountRecipient extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: CloseLookupTableInput<
     TAccountAddress,
@@ -164,7 +164,7 @@ export function getCloseLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountRecipient extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: CloseLookupTableInput<
     TAccountAddress,
@@ -211,7 +211,7 @@ export function getCloseLookupTableInstructionRaw<
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountRecipient extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 >(
   accounts: {
     address: TAccountAddress extends string
@@ -247,7 +247,7 @@ export function getCloseLookupTableInstructionRaw<
 
 export type ParsedCloseLookupTableInstruction<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -260,7 +260,7 @@ export type ParsedCloseLookupTableInstruction<
 
 export function parseCloseLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &

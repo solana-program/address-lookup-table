@@ -38,7 +38,7 @@ export type FreezeLookupTableInstruction<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -49,7 +49,7 @@ export type FreezeLookupTableInstruction<
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority>
         : TAccountAuthority,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -57,7 +57,7 @@ export type FreezeLookupTableInstructionWithSigners<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -69,7 +69,7 @@ export type FreezeLookupTableInstructionWithSigners<
         ? ReadonlySignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
-      ...TRemainingAccounts
+      ...TRemainingAccounts,
     ]
   >;
 
@@ -100,7 +100,7 @@ export function getFreezeLookupTableInstructionDataCodec(): Codec<
 
 export type FreezeLookupTableInput<
   TAccountAddress extends string,
-  TAccountAuthority extends string
+  TAccountAuthority extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: Address<TAccountAuthority>;
@@ -108,7 +108,7 @@ export type FreezeLookupTableInput<
 
 export type FreezeLookupTableInputWithSigners<
   TAccountAddress extends string,
-  TAccountAuthority extends string
+  TAccountAuthority extends string,
 > = {
   address: Address<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
@@ -117,7 +117,7 @@ export type FreezeLookupTableInputWithSigners<
 export function getFreezeLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: FreezeLookupTableInputWithSigners<TAccountAddress, TAccountAuthority>
 ): FreezeLookupTableInstructionWithSigners<
@@ -128,14 +128,14 @@ export function getFreezeLookupTableInstruction<
 export function getFreezeLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: FreezeLookupTableInput<TAccountAddress, TAccountAuthority>
 ): FreezeLookupTableInstruction<TProgram, TAccountAddress, TAccountAuthority>;
 export function getFreezeLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111'
+  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: FreezeLookupTableInput<TAccountAddress, TAccountAuthority>
 ): IInstruction {
@@ -175,7 +175,7 @@ export function getFreezeLookupTableInstructionRaw<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = []
+  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
 >(
   accounts: {
     address: TAccountAddress extends string
@@ -206,7 +206,7 @@ export function getFreezeLookupTableInstructionRaw<
 
 export type ParsedFreezeLookupTableInstruction<
   TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -218,7 +218,7 @@ export type ParsedFreezeLookupTableInstruction<
 
 export function parseFreezeLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[]
+  TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
