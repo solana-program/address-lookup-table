@@ -27,7 +27,6 @@ import {
   mapEncoder,
 } from '@solana/codecs';
 import {
-  AccountRole,
   IAccountMeta,
   IInstruction,
   IInstructionWithAccounts,
@@ -39,51 +38,22 @@ import {
 } from '@solana/instructions';
 import { IAccountSignerMeta, TransactionSigner } from '@solana/signers';
 import { resolveExtendLookupTableBytes } from '../../hooked';
+import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import {
   IInstructionWithByteDelta,
   ResolvedAccount,
-  accountMetaWithDefault,
-  getAccountMetasWithSigners,
+  getAccountMetaFactory,
 } from '../shared';
 
 export type ExtendLookupTableInstruction<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountPayer extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
     | IAccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
-    [
-      TAccountAddress extends string
-        ? WritableAccount<TAccountAddress>
-        : TAccountAddress,
-      TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority>
-        : TAccountAuthority,
-      TAccountPayer extends string
-        ? WritableSignerAccount<TAccountPayer>
-        : TAccountPayer,
-      TAccountSystemProgram extends string
-        ? ReadonlyAccount<TAccountSystemProgram>
-        : TAccountSystemProgram,
-      ...TRemainingAccounts,
-    ]
-  >;
-
-export type ExtendLookupTableInstructionWithSigners<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountAddress extends string | IAccountMeta<string> = string,
-  TAccountAuthority extends string | IAccountMeta<string> = string,
-  TAccountPayer extends string | IAccountMeta<string> = string,
-  TAccountSystemProgram extends
-    | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -149,23 +119,10 @@ export function getExtendLookupTableInstructionDataCodec(): Codec<
 }
 
 export type ExtendLookupTableInput<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TAccountPayer extends string,
-  TAccountSystemProgram extends string,
-> = {
-  address: Address<TAccountAddress>;
-  authority: Address<TAccountAuthority>;
-  payer: Address<TAccountPayer>;
-  systemProgram?: Address<TAccountSystemProgram>;
-  addresses: ExtendLookupTableInstructionDataArgs['addresses'];
-};
-
-export type ExtendLookupTableInputWithSigners<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TAccountPayer extends string,
-  TAccountSystemProgram extends string,
+  TAccountAddress extends string = string,
+  TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
+  TAccountSystemProgram extends string = string,
 > = {
   address: Address<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
@@ -179,28 +136,6 @@ export function getExtendLookupTableInstruction<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
->(
-  input: ExtendLookupTableInputWithSigners<
-    TAccountAddress,
-    TAccountAuthority,
-    TAccountPayer,
-    TAccountSystemProgram
-  >
-): ExtendLookupTableInstructionWithSigners<
-  TProgram,
-  TAccountAddress,
-  TAccountAuthority,
-  TAccountPayer,
-  TAccountSystemProgram
-> &
-  IInstructionWithByteDelta;
-export function getExtendLookupTableInstruction<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TAccountPayer extends string,
-  TAccountSystemProgram extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: ExtendLookupTableInput<
     TAccountAddress,
@@ -209,47 +144,27 @@ export function getExtendLookupTableInstruction<
     TAccountSystemProgram
   >
 ): ExtendLookupTableInstruction<
-  TProgram,
+  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress,
   TAccountAuthority,
   TAccountPayer,
   TAccountSystemProgram
 > &
-  IInstructionWithByteDelta;
-export function getExtendLookupTableInstruction<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TAccountPayer extends string,
-  TAccountSystemProgram extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
->(
-  input: ExtendLookupTableInput<
-    TAccountAddress,
-    TAccountAuthority,
-    TAccountPayer,
-    TAccountSystemProgram
-  >
-): IInstruction & IInstructionWithByteDelta {
+  IInstructionWithByteDelta {
   // Program address.
-  const programAddress =
-    'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
+  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
-  type AccountMetas = Parameters<
-    typeof getExtendLookupTableInstructionRaw<
-      TProgram,
-      TAccountAddress,
-      TAccountAuthority,
-      TAccountPayer,
-      TAccountSystemProgram
-    >
-  >[0];
-  const accounts: Record<keyof AccountMetas, ResolvedAccount> = {
+  const originalAccounts = {
     address: { value: input.address ?? null, isWritable: true },
     authority: { value: input.authority ?? null, isWritable: false },
     payer: { value: input.payer ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
+  const accounts = originalAccounts as Record<
+    keyof typeof originalAccounts,
+    ResolvedAccount
+  >;
 
   // Original args.
   const args = { ...input };
@@ -268,76 +183,31 @@ export function getExtendLookupTableInstruction<
     resolveExtendLookupTableBytes(resolverScope),
   ].reduce((a, b) => a + b, 0);
 
-  // Get account metas and signers.
-  const accountMetas = getAccountMetasWithSigners(
-    accounts,
-    'programId',
-    programAddress
-  );
-
-  const instruction = getExtendLookupTableInstructionRaw(
-    accountMetas as Record<keyof AccountMetas, IAccountMeta>,
-    args as ExtendLookupTableInstructionDataArgs,
-    programAddress
-  );
+  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const instruction = {
+    accounts: [
+      getAccountMeta(accounts.address),
+      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
+      getAccountMeta(accounts.systemProgram),
+    ],
+    programAddress,
+    data: getExtendLookupTableInstructionDataEncoder().encode(
+      args as ExtendLookupTableInstructionDataArgs
+    ),
+  } as ExtendLookupTableInstruction<
+    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TAccountAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountSystemProgram
+  >;
 
   return Object.freeze({ ...instruction, byteDelta });
 }
 
-export function getExtendLookupTableInstructionRaw<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountAddress extends string | IAccountMeta<string> = string,
-  TAccountAuthority extends string | IAccountMeta<string> = string,
-  TAccountPayer extends string | IAccountMeta<string> = string,
-  TAccountSystemProgram extends
-    | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
->(
-  accounts: {
-    address: TAccountAddress extends string
-      ? Address<TAccountAddress>
-      : TAccountAddress;
-    authority: TAccountAuthority extends string
-      ? Address<TAccountAuthority>
-      : TAccountAuthority;
-    payer: TAccountPayer extends string
-      ? Address<TAccountPayer>
-      : TAccountPayer;
-    systemProgram?: TAccountSystemProgram extends string
-      ? Address<TAccountSystemProgram>
-      : TAccountSystemProgram;
-  },
-  args: ExtendLookupTableInstructionDataArgs,
-  programAddress: Address<TProgram> = 'AddressLookupTab1e1111111111111111111111111' as Address<TProgram>,
-  remainingAccounts?: TRemainingAccounts
-) {
-  return {
-    accounts: [
-      accountMetaWithDefault(accounts.address, AccountRole.WRITABLE),
-      accountMetaWithDefault(accounts.authority, AccountRole.READONLY_SIGNER),
-      accountMetaWithDefault(accounts.payer, AccountRole.WRITABLE_SIGNER),
-      accountMetaWithDefault(
-        accounts.systemProgram ??
-          ('11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>),
-        AccountRole.READONLY
-      ),
-      ...(remainingAccounts ?? []),
-    ],
-    data: getExtendLookupTableInstructionDataEncoder().encode(args),
-    programAddress,
-  } as ExtendLookupTableInstruction<
-    TProgram,
-    TAccountAddress,
-    TAccountAuthority,
-    TAccountPayer,
-    TAccountSystemProgram,
-    TRemainingAccounts
-  >;
-}
-
 export type ParsedExtendLookupTableInstruction<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;

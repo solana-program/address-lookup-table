@@ -19,7 +19,6 @@ import {
   mapEncoder,
 } from '@solana/codecs';
 import {
-  AccountRole,
   IAccountMeta,
   IInstruction,
   IInstructionWithAccounts,
@@ -28,36 +27,14 @@ import {
   WritableAccount,
 } from '@solana/instructions';
 import { IAccountSignerMeta, TransactionSigner } from '@solana/signers';
-import {
-  ResolvedAccount,
-  accountMetaWithDefault,
-  getAccountMetasWithSigners,
-} from '../shared';
+import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
+import { ResolvedAccount, getAccountMetaFactory } from '../shared';
 
 export type DeactivateLookupTableInstruction<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
-    [
-      TAccountAddress extends string
-        ? WritableAccount<TAccountAddress>
-        : TAccountAddress,
-      TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority>
-        : TAccountAuthority,
-      ...TRemainingAccounts,
-    ]
-  >;
-
-export type DeactivateLookupTableInstructionWithSigners<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountAddress extends string | IAccountMeta<string> = string,
-  TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
@@ -99,16 +76,8 @@ export function getDeactivateLookupTableInstructionDataCodec(): Codec<
 }
 
 export type DeactivateLookupTableInput<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-> = {
-  address: Address<TAccountAddress>;
-  authority: Address<TAccountAuthority>;
-};
-
-export type DeactivateLookupTableInputWithSigners<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
+  TAccountAddress extends string = string,
+  TAccountAuthority extends string = string,
 > = {
   address: Address<TAccountAddress>;
   authority: TransactionSigner<TAccountAuthority>;
@@ -117,102 +86,45 @@ export type DeactivateLookupTableInputWithSigners<
 export function getDeactivateLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
->(
-  input: DeactivateLookupTableInputWithSigners<
-    TAccountAddress,
-    TAccountAuthority
-  >
-): DeactivateLookupTableInstructionWithSigners<
-  TProgram,
-  TAccountAddress,
-  TAccountAuthority
->;
-export function getDeactivateLookupTableInstruction<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 >(
   input: DeactivateLookupTableInput<TAccountAddress, TAccountAuthority>
 ): DeactivateLookupTableInstruction<
-  TProgram,
+  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress,
   TAccountAuthority
->;
-export function getDeactivateLookupTableInstruction<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
->(
-  input: DeactivateLookupTableInput<TAccountAddress, TAccountAuthority>
-): IInstruction {
+> {
   // Program address.
-  const programAddress =
-    'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
+  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
-  type AccountMetas = Parameters<
-    typeof getDeactivateLookupTableInstructionRaw<
-      TProgram,
-      TAccountAddress,
-      TAccountAuthority
-    >
-  >[0];
-  const accounts: Record<keyof AccountMetas, ResolvedAccount> = {
+  const originalAccounts = {
     address: { value: input.address ?? null, isWritable: true },
     authority: { value: input.authority ?? null, isWritable: false },
   };
+  const accounts = originalAccounts as Record<
+    keyof typeof originalAccounts,
+    ResolvedAccount
+  >;
 
-  // Get account metas and signers.
-  const accountMetas = getAccountMetasWithSigners(
-    accounts,
-    'programId',
-    programAddress
-  );
-
-  const instruction = getDeactivateLookupTableInstructionRaw(
-    accountMetas as Record<keyof AccountMetas, IAccountMeta>,
-    programAddress
-  );
+  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const instruction = {
+    accounts: [
+      getAccountMeta(accounts.address),
+      getAccountMeta(accounts.authority),
+    ],
+    programAddress,
+    data: getDeactivateLookupTableInstructionDataEncoder().encode({}),
+  } as DeactivateLookupTableInstruction<
+    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TAccountAddress,
+    TAccountAuthority
+  >;
 
   return instruction;
 }
 
-export function getDeactivateLookupTableInstructionRaw<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
-  TAccountAddress extends string | IAccountMeta<string> = string,
-  TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends Array<IAccountMeta<string>> = [],
->(
-  accounts: {
-    address: TAccountAddress extends string
-      ? Address<TAccountAddress>
-      : TAccountAddress;
-    authority: TAccountAuthority extends string
-      ? Address<TAccountAuthority>
-      : TAccountAuthority;
-  },
-  programAddress: Address<TProgram> = 'AddressLookupTab1e1111111111111111111111111' as Address<TProgram>,
-  remainingAccounts?: TRemainingAccounts
-) {
-  return {
-    accounts: [
-      accountMetaWithDefault(accounts.address, AccountRole.WRITABLE),
-      accountMetaWithDefault(accounts.authority, AccountRole.READONLY_SIGNER),
-      ...(remainingAccounts ?? []),
-    ],
-    data: getDeactivateLookupTableInstructionDataEncoder().encode({}),
-    programAddress,
-  } as DeactivateLookupTableInstruction<
-    TProgram,
-    TAccountAddress,
-    TAccountAuthority,
-    TRemainingAccounts
-  >;
-}
-
 export type ParsedDeactivateLookupTableInstruction<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+  TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
