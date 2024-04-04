@@ -2,7 +2,7 @@
 
 use {
     common::{assert_ix_error, setup_test_context},
-    scbpf_address_lookup_table::{
+    solana_address_lookup_table_program::{
         instruction::create_lookup_table,
         state::{AddressLookupTable, LOOKUP_TABLE_META_SIZE},
     },
@@ -53,7 +53,10 @@ async fn test_create_lookup_table_idempotent() {
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(lookup_table_account.owner, scbpf_address_lookup_table::id());
+        assert_eq!(
+            lookup_table_account.owner,
+            solana_address_lookup_table_program::id()
+        );
         assert_eq!(lookup_table_account.data.len(), LOOKUP_TABLE_META_SIZE);
         assert_eq!(
             lookup_table_account.lamports,
