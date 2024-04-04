@@ -2,7 +2,7 @@
 #![cfg(feature = "test-sbf")]
 
 use {
-    scbpf_address_lookup_table::state::{AddressLookupTable, LookupTableMeta},
+    solana_address_lookup_table_program::state::{AddressLookupTable, LookupTableMeta},
     solana_program_test::*,
     solana_sdk::{
         account::AccountSharedData,
@@ -18,9 +18,9 @@ pub async fn setup_test_context() -> ProgramTestContext {
     let mut program_test = ProgramTest::default();
     program_test.prefer_bpf(true);
     program_test.add_program(
-        "scbpf_address_lookup_table",
-        scbpf_address_lookup_table::id(),
-        processor!(scbpf_address_lookup_table::processor::process),
+        "solana_address_lookup_table_program",
+        solana_address_lookup_table_program::id(),
+        processor!(solana_address_lookup_table_program::processor::process),
     );
     program_test.start_with_context().await
 }
@@ -84,7 +84,7 @@ pub async fn add_lookup_table_account(
     let mut account = AccountSharedData::new(
         rent_exempt_balance,
         data.len(),
-        &scbpf_address_lookup_table::id(),
+        &solana_address_lookup_table_program::id(),
     );
     account.set_data_from_slice(&data);
     context.set_account(&account_address, &account);

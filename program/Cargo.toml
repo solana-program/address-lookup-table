@@ -1,10 +1,12 @@
 [package]
-name = "scbpf-address-lookup-table"
+name = "solana-address-lookup-table-program"
 version = "0.1.0"
-edition = "2021"
+description = "Solana Address Lookup Table Program"
+authors = ["Anza Technology Maintainers <maintainers@anza.xyz>"]
+repository = "https://github.com/solana-program/address-lookup-table"
 readme = "./README.md"
 license-file = "../LICENSE"
-publish = false
+edition = "2021"
 
 [package.metadata.solana]
 program-id = "AddressLookupTab1e1111111111111111111111111"

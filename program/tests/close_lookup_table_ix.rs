@@ -4,7 +4,7 @@ use {
     common::{
         add_lookup_table_account, assert_ix_error, new_address_lookup_table, setup_test_context,
     },
-    scbpf_address_lookup_table::instruction::close_lookup_table,
+    solana_address_lookup_table_program::instruction::close_lookup_table,
     solana_program_test::*,
     solana_sdk::{
         clock::Clock,

@@ -4,7 +4,7 @@ use {
     common::{
         add_lookup_table_account, assert_ix_error, new_address_lookup_table, setup_test_context,
     },
-    scbpf_address_lookup_table::{
+    solana_address_lookup_table_program::{
         instruction::extend_lookup_table,
         state::{AddressLookupTable, LookupTableMeta},
     },
