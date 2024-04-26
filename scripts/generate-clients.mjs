@@ -1,10 +1,12 @@
 #!/usr/bin/env zx
 import "zx/globals";
 import * as k from "@metaplex-foundation/kinobi";
-import { getAllProgramIdls } from "./utils.mjs";
+import { workingDirectory } from "./utils.mjs";
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls(getAllProgramIdls());
+const kinobi = k.createFromIdl(
+  require(path.join(workingDirectory, "program", "idl.json"))
+);
 
 // Update programs.
 kinobi.update(

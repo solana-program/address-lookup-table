@@ -6,9 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Address } from '@solana/addresses';
-import { getU32Encoder } from '@solana/codecs';
-import { Program } from '@solana/programs';
+import { Address, containsBytes, getU32Encoder } from '@solana/web3.js';
 import {
   ParsedCloseLookupTableInstruction,
   ParsedCreateLookupTableInstruction,
@@ -16,20 +14,9 @@ import {
   ParsedExtendLookupTableInstruction,
   ParsedFreezeLookupTableInstruction,
 } from '../instructions';
-import { memcmp } from '../shared';
 
 export const ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS =
   'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
-
-export type AddressLookupTableProgram =
-  Program<'AddressLookupTab1e1111111111111111111111111'>;
-
-export function getAddressLookupTableProgram(): AddressLookupTableProgram {
-  return {
-    name: 'addressLookupTable',
-    address: ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  };
-}
 
 export enum AddressLookupTableAccount {
   AddressLookupTable,
@@ -39,7 +26,7 @@ export function identifyAddressLookupTableAccount(
   account: { data: Uint8Array } | Uint8Array
 ): AddressLookupTableAccount {
   const data = account instanceof Uint8Array ? account : account.data;
-  if (memcmp(data, getU32Encoder().encode(1), 0)) {
+  if (containsBytes(data, getU32Encoder().encode(1), 0)) {
     return AddressLookupTableAccount.AddressLookupTable;
   }
   throw new Error(
@@ -60,19 +47,19 @@ export function identifyAddressLookupTableInstruction(
 ): AddressLookupTableInstruction {
   const data =
     instruction instanceof Uint8Array ? instruction : instruction.data;
-  if (memcmp(data, getU32Encoder().encode(0), 0)) {
+  if (containsBytes(data, getU32Encoder().encode(0), 0)) {
     return AddressLookupTableInstruction.CreateLookupTable;
   }
-  if (memcmp(data, getU32Encoder().encode(1), 0)) {
+  if (containsBytes(data, getU32Encoder().encode(1), 0)) {
     return AddressLookupTableInstruction.FreezeLookupTable;
   }
-  if (memcmp(data, getU32Encoder().encode(2), 0)) {
+  if (containsBytes(data, getU32Encoder().encode(2), 0)) {
     return AddressLookupTableInstruction.ExtendLookupTable;
   }
-  if (memcmp(data, getU32Encoder().encode(3), 0)) {
+  if (containsBytes(data, getU32Encoder().encode(3), 0)) {
     return AddressLookupTableInstruction.DeactivateLookupTable;
   }
-  if (memcmp(data, getU32Encoder().encode(4), 0)) {
+  if (containsBytes(data, getU32Encoder().encode(4), 0)) {
     return AddressLookupTableInstruction.CloseLookupTable;
   }
   throw new Error(

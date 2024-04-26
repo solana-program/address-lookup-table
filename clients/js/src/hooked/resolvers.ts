@@ -1,4 +1,4 @@
-import { Address } from '@solana/addresses';
+import type { Address } from '@solana/web3.js';
 
 export const resolveExtendLookupTableBytes = (scope: {
   args: { addresses: Array<Address> };

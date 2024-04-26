@@ -47,12 +47,12 @@ impl DeactivateLookupTable {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct DeactivateLookupTableInstructionData {
+pub struct DeactivateLookupTableInstructionData {
     discriminator: u32,
 }
 
 impl DeactivateLookupTableInstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 3 }
     }
 }
@@ -63,7 +63,7 @@ impl DeactivateLookupTableInstructionData {
 ///
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct DeactivateLookupTableBuilder {
     address: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
@@ -221,6 +221,7 @@ impl<'a, 'b> DeactivateLookupTableCpi<'a, 'b> {
 ///
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
+#[derive(Clone, Debug)]
 pub struct DeactivateLookupTableCpiBuilder<'a, 'b> {
     instruction: Box<DeactivateLookupTableCpiBuilderInstruction<'a, 'b>>,
 }
@@ -306,6 +307,7 @@ impl<'a, 'b> DeactivateLookupTableCpiBuilder<'a, 'b> {
     }
 }
 
+#[derive(Clone, Debug)]
 struct DeactivateLookupTableCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
