@@ -1,7 +1,8 @@
 import {
   Address,
-  appendTransactionInstruction,
+  appendTransactionMessageInstruction,
   pipe,
+  Account,
   some,
 } from '@solana/web3.js';
 import test from 'ava';
@@ -33,7 +34,7 @@ test('it creates a new empty address lookup table', async (t) => {
   });
   await pipe(
     await createDefaultTransaction(client, authority),
-    (tx) => appendTransactionInstruction(createLut, tx),
+    (tx) => appendTransactionMessageInstruction(createLut, tx),
     (tx) => signAndSendTransaction(client, tx)
   );
 
@@ -43,7 +44,7 @@ test('it creates a new empty address lookup table', async (t) => {
     recentSlot,
   });
   const lutAccount = await fetchAddressLookupTable(client.rpc, lut);
-  t.like(lutAccount, <AddressLookupTable>{
+  t.like(lutAccount, <Account<AddressLookupTable>>{
     address: lut,
     data: {
       addresses: [] as Address[],

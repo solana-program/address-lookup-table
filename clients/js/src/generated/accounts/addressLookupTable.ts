@@ -8,29 +8,25 @@
 
 import {
   Account,
+  Address,
+  Codec,
+  Decoder,
   EncodedAccount,
+  Encoder,
   FetchAccountConfig,
   FetchAccountsConfig,
   MaybeAccount,
   MaybeEncodedAccount,
+  Option,
+  OptionOrNullable,
   assertAccountExists,
   assertAccountsExist,
+  combineCodec,
   decodeAccount,
   fetchEncodedAccount,
   fetchEncodedAccounts,
-} from '@solana/accounts';
-import {
-  Address,
   getAddressDecoder,
   getAddressEncoder,
-} from '@solana/addresses';
-import {
-  Codec,
-  Decoder,
-  Encoder,
-  Option,
-  OptionOrNullable,
-  combineCodec,
   getArrayDecoder,
   getArrayEncoder,
   getOptionDecoder,
@@ -45,19 +41,11 @@ import {
   getU64Encoder,
   getU8Decoder,
   getU8Encoder,
-  mapEncoder,
-} from '@solana/codecs';
+  transformEncoder,
+} from '@solana/web3.js';
 import { AddressLookupTableSeeds, findAddressLookupTablePda } from '../pdas';
 
-export type AddressLookupTable<TAddress extends string = string> = Account<
-  AddressLookupTableAccountData,
-  TAddress
->;
-
-export type MaybeAddressLookupTable<TAddress extends string = string> =
-  MaybeAccount<AddressLookupTableAccountData, TAddress>;
-
-export type AddressLookupTableAccountData = {
+export type AddressLookupTable = {
   discriminator: number;
   deactivationSlot: bigint;
   lastExtendedSlot: bigint;
@@ -67,7 +55,7 @@ export type AddressLookupTableAccountData = {
   addresses: Array<Address>;
 };
 
-export type AddressLookupTableAccountDataArgs = {
+export type AddressLookupTableArgs = {
   deactivationSlot: number | bigint;
   lastExtendedSlot: number | bigint;
   lastExtendedSlotStartIndex: number;
@@ -75,8 +63,8 @@ export type AddressLookupTableAccountDataArgs = {
   addresses: Array<Address>;
 };
 
-export function getAddressLookupTableAccountDataEncoder(): Encoder<AddressLookupTableAccountDataArgs> {
-  return mapEncoder(
+export function getAddressLookupTableEncoder(): Encoder<AddressLookupTableArgs> {
+  return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
       ['deactivationSlot', getU64Encoder()],
@@ -93,7 +81,7 @@ export function getAddressLookupTableAccountDataEncoder(): Encoder<AddressLookup
   );
 }
 
-export function getAddressLookupTableAccountDataDecoder(): Decoder<AddressLookupTableAccountData> {
+export function getAddressLookupTableDecoder(): Decoder<AddressLookupTable> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['deactivationSlot', getU64Decoder()],
@@ -105,28 +93,30 @@ export function getAddressLookupTableAccountDataDecoder(): Decoder<AddressLookup
   ]);
 }
 
-export function getAddressLookupTableAccountDataCodec(): Codec<
-  AddressLookupTableAccountDataArgs,
-  AddressLookupTableAccountData
+export function getAddressLookupTableCodec(): Codec<
+  AddressLookupTableArgs,
+  AddressLookupTable
 > {
   return combineCodec(
-    getAddressLookupTableAccountDataEncoder(),
-    getAddressLookupTableAccountDataDecoder()
+    getAddressLookupTableEncoder(),
+    getAddressLookupTableDecoder()
   );
 }
 
 export function decodeAddressLookupTable<TAddress extends string = string>(
   encodedAccount: EncodedAccount<TAddress>
-): AddressLookupTable<TAddress>;
+): Account<AddressLookupTable, TAddress>;
 export function decodeAddressLookupTable<TAddress extends string = string>(
   encodedAccount: MaybeEncodedAccount<TAddress>
-): MaybeAddressLookupTable<TAddress>;
+): MaybeAccount<AddressLookupTable, TAddress>;
 export function decodeAddressLookupTable<TAddress extends string = string>(
   encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>
-): AddressLookupTable<TAddress> | MaybeAddressLookupTable<TAddress> {
+):
+  | Account<AddressLookupTable, TAddress>
+  | MaybeAccount<AddressLookupTable, TAddress> {
   return decodeAccount(
     encodedAccount as MaybeEncodedAccount<TAddress>,
-    getAddressLookupTableAccountDataDecoder()
+    getAddressLookupTableDecoder()
   );
 }
 
@@ -134,7 +124,7 @@ export async function fetchAddressLookupTable<TAddress extends string = string>(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
   config?: FetchAccountConfig
-): Promise<AddressLookupTable<TAddress>> {
+): Promise<Account<AddressLookupTable, TAddress>> {
   const maybeAccount = await fetchMaybeAddressLookupTable(rpc, address, config);
   assertAccountExists(maybeAccount);
   return maybeAccount;
@@ -146,7 +136,7 @@ export async function fetchMaybeAddressLookupTable<
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
   config?: FetchAccountConfig
-): Promise<MaybeAddressLookupTable<TAddress>> {
+): Promise<MaybeAccount<AddressLookupTable, TAddress>> {
   const maybeAccount = await fetchEncodedAccount(rpc, address, config);
   return decodeAddressLookupTable(maybeAccount);
 }
@@ -155,7 +145,7 @@ export async function fetchAllAddressLookupTable(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
   config?: FetchAccountsConfig
-): Promise<AddressLookupTable[]> {
+): Promise<Account<AddressLookupTable>[]> {
   const maybeAccounts = await fetchAllMaybeAddressLookupTable(
     rpc,
     addresses,
@@ -169,7 +159,7 @@ export async function fetchAllMaybeAddressLookupTable(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
   config?: FetchAccountsConfig
-): Promise<MaybeAddressLookupTable[]> {
+): Promise<MaybeAccount<AddressLookupTable>[]> {
   const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
   return maybeAccounts.map((maybeAccount) =>
     decodeAddressLookupTable(maybeAccount)
@@ -180,7 +170,7 @@ export async function fetchAddressLookupTableFromSeeds(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   seeds: AddressLookupTableSeeds,
   config: FetchAccountConfig & { programAddress?: Address } = {}
-): Promise<AddressLookupTable> {
+): Promise<Account<AddressLookupTable>> {
   const maybeAccount = await fetchMaybeAddressLookupTableFromSeeds(
     rpc,
     seeds,
@@ -194,8 +184,8 @@ export async function fetchMaybeAddressLookupTableFromSeeds(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   seeds: AddressLookupTableSeeds,
   config: FetchAccountConfig & { programAddress?: Address } = {}
-): Promise<MaybeAddressLookupTable> {
+): Promise<MaybeAccount<AddressLookupTable>> {
   const { programAddress, ...fetchConfig } = config;
   const [address] = await findAddressLookupTablePda(seeds, { programAddress });
-  return fetchMaybeAddressLookupTable(rpc, address, fetchConfig);
+  return await fetchMaybeAddressLookupTable(rpc, address, fetchConfig);
 }

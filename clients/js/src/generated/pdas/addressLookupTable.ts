@@ -11,8 +11,8 @@ import {
   ProgramDerivedAddress,
   getAddressEncoder,
   getProgramDerivedAddress,
-} from '@solana/addresses';
-import { getU64Encoder } from '@solana/codecs';
+  getU64Encoder,
+} from '@solana/web3.js';
 
 export type AddressLookupTableSeeds = {
   /** The address of the LUT's authority */
@@ -28,7 +28,7 @@ export async function findAddressLookupTablePda(
   const {
     programAddress = 'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>,
   } = config;
-  return getProgramDerivedAddress({
+  return await getProgramDerivedAddress({
     programAddress,
     seeds: [
       getAddressEncoder().encode(seeds.authority),

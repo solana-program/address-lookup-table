@@ -6,12 +6,23 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { BASE_ACCOUNT_SIZE } from '@solana/accounts';
-import { Address, ProgramDerivedAddress } from '@solana/addresses';
 import {
+  Address,
+  BASE_ACCOUNT_SIZE,
   Codec,
   Decoder,
   Encoder,
+  IAccountMeta,
+  IAccountSignerMeta,
+  IInstruction,
+  IInstructionWithAccounts,
+  IInstructionWithData,
+  ProgramDerivedAddress,
+  ReadonlyAccount,
+  ReadonlySignerAccount,
+  TransactionSigner,
+  WritableAccount,
+  WritableSignerAccount,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
@@ -21,19 +32,8 @@ import {
   getU64Encoder,
   getU8Decoder,
   getU8Encoder,
-  mapEncoder,
-} from '@solana/codecs';
-import {
-  IAccountMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  ReadonlyAccount,
-  ReadonlySignerAccount,
-  WritableAccount,
-  WritableSignerAccount,
-} from '@solana/instructions';
-import { IAccountSignerMeta, TransactionSigner } from '@solana/signers';
+  transformEncoder,
+} from '@solana/web3.js';
 import { findAddressLookupTablePda } from '../pdas';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import {
@@ -88,7 +88,7 @@ export type CreateLookupTableInstructionDataArgs = {
 };
 
 export function getCreateLookupTableInstructionDataEncoder(): Encoder<CreateLookupTableInstructionDataArgs> {
-  return mapEncoder(
+  return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
       ['recentSlot', getU64Encoder()],

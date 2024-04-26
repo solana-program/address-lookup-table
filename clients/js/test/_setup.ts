@@ -1,25 +1,25 @@
 import {
   Address,
   Commitment,
-  CompilableTransaction,
-  ITransactionWithBlockhashLifetime,
+  CompilableTransactionMessage,
   Rpc,
   RpcSubscriptions,
   SolanaRpcApi,
   SolanaRpcSubscriptionsApi,
+  TransactionMessageWithBlockhashLifetime,
   TransactionSigner,
   airdropFactory,
   createSolanaRpc,
   createSolanaRpcSubscriptions,
-  createTransaction,
+  createTransactionMessage,
   generateKeyPairSigner,
   getSignatureFromTransaction,
   lamports,
   pipe,
   sendAndConfirmTransactionFactory,
-  setTransactionFeePayerSigner,
-  setTransactionLifetimeUsingBlockhash,
-  signTransactionWithSigners,
+  setTransactionMessageFeePayerSigner,
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
 } from '@solana/web3.js';
 
 type Client = {
@@ -54,18 +54,20 @@ export const createDefaultTransaction = async (
     .getLatestBlockhash()
     .send();
   return pipe(
-    createTransaction({ version: 0 }),
-    (tx) => setTransactionFeePayerSigner(feePayer, tx),
-    (tx) => setTransactionLifetimeUsingBlockhash(latestBlockhash, tx)
+    createTransactionMessage({ version: 0 }),
+    (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
+    (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx)
   );
 };
 
 export const signAndSendTransaction = async (
   client: Client,
-  transaction: CompilableTransaction & ITransactionWithBlockhashLifetime,
+  transactionMessage: CompilableTransactionMessage &
+    TransactionMessageWithBlockhashLifetime,
   commitment: Commitment = 'confirmed'
 ) => {
-  const signedTransaction = await signTransactionWithSigners(transaction);
+  const signedTransaction =
+    await signTransactionMessageWithSigners(transactionMessage);
   const signature = getSignatureFromTransaction(signedTransaction);
   await sendAndConfirmTransactionFactory(client)(signedTransaction, {
     commitment,

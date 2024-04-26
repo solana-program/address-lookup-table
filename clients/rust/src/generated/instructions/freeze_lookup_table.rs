@@ -47,12 +47,12 @@ impl FreezeLookupTable {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct FreezeLookupTableInstructionData {
+pub struct FreezeLookupTableInstructionData {
     discriminator: u32,
 }
 
 impl FreezeLookupTableInstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 1 }
     }
 }
@@ -63,7 +63,7 @@ impl FreezeLookupTableInstructionData {
 ///
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct FreezeLookupTableBuilder {
     address: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
@@ -221,6 +221,7 @@ impl<'a, 'b> FreezeLookupTableCpi<'a, 'b> {
 ///
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
+#[derive(Clone, Debug)]
 pub struct FreezeLookupTableCpiBuilder<'a, 'b> {
     instruction: Box<FreezeLookupTableCpiBuilderInstruction<'a, 'b>>,
 }
@@ -306,6 +307,7 @@ impl<'a, 'b> FreezeLookupTableCpiBuilder<'a, 'b> {
     }
 }
 
+#[derive(Clone, Debug)]
 struct FreezeLookupTableCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     address: Option<&'b solana_program::account_info::AccountInfo<'a>>,

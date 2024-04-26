@@ -66,12 +66,12 @@ impl ExtendLookupTable {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct ExtendLookupTableInstructionData {
+pub struct ExtendLookupTableInstructionData {
     discriminator: u32,
 }
 
 impl ExtendLookupTableInstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 2 }
     }
 }
@@ -90,7 +90,7 @@ pub struct ExtendLookupTableInstructionArgs {
 ///   1. `[signer]` authority
 ///   2. `[writable, signer]` payer
 ///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct ExtendLookupTableBuilder {
     address: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
@@ -302,6 +302,7 @@ impl<'a, 'b> ExtendLookupTableCpi<'a, 'b> {
 ///   1. `[signer]` authority
 ///   2. `[writable, signer]` payer
 ///   3. `[]` system_program
+#[derive(Clone, Debug)]
 pub struct ExtendLookupTableCpiBuilder<'a, 'b> {
     instruction: Box<ExtendLookupTableCpiBuilderInstruction<'a, 'b>>,
 }
@@ -423,6 +424,7 @@ impl<'a, 'b> ExtendLookupTableCpiBuilder<'a, 'b> {
     }
 }
 
+#[derive(Clone, Debug)]
 struct ExtendLookupTableCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     address: Option<&'b solana_program::account_info::AccountInfo<'a>>,

@@ -51,12 +51,12 @@ impl CloseLookupTable {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct CloseLookupTableInstructionData {
+pub struct CloseLookupTableInstructionData {
     discriminator: u32,
 }
 
 impl CloseLookupTableInstructionData {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { discriminator: 4 }
     }
 }
@@ -68,7 +68,7 @@ impl CloseLookupTableInstructionData {
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
 ///   2. `[writable]` recipient
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct CloseLookupTableBuilder {
     address: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
@@ -242,6 +242,7 @@ impl<'a, 'b> CloseLookupTableCpi<'a, 'b> {
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
 ///   2. `[writable]` recipient
+#[derive(Clone, Debug)]
 pub struct CloseLookupTableCpiBuilder<'a, 'b> {
     instruction: Box<CloseLookupTableCpiBuilderInstruction<'a, 'b>>,
 }
@@ -338,6 +339,7 @@ impl<'a, 'b> CloseLookupTableCpiBuilder<'a, 'b> {
     }
 }
 
+#[derive(Clone, Debug)]
 struct CloseLookupTableCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
