@@ -6,8 +6,7 @@
     "programs:clean": "zx ./scripts/program/clean.mjs",
     "programs:format": "zx ./scripts/program/format.mjs",
     "programs:lint": "zx ./scripts/program/lint.mjs",
-    "generate:idls": "zx ./scripts/generate-idls.mjs",
-    "generate": "pnpm generate:idls && pnpm generate:clients",
+    "generate": "pnpm generate:clients",
     "generate:clients": "zx ./scripts/generate-clients.mjs",
     "validator:start": "zx ./scripts/start-validator.mjs",
     "validator:restart": "pnpm validator:start --restart",
@@ -18,7 +17,6 @@
   "devDependencies": {
     "@iarna/toml": "^2.2.5",
     "@metaplex-foundation/kinobi": "^0.19.0",
-    "@metaplex-foundation/shank-js": "^0.1.7",
     "typescript": "^5.4.2",
     "zx": "^7.2.3"
   },
