@@ -1,6 +1,6 @@
 {
   "name": "@solana-program/address-lookup-table",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The Solana Address Lookup Table program and its clients",
   "sideEffects": false,
   "module": "./dist/src/index.js",
@@ -35,7 +35,7 @@
   "repository": "https://github.com/solana-program/address-lookup-table.git",
   "license": "MIT",
   "peerDependencies": {
-    "@solana/web3.js": "tp3"
+    "@solana/web3.js": "2.0.0-preview.3"
   },
   "devDependencies": {
     "@ava/typescript": "^4.1.0",
