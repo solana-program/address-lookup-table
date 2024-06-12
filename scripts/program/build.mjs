@@ -10,7 +10,11 @@ import {
 import './dump.mjs';
 
 // Configure arguments here.
-const buildArgs = ['--features', 'bpf-entrypoint', ...cliArguments()];
+const buildArgs = [
+  '--features',
+  'bpf-entrypoint',
+  ...cliArguments()
+];
 
 // Build the programs.
 for (const folder of getProgramFolders()) {

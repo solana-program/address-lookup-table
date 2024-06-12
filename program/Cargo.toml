@@ -27,11 +27,16 @@ spl-program-error = "0.5.0"
 
 [dev-dependencies]
 mollusk-svm = { version = "0.0.5", features = ["fuzz"] }
+mollusk-svm-bencher = "0.0.5"
 solana-sdk = "2.0.1"
 test-case = "3.3.1"
 
 [lib]
 crate-type = ["cdylib", "lib"]
+
+[[bench]]
+name = "compute_units"
+harness = false
 
 [lints.rust.unexpected_cfgs]
 level = "warn"
