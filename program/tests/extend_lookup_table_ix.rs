@@ -44,7 +44,7 @@ fn run_test_case(mollusk: &Mollusk, test_case: TestCase) {
             assert!(matches!(result.program_result, ProgramResult::Success));
 
             let table_account = result.get_account(&test_case.lookup_table_address).unwrap();
-            let lookup_table = AddressLookupTable::deserialize(&table_account.data()).unwrap();
+            let lookup_table = AddressLookupTable::deserialize(table_account.data()).unwrap();
             assert_eq!(lookup_table, expected_account.state);
             assert_eq!(table_account.lamports(), expected_account.lamports);
             assert_eq!(table_account.data().len(), expected_account.data_len);
