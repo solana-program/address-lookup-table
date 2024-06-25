@@ -1,7 +1,8 @@
+#[cfg(feature = "frozen-abi")]
+use solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample};
 use {
     crate::error::AddressLookupError,
     serde::{Deserialize, Serialize},
-    solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample},
     solana_program::{
         clock::Slot, program_error::ProgramError, pubkey::Pubkey, slot_hashes::MAX_ENTRIES,
     },
@@ -41,7 +42,8 @@ pub enum LookupTableStatus {
 }
 
 /// Address lookup table metadata
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, AbiExample)]
+#[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct LookupTableMeta {
     // [Core BPF]: TODO: `Clock` instead of `SlotHashes`.
     /// Lookup tables cannot be closed until the deactivation slot is
@@ -131,7 +133,8 @@ impl LookupTableMeta {
 }
 
 /// Program account states
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, AbiExample, AbiEnumVisitor)]
+#[cfg_attr(feature = "frozen-abi", derive(AbiExample, AbiEnumVisitor))]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum ProgramState {
     /// Account is not initialized.
@@ -169,7 +172,8 @@ impl ProgramState {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, AbiExample)]
+#[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AddressLookupTable<'a> {
     pub meta: LookupTableMeta,
     pub addresses: Cow<'a, [Pubkey]>,
