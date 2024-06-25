@@ -1,8 +1,13 @@
-#![cfg(feature = "test-sbf")]
+// #![cfg(feature = "test-sbf")]
+
+mod common;
 
 use {
-    common::{
-        add_lookup_table_account, assert_ix_error, new_address_lookup_table, setup_test_context,
+    common::{lookup_table_account, new_address_lookup_table, setup},
+    mollusk_svm::{
+        program::system_program,
+        result::{Check, ProgramResult},
+        Mollusk,
     },
     solana_address_lookup_table_program::{
         instruction::extend_lookup_table,
@@ -10,17 +15,14 @@ use {
     },
     solana_program_test::*,
     solana_sdk::{
-        account::{ReadableAccount, WritableAccount},
-        clock::Clock,
-        instruction::{Instruction, InstructionError},
+        account::{AccountSharedData, ReadableAccount, WritableAccount},
+        instruction::Instruction,
+        program_error::ProgramError,
         pubkey::{Pubkey, PUBKEY_BYTES},
-        signature::{Keypair, Signer},
-        transaction::{Transaction, TransactionError},
+        system_program,
     },
     std::{borrow::Cow, result::Result},
 };
-
-mod common;
 
 struct ExpectedTableAccount {
     lamports: u64,
@@ -28,98 +30,86 @@ struct ExpectedTableAccount {
     state: AddressLookupTable<'static>,
 }
 
-struct TestCase<'a> {
+struct TestCase {
     lookup_table_address: Pubkey,
     instruction: Instruction,
-    extra_signer: Option<&'a Keypair>,
-    expected_result: Result<ExpectedTableAccount, InstructionError>,
+    accounts: Vec<(Pubkey, AccountSharedData)>,
+    expected_result: Result<ExpectedTableAccount, ProgramError>,
 }
 
-async fn run_test_case(context: &mut ProgramTestContext, test_case: TestCase<'_>) {
-    let client = &mut context.banks_client;
-    let payer = &context.payer;
-    let recent_blockhash = context.last_blockhash;
-
-    let mut signers = vec![payer];
-    if let Some(extra_signer) = test_case.extra_signer {
-        signers.push(extra_signer);
-    }
-
-    let transaction = Transaction::new_signed_with_payer(
-        &[test_case.instruction],
-        Some(&payer.pubkey()),
-        &signers,
-        recent_blockhash,
-    );
-
-    let process_result = client.process_transaction(transaction).await;
+fn run_test_case(mollusk: &Mollusk, test_case: TestCase) {
+    let result = mollusk.process_instruction(&test_case.instruction, &test_case.accounts);
 
     match test_case.expected_result {
         Ok(expected_account) => {
-            assert!(matches!(process_result, Ok(())));
+            assert!(matches!(result.program_result, ProgramResult::Success));
 
-            let table_account = client
-                .get_account(test_case.lookup_table_address)
-                .await
-                .unwrap()
-                .unwrap();
-
-            let lookup_table = AddressLookupTable::deserialize(&table_account.data).unwrap();
+            let table_account = result.get_account(&test_case.lookup_table_address).unwrap();
+            let lookup_table = AddressLookupTable::deserialize(&table_account.data()).unwrap();
             assert_eq!(lookup_table, expected_account.state);
             assert_eq!(table_account.lamports(), expected_account.lamports);
             assert_eq!(table_account.data().len(), expected_account.data_len);
         }
         Err(expected_err) => {
-            assert_eq!(
-                process_result.unwrap_err().unwrap(),
-                TransactionError::InstructionError(0, expected_err),
-            );
+            assert_eq!(result.program_result, ProgramResult::Failure(expected_err));
         }
     }
 }
 
-#[tokio::test]
-async fn test_extend_lookup_table() {
-    let mut context = setup_test_context().await;
-    let authority = Keypair::new();
+#[test]
+fn test_extend_lookup_table() {
+    let mut mollusk = setup();
+    mollusk.warp_to_slot(1); // Mollusk starts at slot 0, where program-test would start at 1.
+
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
     let current_bank_slot = 1;
-    let rent = context.banks_client.get_rent().await.unwrap();
+    let rent = mollusk.get_rent();
 
     for extend_same_slot in [true, false] {
         for (num_existing_addresses, num_new_addresses, expected_result) in [
-            (0, 0, Err(InstructionError::InvalidInstructionData)),
+            (0, 0, Err(ProgramError::InvalidInstructionData)),
             (0, 1, Ok(())),
             (0, 10, Ok(())),
             (0, 38, Ok(())), // Max new addresses allowed by `limited_deserialize`
-            (0, 39, Err(InstructionError::InvalidInstructionData)),
+            (0, 39, Err(ProgramError::InvalidInstructionData)),
             (1, 1, Ok(())),
             (1, 10, Ok(())),
             (218, 38, Ok(())), // 38 less than maximum, 38 brings it to the maximum
-            (219, 38, Err(InstructionError::InvalidInstructionData)),
+            (219, 38, Err(ProgramError::InvalidInstructionData)),
             (246, 10, Ok(())),
             (255, 1, Ok(())), // One less than maximum, 1 brings it to the maximum
-            (255, 2, Err(InstructionError::InvalidInstructionData)),
-            (256, 1, Err(InstructionError::InvalidArgument)),
+            (255, 2, Err(ProgramError::InvalidInstructionData)),
+            (256, 1, Err(ProgramError::InvalidArgument)),
         ] {
             let mut lookup_table =
-                new_address_lookup_table(Some(authority.pubkey()), num_existing_addresses);
+                new_address_lookup_table(Some(authority), num_existing_addresses);
             if extend_same_slot {
                 lookup_table.meta.last_extended_slot = current_bank_slot;
             }
 
             let lookup_table_address = Pubkey::new_unique();
-            let lookup_table_account =
-                add_lookup_table_account(&mut context, lookup_table_address, lookup_table.clone())
-                    .await;
+            let lookup_table_account = lookup_table_account(lookup_table.clone());
 
             let mut new_addresses = Vec::with_capacity(num_new_addresses);
             new_addresses.resize_with(num_new_addresses, Pubkey::new_unique);
+
             let instruction = extend_lookup_table(
                 lookup_table_address,
-                authority.pubkey(),
-                Some(context.payer.pubkey()),
+                authority,
+                Some(payer),
                 new_addresses.clone(),
             );
+
+            let accounts = vec![
+                (lookup_table_address, lookup_table_account.clone()),
+                (authority, AccountSharedData::default()),
+                (
+                    payer,
+                    AccountSharedData::new(100_000_000, 0, &system_program::id()),
+                ),
+                system_program(),
+            ];
 
             let mut expected_addresses: Vec<Pubkey> = lookup_table.addresses.to_vec();
             expected_addresses.extend(new_addresses);
@@ -152,207 +142,227 @@ async fn test_extend_lookup_table() {
             let test_case = TestCase {
                 lookup_table_address,
                 instruction,
-                extra_signer: Some(&authority),
+                accounts,
                 expected_result,
             };
 
-            run_test_case(&mut context, test_case).await;
+            run_test_case(&mollusk, test_case);
         }
     }
 }
 
-#[tokio::test]
-async fn test_extend_lookup_table_with_wrong_authority() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_extend_lookup_table_with_wrong_authority() {
+    let mollusk = setup();
 
-    let authority = Keypair::new();
-    let wrong_authority = Keypair::new();
-    let initialized_table = new_address_lookup_table(Some(authority.pubkey()), 0);
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+    let wrong_authority = Pubkey::new_unique();
+
+    let initialized_table = new_address_lookup_table(Some(authority), 0);
+
     let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
+    let lookup_table_account = lookup_table_account(initialized_table);
 
     let new_addresses = vec![Pubkey::new_unique()];
-    let ix = extend_lookup_table(
+    let instruction = extend_lookup_table(
         lookup_table_address,
-        wrong_authority.pubkey(),
-        Some(context.payer.pubkey()),
+        wrong_authority,
+        Some(payer),
         new_addresses,
     );
 
-    assert_ix_error(
-        &mut context,
-        ix,
-        Some(&wrong_authority),
-        // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-        // See https://github.com/solana-labs/solana/pull/35113
-        // InstructionError::IncorrectAuthority,
-        InstructionError::Custom(0),
-    )
-    .await;
+    mollusk.process_and_validate_instruction(
+        &instruction,
+        &[
+            (lookup_table_address, lookup_table_account),
+            (wrong_authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            system_program(),
+        ],
+        &[
+            // [Core BPF]: TODO: Should be `ProgramError::Immutable`
+            // See https://github.com/solana-labs/solana/pull/35113
+            Check::err(ProgramError::Custom(0)),
+        ],
+    );
 }
 
-#[tokio::test]
-async fn test_extend_lookup_table_without_signing() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_extend_lookup_table_without_signing() {
+    let mollusk = setup();
 
-    let authority = Keypair::new();
-    let initialized_table = new_address_lookup_table(Some(authority.pubkey()), 10);
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+    let initialized_table = new_address_lookup_table(Some(authority), 10);
+
     let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
+    let lookup_table_account = lookup_table_account(initialized_table);
 
     let new_addresses = vec![Pubkey::new_unique()];
-    let mut ix = extend_lookup_table(
-        lookup_table_address,
-        authority.pubkey(),
-        Some(context.payer.pubkey()),
-        new_addresses,
-    );
-    ix.accounts[1].is_signer = false;
+    let mut instruction =
+        extend_lookup_table(lookup_table_address, authority, Some(payer), new_addresses);
+    instruction.accounts[1].is_signer = false;
 
-    assert_ix_error(
-        &mut context,
-        ix,
-        None,
-        InstructionError::MissingRequiredSignature,
-    )
-    .await;
+    mollusk.process_and_validate_instruction(
+        &instruction,
+        &[
+            (lookup_table_address, lookup_table_account),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            system_program(),
+        ],
+        &[Check::err(ProgramError::MissingRequiredSignature)],
+    );
 }
 
-#[tokio::test]
-async fn test_extend_deactivated_lookup_table() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_extend_deactivated_lookup_table() {
+    let mollusk = setup();
 
-    let authority = Keypair::new();
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
     let initialized_table = {
-        let mut table = new_address_lookup_table(Some(authority.pubkey()), 0);
+        let mut table = new_address_lookup_table(Some(authority), 0);
         table.meta.deactivation_slot = 0;
         table
     };
+
     let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
+    let lookup_table_account = lookup_table_account(initialized_table);
 
     let new_addresses = vec![Pubkey::new_unique()];
-    let ix = extend_lookup_table(
-        lookup_table_address,
-        authority.pubkey(),
-        Some(context.payer.pubkey()),
-        new_addresses,
-    );
+    let instruction =
+        extend_lookup_table(lookup_table_address, authority, Some(payer), new_addresses);
 
-    assert_ix_error(
-        &mut context,
-        ix,
-        Some(&authority),
-        InstructionError::InvalidArgument,
-    )
-    .await;
+    mollusk.process_and_validate_instruction(
+        &instruction,
+        &[
+            (lookup_table_address, lookup_table_account),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            system_program(),
+        ],
+        &[Check::err(ProgramError::InvalidArgument)],
+    );
 }
 
-#[tokio::test]
-async fn test_extend_immutable_lookup_table() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_extend_immutable_lookup_table() {
+    let mollusk = setup();
 
-    let authority = Keypair::new();
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
     let initialized_table = new_address_lookup_table(None, 1);
+
     let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
+    let lookup_table_account = lookup_table_account(initialized_table);
 
     let new_addresses = vec![Pubkey::new_unique()];
-    let ix = extend_lookup_table(
-        lookup_table_address,
-        authority.pubkey(),
-        Some(context.payer.pubkey()),
-        new_addresses,
-    );
+    let instruction =
+        extend_lookup_table(lookup_table_address, authority, Some(payer), new_addresses);
 
-    assert_ix_error(
-        &mut context,
-        ix,
-        Some(&authority),
-        // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-        // See https://github.com/solana-labs/solana/pull/35113
-        // InstructionError::Immutable,
-        InstructionError::Custom(0),
-    )
-    .await;
+    mollusk.process_and_validate_instruction(
+        &instruction,
+        &[
+            (lookup_table_address, lookup_table_account),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            system_program(),
+        ],
+        &[
+            // [Core BPF]: TODO: Should be `ProgramError::Immutable`
+            // See https://github.com/solana-labs/solana/pull/35113
+            Check::err(ProgramError::Custom(0)),
+        ],
+    );
 }
 
-#[tokio::test]
-async fn test_extend_lookup_table_without_payer() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_extend_lookup_table_without_payer() {
+    let mollusk = setup();
 
-    let authority = Keypair::new();
-    let initialized_table = new_address_lookup_table(Some(authority.pubkey()), 0);
+    let authority = Pubkey::new_unique();
+    let initialized_table = new_address_lookup_table(Some(authority), 0);
+
     let lookup_table_address = Pubkey::new_unique();
-    add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
+    let lookup_table_account = lookup_table_account(initialized_table);
 
     let new_addresses = vec![Pubkey::new_unique()];
-    let ix = extend_lookup_table(
-        lookup_table_address,
-        authority.pubkey(),
-        None,
-        new_addresses,
-    );
+    let instruction = extend_lookup_table(lookup_table_address, authority, None, new_addresses);
 
-    assert_ix_error(
-        &mut context,
-        ix,
-        Some(&authority),
-        InstructionError::NotEnoughAccountKeys,
-    )
-    .await;
+    mollusk.process_and_validate_instruction(
+        &instruction,
+        &[
+            (lookup_table_address, lookup_table_account),
+            (authority, AccountSharedData::default()),
+        ],
+        &[Check::err(ProgramError::NotEnoughAccountKeys)],
+    );
 }
 
 #[tokio::test]
 async fn test_extend_prepaid_lookup_table_without_payer() {
-    let mut context = setup_test_context().await;
+    let mollusk = setup();
 
-    let authority = Keypair::new();
+    let authority = Pubkey::new_unique();
     let lookup_table_address = Pubkey::new_unique();
 
-    let expected_state = {
+    let (lookup_table_account, expected_state) = {
         // initialize lookup table
-        let empty_lookup_table = new_address_lookup_table(Some(authority.pubkey()), 0);
-        let mut lookup_table_account =
-            add_lookup_table_account(&mut context, lookup_table_address, empty_lookup_table).await;
+        let empty_lookup_table = new_address_lookup_table(Some(authority), 0);
+        let mut lookup_table_account = lookup_table_account(empty_lookup_table);
 
         // calculate required rent exempt balance for adding one address
-        let mut temp_lookup_table = new_address_lookup_table(Some(authority.pubkey()), 1);
+        let mut temp_lookup_table = new_address_lookup_table(Some(authority), 1);
         let data = temp_lookup_table.clone().serialize_for_tests().unwrap();
-        let rent = context.banks_client.get_rent().await.unwrap();
+        let rent = mollusk.get_rent();
         let rent_exempt_balance = rent.minimum_balance(data.len());
 
         // prepay for one address
         lookup_table_account.set_lamports(rent_exempt_balance);
-        context.set_account(&lookup_table_address, &lookup_table_account);
 
         // test will extend table in the current bank's slot
-        let clock = context.banks_client.get_sysvar::<Clock>().await.unwrap();
+        let clock = mollusk.get_clock();
         temp_lookup_table.meta.last_extended_slot = clock.slot;
 
-        ExpectedTableAccount {
-            lamports: rent_exempt_balance,
-            data_len: data.len(),
-            state: temp_lookup_table,
-        }
+        (
+            lookup_table_account,
+            ExpectedTableAccount {
+                lamports: rent_exempt_balance,
+                data_len: data.len(),
+                state: temp_lookup_table,
+            },
+        )
     };
 
     let new_addresses = expected_state.state.addresses.to_vec();
-    let instruction = extend_lookup_table(
-        lookup_table_address,
-        authority.pubkey(),
-        None,
-        new_addresses,
-    );
+    let instruction = extend_lookup_table(lookup_table_address, authority, None, new_addresses);
+
+    let accounts = vec![
+        (lookup_table_address, lookup_table_account),
+        (authority, AccountSharedData::default()),
+    ];
 
     run_test_case(
-        &mut context,
+        &mollusk,
         TestCase {
             lookup_table_address,
             instruction,
-            extra_signer: Some(&authority),
+            accounts,
             expected_result: Ok(expected_state),
         },
-    )
-    .await;
+    );
 }
