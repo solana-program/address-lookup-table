@@ -183,10 +183,7 @@ async fn test_extend_lookup_table_with_wrong_authority() {
         &mut context,
         ix,
         Some(&wrong_authority),
-        // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-        // See https://github.com/solana-labs/solana/pull/35113
-        // InstructionError::IncorrectAuthority,
-        InstructionError::Custom(0),
+        InstructionError::IncorrectAuthority,
     )
     .await;
 }
@@ -269,10 +266,7 @@ async fn test_extend_immutable_lookup_table() {
         &mut context,
         ix,
         Some(&authority),
-        // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-        // See https://github.com/solana-labs/solana/pull/35113
-        // InstructionError::Immutable,
-        InstructionError::Custom(0),
+        InstructionError::Immutable,
     )
     .await;
 }

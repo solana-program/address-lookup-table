@@ -161,15 +161,11 @@ fn process_freeze_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) ->
 
         if lookup_table.meta.authority.is_none() {
             msg!("Lookup table is already frozen");
-            // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::Immutable);
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
             msg!("Incorrect lookup table authority");
-            // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::IncorrectAuthority);
         }
         if lookup_table.meta.deactivation_slot != Slot::MAX {
             msg!("Deactivated tables cannot be frozen");
@@ -218,15 +214,11 @@ fn process_extend_lookup_table(
 
         if lookup_table.meta.authority.is_none() {
             msg!("Lookup table is frozen");
-            // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::Immutable);
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
             msg!("Incorrect lookup table authority");
-            // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::IncorrectAuthority);
         }
         if lookup_table.meta.deactivation_slot != Slot::MAX {
             msg!("Deactivated tables cannot be extended");
@@ -341,15 +333,11 @@ fn process_deactivate_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]
 
         if lookup_table.meta.authority.is_none() {
             msg!("Lookup table is frozen");
-            // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::Immutable);
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
             msg!("Incorrect lookup table authority");
-            // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::IncorrectAuthority);
         }
         if lookup_table.meta.deactivation_slot != Slot::MAX {
             msg!("Lookup table is already deactivated");
@@ -405,15 +393,11 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
 
         if lookup_table.meta.authority.is_none() {
             msg!("Lookup table is frozen");
-            // [Core BPF]: TODO: Should be `ProgramError::Immutable`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::Immutable);
         }
         if lookup_table.meta.authority != Some(*authority_info.key) {
             msg!("Incorrect lookup table authority");
-            // [Core BPF]: TODO: Should be `ProgramError::IncorrectAuthority`
-            // See https://github.com/solana-labs/solana/pull/35113
-            return Err(ProgramError::Custom(0));
+            return Err(ProgramError::IncorrectAuthority);
         }
 
         let clock = <Clock as Sysvar>::get()?;
