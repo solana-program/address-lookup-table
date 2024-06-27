@@ -6,9 +6,12 @@ use {
     solana_program_test::*,
     solana_sdk::{
         account::AccountSharedData,
+        clock::Slot,
+        hash::Hash,
         instruction::{Instruction, InstructionError},
         pubkey::Pubkey,
         signature::{Keypair, Signer},
+        slot_hashes::SlotHashes,
         transaction::{Transaction, TransactionError},
     },
     std::borrow::Cow,
@@ -88,4 +91,12 @@ pub async fn add_lookup_table_account(
     context.set_account(&account_address, &account);
 
     account
+}
+
+pub fn overwrite_slot_hashes_with_slots(context: &ProgramTestContext, slots: &[Slot]) {
+    let mut slot_hashes = SlotHashes::default();
+    for slot in slots {
+        slot_hashes.add(*slot, Hash::new_unique());
+    }
+    context.set_sysvar(&slot_hashes);
 }

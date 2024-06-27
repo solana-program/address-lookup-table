@@ -16,7 +16,6 @@ pub const LOOKUP_TABLE_META_SIZE: usize = 56;
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct LookupTableMeta {
-    // [Core BPF]: TODO: `Clock` instead of `SlotHashes`.
     /// Lookup tables cannot be closed until the deactivation slot is
     /// no longer "recent" (not accessible in the `SlotHashes` sysvar).
     pub deactivation_slot: Slot,

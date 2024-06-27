@@ -1,7 +1,7 @@
 #![cfg(feature = "test-sbf")]
 
 use {
-    common::{assert_ix_error, setup_test_context},
+    common::{assert_ix_error, overwrite_slot_hashes_with_slots, setup_test_context},
     solana_address_lookup_table_program::{
         instruction::create_lookup_table,
         state::{AddressLookupTable, LOOKUP_TABLE_META_SIZE},
@@ -25,8 +25,7 @@ async fn test_create_lookup_table_idempotent() {
     let mut context = setup_test_context().await;
 
     let test_recent_slot = 123;
-    // [Core BPF]: Warping to slot instead of overwriting `SlotHashes`.
-    context.warp_to_slot(test_recent_slot + 1).unwrap();
+    overwrite_slot_hashes_with_slots(&context, &[122, test_recent_slot, 124]);
 
     let client = &mut context.banks_client;
     let payer = &context.payer;
@@ -95,8 +94,7 @@ async fn test_create_lookup_table_use_payer_as_authority() {
     let mut context = setup_test_context().await;
 
     let test_recent_slot = 123;
-    // [Core BPF]: Warping to slot instead of overwriting `SlotHashes`.
-    context.warp_to_slot(test_recent_slot + 1).unwrap();
+    overwrite_slot_hashes_with_slots(&context, &[test_recent_slot]);
 
     let client = &mut context.banks_client;
     let payer = &context.payer;
@@ -137,8 +135,7 @@ async fn test_create_lookup_table_pda_mismatch() {
     let mut context = setup_test_context().await;
 
     let test_recent_slot = 123;
-    // [Core BPF]: Warping to slot instead of overwriting `SlotHashes`.
-    context.warp_to_slot(test_recent_slot + 1).unwrap();
+    overwrite_slot_hashes_with_slots(&context, &[test_recent_slot]);
 
     let payer = &context.payer;
     let authority_address = Pubkey::new_unique();

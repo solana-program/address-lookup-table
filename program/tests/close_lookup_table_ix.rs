@@ -2,7 +2,8 @@
 
 use {
     common::{
-        add_lookup_table_account, assert_ix_error, new_address_lookup_table, setup_test_context,
+        add_lookup_table_account, assert_ix_error, new_address_lookup_table,
+        overwrite_slot_hashes_with_slots, setup_test_context,
     },
     solana_address_lookup_table_program::instruction::close_lookup_table,
     solana_program_test::*,
@@ -11,7 +12,6 @@ use {
         instruction::InstructionError,
         pubkey::Pubkey,
         signature::{Keypair, Signer},
-        slot_hashes::MAX_ENTRIES,
         transaction::Transaction,
     },
 };
@@ -22,7 +22,7 @@ mod common;
 async fn test_close_lookup_table() {
     // Succesfully close a deactived lookup table.
     let mut context = setup_test_context().await;
-    context.warp_to_slot(MAX_ENTRIES as u64).unwrap();
+    overwrite_slot_hashes_with_slots(&context, &[]);
 
     let lookup_table_address = Pubkey::new_unique();
     let authority_keypair = Keypair::new();
@@ -96,12 +96,6 @@ async fn test_close_lookup_table_deactivated() {
 
     let authority_keypair = Keypair::new();
 
-    // [Core BPF]: The original builtin implementation was relying on the fact
-    // that the `SlotHashes` sysvar is initialized to have an entry for slot 0.
-    // Program-Test does this to provide a more realistic test environment.
-    // That means this test was running with the `Clock` current slot at 1.
-    // In this implementation, we adapt the deactivation slot as well as the
-    // current slot into tweakable test case values.
     for (deactivation_slot, current_slot) in [
         (1, 1),                 // Deactivated in the same slot
         (1, 2),                 // Deactivated one slot earlier
@@ -122,6 +116,7 @@ async fn test_close_lookup_table_deactivated() {
         let mut clock = context.banks_client.get_sysvar::<Clock>().await.unwrap();
         clock.slot = current_slot;
         context.set_sysvar::<Clock>(&clock);
+        overwrite_slot_hashes_with_slots(&context, &[deactivation_slot]);
 
         let initialized_table = {
             let mut table = new_address_lookup_table(Some(authority_keypair.pubkey()), 0);
@@ -137,33 +132,6 @@ async fn test_close_lookup_table_deactivated() {
             context.payer.pubkey(),
         );
 
-        // [Core BPF]: This still holds true while using `Clock`.
-        // Context sets up the slot hashes sysvar to _not_ have an entry for
-        // the current slot, which is when the table was deactivated.
-        //
-        // When the curent slot from `Clock` is the same as the deactivation
-        // slot, `LookupTableMeta::status()` should evaluate to this branch:
-        //
-        // ```rust
-        // else if self.deactivation_slot == current_slot {
-        //     LookupTableStatus::Deactivating {
-        //         remaining_blocks: MAX_ENTRIES.saturating_add(1),
-        //     }
-        // ````
-        //
-        // When the deactivation slot is a prior slot, but the cooldown period
-        // hasn't expired yet,`LookupTableMeta::status()` should evaluate to
-        // this branch:
-        //
-        // ```rust
-        // else if let Some(slot_position) =
-        //     calculate_slot_position(&self.deactivation_slot, &current_slot)
-        // {
-        //     LookupTableStatus::Deactivating {
-        //         remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
-        //     }
-        // ````
-        //
         // Because the response is not `LookupTableStatus::Deactivated`, the ix
         // should fail.
         assert_ix_error(
