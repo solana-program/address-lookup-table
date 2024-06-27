@@ -5,8 +5,7 @@ use {
         check_id,
         instruction::AddressLookupTableInstruction,
         state::{
-            AddressLookupTable, LookupTableStatus, ProgramState, LOOKUP_TABLE_MAX_ADDRESSES,
-            LOOKUP_TABLE_META_SIZE,
+            AddressLookupTable, ProgramState, LOOKUP_TABLE_MAX_ADDRESSES, LOOKUP_TABLE_META_SIZE,
         },
     },
     solana_program::{
@@ -23,6 +22,68 @@ use {
         sysvar::Sysvar,
     },
 };
+
+/// Activation status of a lookup table
+#[derive(Debug, PartialEq, Eq, Clone)]
+enum LookupTableStatus {
+    Activated,
+    Deactivating { remaining_blocks: usize },
+    Deactivated,
+}
+
+// [Core BPF]: Newly-implemented logic for calculating slot position relative
+// to the current slot on the `Clock`.
+// In the original implementation, `slot_hashes.position()` can return
+// `Some(position)` where `position` is in the range `0..511`.
+// Position `0` means `MAX_ENTRIES - 0 = 512` blocks remaining.
+// Position `511` means `MAX_ENTRIES - 511 = 1` block remaining.
+// To account for that range, considering the current slot would not be present
+// in the `SlotHashes` sysvar, we need to first subtract `1` from the current
+// slot, and then subtract the target slot from the result.
+fn calculate_slot_position(target_slot: &Slot, current_slot: &Slot) -> Option<usize> {
+    let position = current_slot.saturating_sub(*target_slot);
+
+    if position >= (MAX_ENTRIES as u64) {
+        return None;
+    }
+    Some(position as usize)
+}
+
+// [Core BPF]: This function has been modified from its legacy built-in
+// counterpart to no longer use the `SlotHashes` sysvar, since it is not
+// available for BPF programs. Instead, it uses the `current_slot`
+// parameter to calculate the table's status.
+// This will no longer consider the case where a slot has been skipped
+// and no block was produced.
+// If it's imperative to ensure we are only considering slots where blocks
+// were created, then we'll need to revisit this function, and possibly
+// provide the `SlotHashes` account so we can reliably check slot hashes.
+/// Return the current status of the lookup table
+fn get_lookup_table_status(deactivation_slot: Slot, current_slot: Slot) -> LookupTableStatus {
+    if deactivation_slot == Slot::MAX {
+        LookupTableStatus::Activated
+    } else if deactivation_slot == current_slot {
+        LookupTableStatus::Deactivating {
+            remaining_blocks: MAX_ENTRIES,
+        }
+    } else if let Some(slot_position) = calculate_slot_position(&deactivation_slot, &current_slot) {
+        // [Core BPF]: TODO: `Clock` instead of `SlotHashes`.
+        // Deactivation requires a cool-down period to give in-flight transactions
+        // enough time to land and to remove indeterminism caused by transactions
+        // loading addresses in the same slot when a table is closed. The
+        // cool-down period is equivalent to the amount of time it takes for
+        // a slot to be removed from the slot hash list.
+        //
+        // By using the slot hash to enforce the cool-down, there is a side effect
+        // of not allowing lookup tables to be recreated at the same derived address
+        // because tables must be created at an address derived from a recent slot.
+        LookupTableStatus::Deactivating {
+            remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
+        }
+    } else {
+        LookupTableStatus::Deactivated
+    }
+}
 
 // [Core BPF]: Locally-implemented
 // `solana_sdk::program_utils::limited_deserialize`.
@@ -409,7 +470,7 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
         // This will no longer consider skipped slots wherein a block was not
         // produced.
         // See `state::LookupTableMeta::status` for more details.
-        match lookup_table.meta.status(clock.slot) {
+        match get_lookup_table_status(lookup_table.meta.deactivation_slot, clock.slot) {
             LookupTableStatus::Activated => {
                 msg!("Lookup table is not deactivated");
                 Err(ProgramError::InvalidArgument)
