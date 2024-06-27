@@ -22,13 +22,15 @@ mod common;
 async fn test_close_lookup_table() {
     // Succesfully close a deactived lookup table.
     let mut context = setup_test_context().await;
+
+    context.warp_to_slot(2).unwrap();
     overwrite_slot_hashes_with_slots(&context, &[]);
 
     let lookup_table_address = Pubkey::new_unique();
     let authority_keypair = Keypair::new();
     let initialized_table = {
         let mut table = new_address_lookup_table(Some(authority_keypair.pubkey()), 0);
-        table.meta.deactivation_slot = 0;
+        table.meta.deactivation_slot = 1;
         table
     };
     add_lookup_table_account(&mut context, lookup_table_address, initialized_table).await;
