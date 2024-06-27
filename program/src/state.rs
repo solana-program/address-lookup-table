@@ -1,7 +1,6 @@
 #[cfg(feature = "frozen-abi")]
 use solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample};
 use {
-    crate::error::AddressLookupError,
     serde::{Deserialize, Serialize},
     solana_program::{
         clock::Slot, program_error::ProgramError, pubkey::Pubkey, slot_hashes::MAX_ENTRIES,
@@ -81,15 +80,6 @@ impl LookupTableMeta {
         LookupTableMeta {
             authority: Some(authority),
             ..LookupTableMeta::default()
-        }
-    }
-
-    /// Returns whether the table is considered active for address lookups
-    pub fn is_active(&self, current_slot: Slot) -> bool {
-        match self.status(current_slot) {
-            LookupTableStatus::Activated => true,
-            LookupTableStatus::Deactivating { .. } => true,
-            LookupTableStatus::Deactivated => false,
         }
     }
 
@@ -196,47 +186,6 @@ impl<'a> AddressLookupTable<'a> {
             // error is deprecated. The error code for failed serialization has
             // changed.
             .map_err(|_| ProgramError::InvalidAccountData)
-    }
-
-    /// Get the length of addresses that are active for lookups
-    pub fn get_active_addresses_len(
-        &self,
-        current_slot: Slot,
-    ) -> Result<usize, AddressLookupError> {
-        if !self.meta.is_active(current_slot) {
-            // Once a lookup table is no longer active, it can be closed
-            // at any point, so returning a specific error for deactivated
-            // lookup tables could result in a race condition.
-            return Err(AddressLookupError::LookupTableAccountNotFound);
-        }
-
-        // If the address table was extended in the same slot in which it is used
-        // to lookup addresses for another transaction, the recently extended
-        // addresses are not considered active and won't be accessible.
-        let active_addresses_len = if current_slot > self.meta.last_extended_slot {
-            self.addresses.len()
-        } else {
-            self.meta.last_extended_slot_start_index as usize
-        };
-
-        Ok(active_addresses_len)
-    }
-
-    /// Lookup addresses for provided table indexes. Since lookups are performed
-    /// on tables which are not read-locked, this implementation needs to be
-    /// careful about resolving addresses consistently.
-    pub fn lookup(
-        &self,
-        current_slot: Slot,
-        indexes: &[u8],
-    ) -> Result<Vec<Pubkey>, AddressLookupError> {
-        let active_addresses_len = self.get_active_addresses_len(current_slot)?;
-        let active_addresses = &self.addresses[0..active_addresses_len];
-        indexes
-            .iter()
-            .map(|idx| active_addresses.get(*idx as usize).cloned())
-            .collect::<Option<_>>()
-            .ok_or(AddressLookupError::InvalidLookupIndex)
     }
 
     /// Serialize an address table including its addresses
@@ -472,20 +421,6 @@ mod tests {
     }
 
     #[test]
-    fn test_lookup_from_empty_table() {
-        let lookup_table = AddressLookupTable {
-            meta: LookupTableMeta::default(),
-            addresses: Cow::Owned(vec![]),
-        };
-
-        assert_eq!(lookup_table.lookup(0, &[]), Ok(vec![]));
-        assert_eq!(
-            lookup_table.lookup(0, &[0]),
-            Err(AddressLookupError::InvalidLookupIndex)
-        );
-    }
-
-    #[test]
     fn test_serialize_new_lookup_table() {
         let authority_key = Pubkey::new_unique();
         let check_meta = LookupTableMeta::new(authority_key);
@@ -554,99 +489,5 @@ mod tests {
         addresses[0] = pubkey1;
         addresses[1] = pubkey2;
         assert_eq!(&addresses, &[pubkey1, pubkey2]);
-    }
-
-    #[test]
-    fn test_lookup_from_deactivating_table() {
-        let current_slot = 1;
-        let addresses = vec![Pubkey::new_unique()];
-        let lookup_table = AddressLookupTable {
-            meta: LookupTableMeta {
-                deactivation_slot: current_slot,
-                last_extended_slot: current_slot - 1,
-                ..LookupTableMeta::default()
-            },
-            addresses: Cow::Owned(addresses.clone()),
-        };
-
-        assert_eq!(
-            lookup_table.meta.status(current_slot),
-            LookupTableStatus::Deactivating {
-                remaining_blocks: MAX_ENTRIES
-            }
-        );
-
-        assert_eq!(
-            lookup_table.lookup(current_slot, &[0]),
-            Ok(vec![addresses[0]]),
-        );
-    }
-
-    #[test]
-    fn test_lookup_from_deactivated_table() {
-        let current_slot = (MAX_ENTRIES + 1) as Slot;
-        let lookup_table = AddressLookupTable {
-            meta: LookupTableMeta {
-                deactivation_slot: 0,
-                last_extended_slot: 0,
-                ..LookupTableMeta::default()
-            },
-            addresses: Cow::Owned(vec![]),
-        };
-
-        assert_eq!(
-            lookup_table.meta.status(current_slot),
-            LookupTableStatus::Deactivated
-        );
-        assert_eq!(
-            lookup_table.lookup(current_slot, &[0]),
-            Err(AddressLookupError::LookupTableAccountNotFound)
-        );
-    }
-
-    #[test]
-    fn test_lookup_from_table_extended_in_current_slot() {
-        let current_slot = 0;
-        let addresses: Vec<_> = (0..2).map(|_| Pubkey::new_unique()).collect();
-        let lookup_table = AddressLookupTable {
-            meta: LookupTableMeta {
-                last_extended_slot: current_slot,
-                last_extended_slot_start_index: 1,
-                ..LookupTableMeta::default()
-            },
-            addresses: Cow::Owned(addresses.clone()),
-        };
-
-        assert_eq!(
-            lookup_table.lookup(current_slot, &[0]),
-            Ok(vec![addresses[0]])
-        );
-        assert_eq!(
-            lookup_table.lookup(current_slot, &[1]),
-            Err(AddressLookupError::InvalidLookupIndex),
-        );
-    }
-
-    #[test]
-    fn test_lookup_from_table_extended_in_previous_slot() {
-        let current_slot = 1;
-        let addresses: Vec<_> = (0..10).map(|_| Pubkey::new_unique()).collect();
-        let lookup_table = AddressLookupTable {
-            meta: LookupTableMeta {
-                last_extended_slot: current_slot - 1,
-                last_extended_slot_start_index: 1,
-                ..LookupTableMeta::default()
-            },
-            addresses: Cow::Owned(addresses.clone()),
-        };
-
-        assert_eq!(
-            lookup_table.lookup(current_slot, &[0, 3, 1, 5]),
-            Ok(vec![addresses[0], addresses[3], addresses[1], addresses[5]])
-        );
-        assert_eq!(
-            lookup_table.lookup(current_slot, &[10]),
-            Err(AddressLookupError::InvalidLookupIndex),
-        );
     }
 }
