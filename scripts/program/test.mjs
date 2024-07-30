@@ -9,9 +9,8 @@ import {
 // Save external programs binaries to the output directory.
 import './dump.mjs';
 
-// Configure additional arguments here, e.g.:
-// ['--arg1', '--arg2', ...cliArguments()]
-const testArgs = cliArguments();
+// Configure arguments here.
+const testArgs = ['--features', 'bpf-entrypoint', ...cliArguments()];
 
 const hasSolfmt = await which('solfmt', { nothrow: true });
 
