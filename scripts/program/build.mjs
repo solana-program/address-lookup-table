@@ -9,9 +9,8 @@ import {
 // Save external programs binaries to the output directory.
 import './dump.mjs';
 
-// Configure additional arguments here, e.g.:
-// ['--arg1', '--arg2', ...cliArguments()]
-const buildArgs = cliArguments();
+// Configure arguments here.
+const buildArgs = ['--features', 'bpf-entrypoint', ...cliArguments()];
 
 // Build the programs.
 await Promise.all(
