@@ -3,25 +3,7 @@ import 'zx/globals';
 import { getInstalledSolanaVersion, getSolanaVersion } from './utils.mjs';
 
 const expectedVersion = getSolanaVersion();
-
-let installedVersion;
-try {
-  installedVersion = await getInstalledSolanaVersion();
-} catch (error) {
-  echo(
-    chalk.red('[ ERROR ]'),
-    `No Solana installation found. Solana ${expectedVersion} is required for this project.`
-  );
-  await askToInstallSolana(expectedVersion);
-}
-
-if (installedVersion === expectedVersion) {
-  echo(
-    chalk.green('[ SUCCESS ]'),
-    `The expected Solana version ${expectedVersion} is installed.`
-  );
-  process.exit(0);
-}
+const installedVersion = await getInstalledSolanaVersion();
 
 const installPath = path.join(
   os.homedir(),
@@ -39,7 +21,18 @@ const releasePath = path.join(
 const activeReleasePath = path.join(installPath, 'active_release');
 const hasRelease = await fs.exists(releasePath);
 
-if (hasRelease) {
+if (!installedVersion) {
+  echo(
+    chalk.red('[ ERROR ]'),
+    `No Solana installation found. Solana ${expectedVersion} is required for this project.`
+  );
+  await askToInstallSolana(expectedVersion);
+} else if (installedVersion === expectedVersion) {
+  echo(
+    chalk.green('[ SUCCESS ]'),
+    `The expected Solana version ${expectedVersion} is installed.`
+  );
+} else if (hasRelease) {
   await $`rm -f "${activeReleasePath}"`;
   await $`ln -s "${releasePath}" "${activeReleasePath}"`;
   echo(
