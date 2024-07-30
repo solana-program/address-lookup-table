@@ -66,7 +66,6 @@ runs:
       uses: ./.github/actions/install-solana
       with:
         version: ${{ env.SOLANA_VERSION }}
-        base_url: 'https://release.anza.xyz'
         cache: true
 
     - name: Cache Cargo Dependencies
