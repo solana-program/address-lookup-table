@@ -10,7 +10,15 @@ import {
 
 // Configure additional arguments here, e.g.:
 // ['--arg1', '--arg2', ...cliArguments()]
-const lintArgs = cliArguments();
+const lintArgs = [
+  '-Zunstable-options',
+  '--features',
+  'bpf-entrypoint,test-sbf',
+  '--',
+  '--deny=warnings',
+  '--deny=clippy::arithmetic_side_effects',
+  ...cliArguments()
+];
 
 const fix = popArgument(lintArgs, '--fix');
 const toolchain = getToolchainArgument('format');
