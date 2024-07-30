@@ -6,7 +6,12 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { containsBytes, getU32Encoder, type Address } from '@solana/web3.js';
+import {
+  containsBytes,
+  getU32Encoder,
+  type Address,
+  type ReadonlyUint8Array,
+} from '@solana/web3.js';
 import {
   type ParsedCloseLookupTableInstruction,
   type ParsedCreateLookupTableInstruction,
@@ -23,9 +28,9 @@ export enum AddressLookupTableAccount {
 }
 
 export function identifyAddressLookupTableAccount(
-  account: { data: Uint8Array } | Uint8Array
+  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): AddressLookupTableAccount {
-  const data = account instanceof Uint8Array ? account : account.data;
+  const data = 'data' in account ? account.data : account;
   if (containsBytes(data, getU32Encoder().encode(1), 0)) {
     return AddressLookupTableAccount.AddressLookupTable;
   }
@@ -43,10 +48,9 @@ export enum AddressLookupTableInstruction {
 }
 
 export function identifyAddressLookupTableInstruction(
-  instruction: { data: Uint8Array } | Uint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): AddressLookupTableInstruction {
-  const data =
-    instruction instanceof Uint8Array ? instruction : instruction.data;
+  const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU32Encoder().encode(0), 0)) {
     return AddressLookupTableInstruction.CreateLookupTable;
   }

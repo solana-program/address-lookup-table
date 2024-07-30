@@ -2,7 +2,6 @@
 import 'zx/globals';
 import {
   cliArguments,
-  getProgramFolders,
   getToolchainArgument,
   partitionArguments,
   popArgument,
@@ -16,16 +15,16 @@ const formatArgs = cliArguments();
 const fix = popArgument(formatArgs, '--fix');
 const [cargoArgs, fmtArgs] = partitionArguments(formatArgs, '--');
 const toolchain = getToolchainArgument('format');
-
-// Format the programs.
-await Promise.all(
-  getProgramFolders().map(async (folder) => {
-    const manifestPath = path.join(workingDirectory, folder, 'Cargo.toml');
-
-    if (fix) {
-      await $`cargo ${toolchain} fmt --manifest-path ${manifestPath} ${cargoArgs} -- ${fmtArgs}`;
-    } else {
-      await $`cargo ${toolchain} fmt --manifest-path ${manifestPath} ${cargoArgs} -- --check ${fmtArgs}`;
-    }
-  })
+const manifestPath = path.join(
+  workingDirectory,
+  'clients',
+  'rust',
+  'Cargo.toml'
 );
+
+// Format the client.
+if (fix) {
+  await $`cargo ${toolchain} fmt --manifest-path ${manifestPath} ${cargoArgs} -- ${fmtArgs}`;
+} else {
+  await $`cargo ${toolchain} fmt --manifest-path ${manifestPath} ${cargoArgs} -- --check ${fmtArgs}`;
+}

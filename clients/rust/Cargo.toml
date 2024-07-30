@@ -1,6 +1,8 @@
 [package]
 name = "solana-address-lookup-table-client"
 version = "0.1.0"
+description = "A generated Rust library for the Address Lookup Table program"
+repository = "https://github.com/solana-program/address-lookup-table"
 edition = "2021"
 readme = "README.md"
 license-file = "../../LICENSE"

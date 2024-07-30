@@ -3,7 +3,6 @@
 //! to add features, then rerun kinobi to update it.
 //!
 //! <https://github.com/kinobi-so/kinobi>
-//!
 
 pub(crate) mod r#close_lookup_table;
 pub(crate) mod r#create_lookup_table;
@@ -11,8 +10,7 @@ pub(crate) mod r#deactivate_lookup_table;
 pub(crate) mod r#extend_lookup_table;
 pub(crate) mod r#freeze_lookup_table;
 
-pub use self::r#close_lookup_table::*;
-pub use self::r#create_lookup_table::*;
-pub use self::r#deactivate_lookup_table::*;
-pub use self::r#extend_lookup_table::*;
-pub use self::r#freeze_lookup_table::*;
+pub use self::{
+    r#close_lookup_table::*, r#create_lookup_table::*, r#deactivate_lookup_table::*,
+    r#extend_lookup_table::*, r#freeze_lookup_table::*,
+};
