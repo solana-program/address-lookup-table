@@ -8,8 +8,7 @@ import {
   workingDirectory,
 } from '../utils.mjs';
 
-// Configure additional arguments here, e.g.:
-// ['--arg1', '--arg2', ...cliArguments()]
+// Configure arguments here.
 const lintArgs = [
   '-Zunstable-options',
   '--features',
@@ -17,7 +16,7 @@ const lintArgs = [
   '--',
   '--deny=warnings',
   '--deny=clippy::arithmetic_side_effects',
-  ...cliArguments()
+  ...cliArguments(),
 ];
 
 const fix = popArgument(lintArgs, '--fix');

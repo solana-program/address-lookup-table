@@ -3,7 +3,7 @@ import 'zx/globals';
 import { createFromRoot } from 'kinobi';
 import { renderVisitor as renderJavaScriptVisitor } from '@kinobi-so/renderers-js';
 import { renderVisitor as renderRustVisitor } from '@kinobi-so/renderers-rust';
-import { workingDirectory } from './utils.mjs';
+import { getToolchainArgument, workingDirectory } from './utils.mjs';
 
 // Instanciate Kinobi.
 const kinobi = createFromRoot(
@@ -24,5 +24,6 @@ kinobi.accept(
   renderRustVisitor(path.join(rustClient, 'src', 'generated'), {
     formatCode: true,
     crateFolder: rustClient,
+    toolchain: getToolchainArgument('format'),
   })
 );

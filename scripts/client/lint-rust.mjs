@@ -7,13 +7,12 @@ import {
   workingDirectory,
 } from '../utils.mjs';
 
-// Configure additional arguments here, e.g.:
-// ['--arg1', '--arg2', ...cliArguments()]
+// Configure arguments here.
 const lintArgs = [
   '-Zunstable-options',
   '--',
   '--deny=warnings',
-  ...cliArguments()
+  ...cliArguments(),
 ];
 
 const fix = popArgument(lintArgs, '--fix');
