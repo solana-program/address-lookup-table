@@ -1,6 +1,6 @@
 //! Address Lookup Table Program
 
-#![cfg_attr(RUSTC_WITH_SPECIALIZATION, feature(specialization))]
+#![cfg_attr(RUSTC_WITH_SPECIALIZATION, feature(min_specialization))]
 
 #[cfg(all(target_os = "solana", feature = "bpf-entrypoint"))]
 mod entrypoint;
