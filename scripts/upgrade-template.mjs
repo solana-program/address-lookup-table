@@ -32,7 +32,6 @@ const unchangedGlobs = [
   'scripts/generate-clients.mjs',
   'scripts/generate-idls.mjs',
   'scripts/upgrade-template.mjs',
-  'scripts/program/*',
   'Cargo.lock',
   '**/pnpm-lock.yaml',
   'pnpm-lock.yaml',
@@ -51,7 +50,7 @@ cd('address-lookup-table');
 // Restore files and folders that should not be overwritten.
 await $`git add --all`;
 for (const glob of unchangedGlobs) {
-  await $`git restore --worktree --staged "${glob}"`;
+  await $`git restore --worktree --staged "${glob}"`.nothrow();
 }
 
 // Re-install dependencies.
