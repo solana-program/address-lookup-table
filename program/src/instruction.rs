@@ -2,6 +2,7 @@
 
 use {
     serde::{Deserialize, Serialize},
+    shank::ShankInstruction,
     solana_program::{
         clock::Slot,
         instruction::{AccountMeta, Instruction},
@@ -10,7 +11,8 @@ use {
     },
 };
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[rustfmt::skip]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, ShankInstruction)]
 pub enum AddressLookupTableInstruction {
     /// Create an address lookup table
     ///
@@ -21,6 +23,30 @@ pub enum AddressLookupTableInstruction {
     ///   2. `[SIGNER, WRITE]` Account that will fund the new address lookup
     ///      table.
     ///   3. `[]` System program for CPI.
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        description = "Uninitialized address lookup table account",
+    )]
+    #[account(
+        1,
+        signer,
+        name = "authority",
+        description = "Account used to derive and control the new address lookup table",
+    )]
+    #[account(
+        2,
+        writable,
+        signer,
+        name = "payer",
+        description = "Account that will fund the new address lookup table",
+    )]
+    #[account(
+        3,
+        name = "system_program",
+        description = "System program",
+    )]
     CreateLookupTable {
         /// A recent slot must be used in the derivation path
         /// for each initialized table. When closing table accounts,
@@ -39,6 +65,18 @@ pub enum AddressLookupTableInstruction {
     /// # Account references
     ///   0. `[WRITE]` Address lookup table account to freeze
     ///   1. `[SIGNER]` Current authority
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        description = "Address lookup table account to freeze",
+    )]
+    #[account(
+        1,
+        signer,
+        name = "authority",
+        description = "Current authority",
+    )]
     FreezeLookupTable,
 
     /// Extend an address lookup table with new addresses. Funding account and
@@ -52,6 +90,32 @@ pub enum AddressLookupTableInstruction {
     ///   2. `[SIGNER, WRITE, OPTIONAL]` Account that will fund the table
     ///      reallocation
     ///   3. `[OPTIONAL]` System program for CPI.
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        description = "Address lookup table account to extend",
+    )]
+    #[account(
+        1,
+        signer,
+        name = "authority",
+        description = "Current authority",
+    )]
+    #[account(
+        2,
+        writable,
+        signer,
+        optional,
+        name = "payer",
+        description = "Account that will fund the table reallocation",
+    )]
+    #[account(
+        3,
+        optional,
+        name = "system_program",
+        description = "System program",
+    )]
     ExtendLookupTable { new_addresses: Vec<Pubkey> },
 
     /// Deactivate an address lookup table, making it unusable and
@@ -60,6 +124,18 @@ pub enum AddressLookupTableInstruction {
     /// # Account references
     ///   0. `[WRITE]` Address lookup table account to deactivate
     ///   1. `[SIGNER]` Current authority
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        description = "Address lookup table account to deactivate",
+    )]
+    #[account(
+        1,
+        signer,
+        name = "authority",
+        description = "Current authority",
+    )]
     DeactivateLookupTable,
 
     /// Close an address lookup table account
@@ -68,6 +144,24 @@ pub enum AddressLookupTableInstruction {
     ///   0. `[WRITE]` Address lookup table account to close
     ///   1. `[SIGNER]` Current authority
     ///   2. `[WRITE]` Recipient of closed account lamports
+    #[account(
+        0,
+        writable,
+        name = "lookup_table",
+        description = "Address lookup table account to close",
+    )]
+    #[account(
+        1,
+        signer,
+        name = "authority",
+        description = "Current authority",
+    )]
+    #[account(
+        2,
+        writable,
+        name = "recipient",
+        description = "Recipient of closed account lamports",
+    )]
     CloseLookupTable,
 }
 

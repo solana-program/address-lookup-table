@@ -1,3 +1,4 @@
+use shank::ShankAccount;
 #[cfg(feature = "frozen-abi")]
 use solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample};
 use {
@@ -14,7 +15,7 @@ pub const LOOKUP_TABLE_META_SIZE: usize = 56;
 
 /// Address lookup table metadata
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, ShankAccount)]
 pub struct LookupTableMeta {
     /// Lookup tables cannot be closed until the deactivation slot is
     /// no longer "recent" (not accessible in the `SlotHashes` sysvar).
