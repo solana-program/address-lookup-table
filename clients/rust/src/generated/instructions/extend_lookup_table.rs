@@ -3,12 +3,12 @@
 //! to add features, then rerun kinobi to update it.
 //!
 //! <https://github.com/kinobi-so/kinobi>
-//!
 
-use borsh::BorshDeserialize;
-use borsh::BorshSerialize;
-use kaigan::types::U64PrefixVec;
-use solana_program::pubkey::Pubkey;
+use {
+    borsh::{BorshDeserialize, BorshSerialize},
+    kaigan::types::U64PrefixVec,
+    solana_program::pubkey::Pubkey,
+};
 
 /// Accounts.
 pub struct ExtendLookupTable {
@@ -95,7 +95,8 @@ pub struct ExtendLookupTableInstructionArgs {
 ///   0. `[writable]` address
 ///   1. `[signer]` authority
 ///   2. `[writable, signer]` payer
-///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   3. `[optional]` system_program (default to
+///      `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct ExtendLookupTableBuilder {
     address: Option<solana_program::pubkey::Pubkey>,
@@ -375,8 +376,9 @@ impl<'a, 'b> ExtendLookupTableCpiBuilder<'a, 'b> {
     }
     /// Add additional accounts to the instruction.
     ///
-    /// Each account is represented by a tuple of the `AccountInfo`, a `bool` indicating whether the account is writable or not,
-    /// and a `bool` indicating whether the account is a signer or not.
+    /// Each account is represented by a tuple of the `AccountInfo`, a `bool`
+    /// indicating whether the account is writable or not, and a `bool`
+    /// indicating whether the account is a signer or not.
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
