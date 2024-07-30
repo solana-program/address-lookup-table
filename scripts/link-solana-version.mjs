@@ -2,8 +2,18 @@
 import 'zx/globals';
 import { getInstalledSolanaVersion, getSolanaVersion } from './utils.mjs';
 
-const installedVersion = await getInstalledSolanaVersion();
 const expectedVersion = getSolanaVersion();
+
+let installedVersion;
+try {
+  installedVersion = await getInstalledSolanaVersion();
+} catch (error) {
+  echo(
+    chalk.red('[ ERROR ]'),
+    `No Solana installation found. Solana ${expectedVersion} is required for this project.`
+  );
+  await askToInstallSolana(expectedVersion);
+}
 
 if (installedVersion === expectedVersion) {
   echo(
@@ -36,21 +46,36 @@ if (hasRelease) {
     chalk.green('[ SUCCESS ]'),
     `Successfully switched from Solana version ${installedVersion} to ${expectedVersion} to match the project's requirements.`
   );
-  process.exit(0);
+} else {
+  echo(
+    chalk.yellow('[ WARNING ]'),
+    `Cannot switch from Solana version ${installedVersion} to ${expectedVersion} because it is not installed.`
+  );
+  await askToInstallSolana(expectedVersion);
 }
 
-echo(
-  chalk.yellow('[ WARNING ]'),
-  `Cannot switch from Solana version ${installedVersion} to ${expectedVersion} because it is not installed.`
-);
-
-const installRelease = await question('Should we install it now? [y/N] ');
-if (installRelease === 'y') {
-  echo(`Installing Solana ${expectedVersion}...`);
-  await $`sh -c "$(curl -sSfL https://release.solana.com/v${expectedVersion}/install)"`;
+async function askToInstallSolana(version) {
+  const installRelease = await question('Should we install it now? [y/N] ');
+  if (installRelease === 'y') {
+    await installSolana(version);
+    echo(
+      chalk.green('[ SUCCESS ]'),
+      `Successfully installed Solana version ${version}.`
+    );
+  } else {
+    process.exit(1);
+  }
 }
 
-echo(
-  chalk.green('[ SUCCESS ]'),
-  `Successfully switched from Solana version ${installedVersion} to ${expectedVersion} to match the project's requirements.`
-);
+async function installSolana(version) {
+  echo(`Installing Solana ${version}...`);
+  const cutoff = '1.18.19';
+  const isBeforeCutoff =
+    (await $`[[ "$(printf '%s\n' "${cutoff}" "${version}" | sort -V | head -n1)" = "${version}" ]] && [[ "${cutoff}" != "${version}" ]]`.quiet()
+      .exitCode) == 0;
+  if (isBeforeCutoff) {
+    await $`sh -c "$(curl -sSfL https://release.solana.com/v${version}/install)"`;
+  } else {
+    await $`sh -c "$(curl -sSfL https://release.anza.xyz/v${version}/install)"`;
+  }
+}
