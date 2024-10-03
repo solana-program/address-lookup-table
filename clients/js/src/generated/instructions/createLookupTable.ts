@@ -45,6 +45,12 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const CREATE_LOOKUP_TABLE_DISCRIMINATOR = 0;
+
+export function getCreateLookupTableDiscriminatorBytes() {
+  return getU32Encoder().encode(CREATE_LOOKUP_TABLE_DISCRIMINATOR);
+}
+
 export type CreateLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
@@ -94,7 +100,7 @@ export function getCreateLookupTableInstructionDataEncoder(): Encoder<CreateLook
       ['recentSlot', getU64Encoder()],
       ['bump', getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 0 })
+    (value) => ({ ...value, discriminator: CREATE_LOOKUP_TABLE_DISCRIMINATOR })
   );
 }
 
@@ -135,16 +141,18 @@ export async function getCreateLookupTableInstructionAsync<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
   input: CreateLookupTableAsyncInput<
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   CreateLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
@@ -153,7 +161,8 @@ export async function getCreateLookupTableInstructionAsync<
     IInstructionWithByteDelta
 > {
   // Program address.
-  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -204,7 +213,7 @@ export async function getCreateLookupTableInstructionAsync<
       args as CreateLookupTableInstructionDataArgs
     ),
   } as CreateLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
@@ -233,15 +242,17 @@ export function getCreateLookupTableInstruction<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
   input: CreateLookupTableInput<
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): CreateLookupTableInstruction<
-  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAddress,
   TAccountAuthority,
   TAccountPayer,
@@ -249,7 +260,8 @@ export function getCreateLookupTableInstruction<
 > &
   IInstructionWithByteDelta {
   // Program address.
-  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -294,7 +306,7 @@ export function getCreateLookupTableInstruction<
       args as CreateLookupTableInstructionDataArgs
     ),
   } as CreateLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,

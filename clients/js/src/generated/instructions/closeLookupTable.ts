@@ -29,6 +29,12 @@ import {
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const CLOSE_LOOKUP_TABLE_DISCRIMINATOR = 4;
+
+export function getCloseLookupTableDiscriminatorBytes() {
+  return getU32Encoder().encode(CLOSE_LOOKUP_TABLE_DISCRIMINATOR);
+}
+
 export type CloseLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
@@ -60,7 +66,7 @@ export type CloseLookupTableInstructionDataArgs = {};
 export function getCloseLookupTableInstructionDataEncoder(): Encoder<CloseLookupTableInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
-    (value) => ({ ...value, discriminator: 4 })
+    (value) => ({ ...value, discriminator: CLOSE_LOOKUP_TABLE_DISCRIMINATOR })
   );
 }
 
@@ -92,20 +98,23 @@ export function getCloseLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
   TAccountRecipient extends string,
+  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
   input: CloseLookupTableInput<
     TAccountAddress,
     TAccountAuthority,
     TAccountRecipient
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): CloseLookupTableInstruction<
-  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAddress,
   TAccountAuthority,
   TAccountRecipient
 > {
   // Program address.
-  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -128,7 +137,7 @@ export function getCloseLookupTableInstruction<
     programAddress,
     data: getCloseLookupTableInstructionDataEncoder().encode({}),
   } as CloseLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority,
     TAccountRecipient
