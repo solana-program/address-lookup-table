@@ -29,6 +29,12 @@ import {
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const DEACTIVATE_LOOKUP_TABLE_DISCRIMINATOR = 3;
+
+export function getDeactivateLookupTableDiscriminatorBytes() {
+  return getU32Encoder().encode(DEACTIVATE_LOOKUP_TABLE_DISCRIMINATOR);
+}
+
 export type DeactivateLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
@@ -56,7 +62,10 @@ export type DeactivateLookupTableInstructionDataArgs = {};
 export function getDeactivateLookupTableInstructionDataEncoder(): Encoder<DeactivateLookupTableInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
-    (value) => ({ ...value, discriminator: 3 })
+    (value) => ({
+      ...value,
+      discriminator: DEACTIVATE_LOOKUP_TABLE_DISCRIMINATOR,
+    })
   );
 }
 
@@ -85,15 +94,18 @@ export type DeactivateLookupTableInput<
 export function getDeactivateLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
+  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
-  input: DeactivateLookupTableInput<TAccountAddress, TAccountAuthority>
+  input: DeactivateLookupTableInput<TAccountAddress, TAccountAuthority>,
+  config?: { programAddress?: TProgramAddress }
 ): DeactivateLookupTableInstruction<
-  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAddress,
   TAccountAuthority
 > {
   // Program address.
-  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -114,7 +126,7 @@ export function getDeactivateLookupTableInstruction<
     programAddress,
     data: getDeactivateLookupTableInstructionDataEncoder().encode({}),
   } as DeactivateLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority
   >;

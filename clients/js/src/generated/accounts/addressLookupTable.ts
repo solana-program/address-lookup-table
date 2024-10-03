@@ -45,6 +45,12 @@ import {
 } from '@solana/web3.js';
 import { AddressLookupTableSeeds, findAddressLookupTablePda } from '../pdas';
 
+export const ADDRESS_LOOKUP_TABLE_DISCRIMINATOR = 1;
+
+export function getAddressLookupTableDiscriminatorBytes() {
+  return getU32Encoder().encode(ADDRESS_LOOKUP_TABLE_DISCRIMINATOR);
+}
+
 export type AddressLookupTable = {
   discriminator: number;
   deactivationSlot: bigint;
@@ -80,7 +86,11 @@ export function getAddressLookupTableEncoder(): Encoder<AddressLookupTableArgs> 
         getArrayEncoder(getAddressEncoder(), { size: 'remainder' }),
       ],
     ]),
-    (value) => ({ ...value, discriminator: 1, padding: 0 })
+    (value) => ({
+      ...value,
+      discriminator: ADDRESS_LOOKUP_TABLE_DISCRIMINATOR,
+      padding: 0,
+    })
   );
 }
 

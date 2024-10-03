@@ -42,6 +42,12 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const EXTEND_LOOKUP_TABLE_DISCRIMINATOR = 2;
+
+export function getExtendLookupTableDiscriminatorBytes() {
+  return getU32Encoder().encode(EXTEND_LOOKUP_TABLE_DISCRIMINATOR);
+}
+
 export type ExtendLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
@@ -91,7 +97,7 @@ export function getExtendLookupTableInstructionDataEncoder(): Encoder<ExtendLook
         getArrayEncoder(getAddressEncoder(), { size: getU64Encoder() }),
       ],
     ]),
-    (value) => ({ ...value, discriminator: 2 })
+    (value) => ({ ...value, discriminator: EXTEND_LOOKUP_TABLE_DISCRIMINATOR })
   );
 }
 
@@ -133,15 +139,17 @@ export function getExtendLookupTableInstruction<
   TAccountAuthority extends string,
   TAccountPayer extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
   input: ExtendLookupTableInput<
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): ExtendLookupTableInstruction<
-  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAddress,
   TAccountAuthority,
   TAccountPayer,
@@ -149,7 +157,8 @@ export function getExtendLookupTableInstruction<
 > &
   IInstructionWithByteDelta {
   // Program address.
-  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -193,7 +202,7 @@ export function getExtendLookupTableInstruction<
       args as ExtendLookupTableInstructionDataArgs
     ),
   } as ExtendLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority,
     TAccountPayer,

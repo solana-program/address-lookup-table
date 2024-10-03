@@ -29,6 +29,12 @@ import {
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const FREEZE_LOOKUP_TABLE_DISCRIMINATOR = 1;
+
+export function getFreezeLookupTableDiscriminatorBytes() {
+  return getU32Encoder().encode(FREEZE_LOOKUP_TABLE_DISCRIMINATOR);
+}
+
 export type FreezeLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
   TAccountAddress extends string | IAccountMeta<string> = string,
@@ -56,7 +62,7 @@ export type FreezeLookupTableInstructionDataArgs = {};
 export function getFreezeLookupTableInstructionDataEncoder(): Encoder<FreezeLookupTableInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
-    (value) => ({ ...value, discriminator: 1 })
+    (value) => ({ ...value, discriminator: FREEZE_LOOKUP_TABLE_DISCRIMINATOR })
   );
 }
 
@@ -85,15 +91,18 @@ export type FreezeLookupTableInput<
 export function getFreezeLookupTableInstruction<
   TAccountAddress extends string,
   TAccountAuthority extends string,
+  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
-  input: FreezeLookupTableInput<TAccountAddress, TAccountAuthority>
+  input: FreezeLookupTableInput<TAccountAddress, TAccountAuthority>,
+  config?: { programAddress?: TProgramAddress }
 ): FreezeLookupTableInstruction<
-  typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAddress,
   TAccountAuthority
 > {
   // Program address.
-  const programAddress = ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -114,7 +123,7 @@ export function getFreezeLookupTableInstruction<
     programAddress,
     data: getFreezeLookupTableInstructionDataEncoder().encode({}),
   } as FreezeLookupTableInstruction<
-    typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAddress,
     TAccountAuthority
   >;
