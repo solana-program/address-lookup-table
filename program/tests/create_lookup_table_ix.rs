@@ -1,147 +1,168 @@
 #![cfg(feature = "test-sbf")]
 
+mod common;
+
 use {
-    common::{assert_ix_error, overwrite_slot_hashes_with_slots, setup_test_context},
+    common::setup,
+    mollusk_svm::{program::keyed_account_for_system_program, result::Check},
     solana_address_lookup_table_program::{
         instruction::create_lookup_table,
         state::{AddressLookupTable, LOOKUP_TABLE_META_SIZE},
     },
-    solana_program_test::*,
     solana_sdk::{
-        clock::Slot, instruction::InstructionError, pubkey::Pubkey, rent::Rent, signature::Signer,
-        transaction::Transaction,
+        account::{AccountSharedData, ReadableAccount},
+        clock::Slot,
+        program_error::ProgramError,
+        pubkey::Pubkey,
+        rent::Rent,
+        system_program,
     },
 };
-
-mod common;
 
 // [Core BPF]: Tests that assert proper authority checks have been removed,
 // since feature "FKAcEvNgSY79RpqsPNUV5gDyumopH4cEHqUxyfm8b8Ap"
 // (relax_authority_signer_check_for_lookup_table_creation) has been activated
 // on all clusters.
 
-#[tokio::test]
-async fn test_create_lookup_table_idempotent() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_create_lookup_table_idempotent() {
+    let mut mollusk = setup();
 
     let test_recent_slot = 123;
-    overwrite_slot_hashes_with_slots(&context, &[122, test_recent_slot, 124]);
 
-    let client = &mut context.banks_client;
-    let payer = &context.payer;
-    let recent_blockhash = context.last_blockhash;
-    let authority_address = Pubkey::new_unique();
+    // [Core BPF]: Warping to slot, which will update `SlotHashes`.
+    mollusk.warp_to_slot(test_recent_slot + 1);
+
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
     let (create_lookup_table_ix, lookup_table_address) =
-        create_lookup_table(authority_address, payer.pubkey(), test_recent_slot);
+        create_lookup_table(authority, payer, test_recent_slot);
 
     // First create should succeed
-    {
-        let transaction = Transaction::new_signed_with_payer(
-            &[create_lookup_table_ix.clone()],
-            Some(&payer.pubkey()),
-            &[payer],
-            recent_blockhash,
-        );
-
-        assert!(matches!(
-            client.process_transaction(transaction).await,
-            Ok(())
-        ));
-        let lookup_table_account = client
-            .get_account(lookup_table_address)
-            .await
-            .unwrap()
-            .unwrap();
-        assert_eq!(
-            lookup_table_account.owner,
-            solana_address_lookup_table_program::id()
-        );
-        assert_eq!(lookup_table_account.data.len(), LOOKUP_TABLE_META_SIZE);
-        assert_eq!(
-            lookup_table_account.lamports,
-            Rent::default().minimum_balance(LOOKUP_TABLE_META_SIZE)
-        );
-        let lookup_table = AddressLookupTable::deserialize(&lookup_table_account.data).unwrap();
-        assert_eq!(lookup_table.meta.deactivation_slot, Slot::MAX);
-        assert_eq!(lookup_table.meta.authority, Some(authority_address));
-        assert_eq!(lookup_table.meta.last_extended_slot, 0);
-        assert_eq!(lookup_table.meta.last_extended_slot_start_index, 0);
-        assert_eq!(lookup_table.addresses.len(), 0);
-    }
-
-    // Second create should succeed too
-    {
-        let recent_blockhash = client
-            .get_new_latest_blockhash(&recent_blockhash)
-            .await
-            .unwrap();
-        let transaction = Transaction::new_signed_with_payer(
-            &[create_lookup_table_ix],
-            Some(&payer.pubkey()),
-            &[payer],
-            recent_blockhash,
-        );
-
-        assert!(matches!(
-            client.process_transaction(transaction).await,
-            Ok(())
-        ));
-    }
-}
-
-#[tokio::test]
-async fn test_create_lookup_table_use_payer_as_authority() {
-    let mut context = setup_test_context().await;
-
-    let test_recent_slot = 123;
-    overwrite_slot_hashes_with_slots(&context, &[test_recent_slot]);
-
-    let client = &mut context.banks_client;
-    let payer = &context.payer;
-    let recent_blockhash = context.last_blockhash;
-    let authority_address = payer.pubkey();
-    let transaction = Transaction::new_signed_with_payer(
-        &[create_lookup_table(authority_address, payer.pubkey(), test_recent_slot).0],
-        Some(&payer.pubkey()),
-        &[payer],
-        recent_blockhash,
+    let result = mollusk.process_and_validate_instruction(
+        &create_lookup_table_ix,
+        &[
+            (lookup_table_address, AccountSharedData::default()),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            keyed_account_for_system_program(),
+        ],
+        &[Check::success()],
     );
 
-    assert!(matches!(
-        client.process_transaction(transaction).await,
-        Ok(())
-    ));
+    let lookup_table_account = result.get_account(&lookup_table_address).unwrap();
+
+    assert_eq!(
+        lookup_table_account.owner(),
+        &solana_address_lookup_table_program::id()
+    );
+    assert_eq!(lookup_table_account.data().len(), LOOKUP_TABLE_META_SIZE);
+    assert_eq!(
+        lookup_table_account.lamports(),
+        Rent::default().minimum_balance(LOOKUP_TABLE_META_SIZE)
+    );
+    let lookup_table = AddressLookupTable::deserialize(&lookup_table_account.data()).unwrap();
+    assert_eq!(lookup_table.meta.deactivation_slot, Slot::MAX);
+    assert_eq!(lookup_table.meta.authority, Some(authority));
+    assert_eq!(lookup_table.meta.last_extended_slot, 0);
+    assert_eq!(lookup_table.meta.last_extended_slot_start_index, 0);
+    assert_eq!(lookup_table.addresses.len(), 0);
+
+    // Second create should succeed too
+    mollusk.process_and_validate_instruction(
+        &create_lookup_table_ix,
+        &[
+            (lookup_table_address, lookup_table_account.clone()),
+            (authority, AccountSharedData::default()),
+            (payer, AccountSharedData::default()), // Note the lack of lamports.
+            keyed_account_for_system_program(),
+        ],
+        &[Check::success()],
+    );
 }
 
-#[tokio::test]
-async fn test_create_lookup_table_not_recent_slot() {
-    let mut context = setup_test_context().await;
-    let payer = &context.payer;
-    let authority_address = Pubkey::new_unique();
-
-    let ix = create_lookup_table(authority_address, payer.pubkey(), Slot::MAX).0;
-
-    assert_ix_error(
-        &mut context,
-        ix,
-        None,
-        InstructionError::InvalidInstructionData,
-    )
-    .await;
-}
-
-#[tokio::test]
-async fn test_create_lookup_table_pda_mismatch() {
-    let mut context = setup_test_context().await;
+#[test]
+fn test_create_lookup_table_use_payer_as_authority() {
+    let mut mollusk = setup();
 
     let test_recent_slot = 123;
-    overwrite_slot_hashes_with_slots(&context, &[test_recent_slot]);
 
-    let payer = &context.payer;
-    let authority_address = Pubkey::new_unique();
+    // [Core BPF]: Warping to slot, which will update `SlotHashes`.
+    mollusk.warp_to_slot(test_recent_slot + 1);
 
-    let mut ix = create_lookup_table(authority_address, payer.pubkey(), test_recent_slot).0;
-    ix.accounts[0].pubkey = Pubkey::new_unique();
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+    let (create_lookup_table_ix, lookup_table_address) =
+        create_lookup_table(authority, payer, test_recent_slot);
 
-    assert_ix_error(&mut context, ix, None, InstructionError::InvalidArgument).await;
+    mollusk.process_and_validate_instruction(
+        &create_lookup_table_ix,
+        &[
+            (lookup_table_address, AccountSharedData::default()),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            keyed_account_for_system_program(),
+        ],
+        &[Check::success()],
+    );
+}
+
+#[test]
+fn test_create_lookup_table_not_recent_slot() {
+    let mollusk = setup();
+
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+    let (create_lookup_table_ix, lookup_table_address) =
+        create_lookup_table(authority, payer, Slot::MAX);
+
+    mollusk.process_and_validate_instruction(
+        &create_lookup_table_ix,
+        &[
+            (lookup_table_address, AccountSharedData::default()),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            keyed_account_for_system_program(),
+        ],
+        &[Check::err(ProgramError::InvalidInstructionData)],
+    );
+}
+
+#[test]
+fn test_create_lookup_table_pda_mismatch() {
+    let mut mollusk = setup();
+
+    let test_recent_slot = 123;
+
+    // [Core BPF]: Warping to slot, which will update `SlotHashes`.
+    mollusk.warp_to_slot(test_recent_slot + 1);
+
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+    let wrong_pda = Pubkey::new_unique();
+    let mut create_lookup_table_ix = create_lookup_table(authority, payer, test_recent_slot).0;
+    create_lookup_table_ix.accounts[0].pubkey = wrong_pda;
+
+    mollusk.process_and_validate_instruction(
+        &create_lookup_table_ix,
+        &[
+            (wrong_pda, AccountSharedData::default()),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            keyed_account_for_system_program(),
+        ],
+        &[Check::err(ProgramError::InvalidArgument)],
+    );
 }
