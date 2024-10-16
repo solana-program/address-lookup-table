@@ -189,7 +189,7 @@ fn test_close_lookup_table_with_wrong_authority() {
     let recipient = Pubkey::new_unique();
     let authority = Pubkey::new_unique();
     let wrong_authority = Pubkey::new_unique();
-    let initialized_table = new_address_lookup_table(Some(authority), 0);
+    let initialized_table = new_address_lookup_table(Some(authority), 10);
 
     let lookup_table_address = Pubkey::new_unique();
     let lookup_table_account = lookup_table_account(initialized_table.clone());
@@ -211,7 +211,7 @@ fn test_close_lookup_table_without_signing() {
 
     let recipient = Pubkey::new_unique();
     let authority = Pubkey::new_unique();
-    let initialized_table = new_address_lookup_table(Some(authority), 0);
+    let initialized_table = new_address_lookup_table(Some(authority), 10);
 
     let lookup_table_address = Pubkey::new_unique();
     let lookup_table_account = lookup_table_account(initialized_table.clone());
