@@ -195,7 +195,7 @@ fn test_close_lookup_table_with_wrong_authority() {
     let lookup_table_account = lookup_table_account(initialized_table.clone());
 
     mollusk.process_and_validate_instruction(
-        &close_lookup_table(lookup_table_address, authority, recipient),
+        &close_lookup_table(lookup_table_address, wrong_authority, recipient),
         &[
             (lookup_table_address, lookup_table_account),
             (wrong_authority, AccountSharedData::default()),

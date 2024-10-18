@@ -94,19 +94,17 @@ fn test_create_lookup_table_use_payer_as_authority() {
     mollusk.warp_to_slot(test_recent_slot + 1);
 
     let payer = Pubkey::new_unique();
-    let authority = Pubkey::new_unique();
+    let payer_account = AccountSharedData::new(100_000_000, 0, &system_program::id());
+
     let (create_lookup_table_ix, lookup_table_address) =
-        create_lookup_table(authority, payer, test_recent_slot);
+        create_lookup_table(payer, payer, test_recent_slot);
 
     mollusk.process_and_validate_instruction(
         &create_lookup_table_ix,
         &[
             (lookup_table_address, AccountSharedData::default()),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (payer, payer_account.clone()),
+            (payer, payer_account),
             keyed_account_for_system_program(),
         ],
         &[Check::success()],
