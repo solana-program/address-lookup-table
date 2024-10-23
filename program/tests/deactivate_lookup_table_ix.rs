@@ -36,7 +36,7 @@ fn test_deactivate_lookup_table() {
 
     let lookup_table_account = result.get_account(&lookup_table_address).unwrap();
 
-    let lookup_table = AddressLookupTable::deserialize(&lookup_table_account.data()).unwrap();
+    let lookup_table = AddressLookupTable::deserialize(lookup_table_account.data()).unwrap();
     assert_eq!(lookup_table.meta.deactivation_slot, 0);
 
     // Check that only the deactivation slot changed

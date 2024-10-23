@@ -10,6 +10,7 @@ import {
 // Configure arguments here.
 const lintArgs = [
   '-Zunstable-options',
+  '--all-targets',
   '--',
   '--deny=warnings',
   ...cliArguments(),

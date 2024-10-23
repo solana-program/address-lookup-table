@@ -35,3 +35,11 @@ crate-type = ["cdylib", "lib"]
 
 [build-dependencies]
 rustc_version = "0.4"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = [
+    'cfg(target_os, values("solana"))',
+    'cfg(feature, values("min_specialization"))',
+    'cfg(RUSTC_WITH_SPECIALIZATION)',
+]
