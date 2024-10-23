@@ -64,7 +64,7 @@ fn test_create_lookup_table_idempotent() {
         lookup_table_account.lamports(),
         Rent::default().minimum_balance(LOOKUP_TABLE_META_SIZE)
     );
-    let lookup_table = AddressLookupTable::deserialize(&lookup_table_account.data()).unwrap();
+    let lookup_table = AddressLookupTable::deserialize(lookup_table_account.data()).unwrap();
     assert_eq!(lookup_table.meta.deactivation_slot, Slot::MAX);
     assert_eq!(lookup_table.meta.authority, Some(authority));
     assert_eq!(lookup_table.meta.last_extended_slot, 0);
