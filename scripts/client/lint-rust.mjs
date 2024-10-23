@@ -11,6 +11,7 @@ import {
 const lintArgs = [
   '-Zunstable-options',
   '--all-targets',
+  '--all-features',
   '--',
   '--deny=warnings',
   ...cliArguments(),
