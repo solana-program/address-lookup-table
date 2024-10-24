@@ -11,8 +11,8 @@ import {
 // Configure arguments here.
 const lintArgs = [
   '-Zunstable-options',
-  '--features',
-  'bpf-entrypoint,test-sbf',
+  '--all-targets',
+  '--all-features',
   '--',
   '--deny=warnings',
   '--deny=clippy::arithmetic_side_effects',

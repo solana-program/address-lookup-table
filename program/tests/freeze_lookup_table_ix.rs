@@ -35,7 +35,7 @@ fn test_freeze_lookup_table() {
     );
 
     let lookup_table_account = result.get_account(&lookup_table_address).unwrap();
-    let lookup_table = AddressLookupTable::deserialize(&lookup_table_account.data()).unwrap();
+    let lookup_table = AddressLookupTable::deserialize(lookup_table_account.data()).unwrap();
 
     assert_eq!(lookup_table.meta.authority, None);
 

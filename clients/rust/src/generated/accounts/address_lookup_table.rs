@@ -62,28 +62,3 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for AddressLook
         Self::deserialize(&mut data)
     }
 }
-
-#[cfg(feature = "anchor")]
-impl anchor_lang::AccountDeserialize for AddressLookupTable {
-    fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
-        Ok(Self::deserialize(buf)?)
-    }
-}
-
-#[cfg(feature = "anchor")]
-impl anchor_lang::AccountSerialize for AddressLookupTable {}
-
-#[cfg(feature = "anchor")]
-impl anchor_lang::Owner for AddressLookupTable {
-    fn owner() -> Pubkey {
-        crate::ADDRESS_LOOKUP_TABLE_ID
-    }
-}
-
-#[cfg(feature = "anchor-idl-build")]
-impl anchor_lang::IdlBuild for AddressLookupTable {}
-
-#[cfg(feature = "anchor-idl-build")]
-impl anchor_lang::Discriminator for AddressLookupTable {
-    const DISCRIMINATOR: [u8; 8] = [0; 8];
-}

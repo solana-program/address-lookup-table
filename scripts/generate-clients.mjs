@@ -22,6 +22,7 @@ codama.accept(
 const rustClient = path.join(__dirname, '..', 'clients', 'rust');
 codama.accept(
   renderRustVisitor(path.join(rustClient, 'src', 'generated'), {
+    anchorTraits: false,
     formatCode: true,
     crateFolder: rustClient,
     toolchain: getToolchainArgument('format'),
