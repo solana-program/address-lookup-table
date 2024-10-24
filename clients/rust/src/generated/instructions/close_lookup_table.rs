@@ -222,7 +222,7 @@ impl<'a, 'b> CloseLookupTableCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(4 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.address.clone());
         account_infos.push(self.authority.clone());
