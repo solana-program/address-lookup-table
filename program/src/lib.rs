@@ -5,6 +5,7 @@
 mod entrypoint;
 pub mod error;
 pub mod instruction;
+mod pod_slot_hashes;
 pub mod processor;
 pub mod state;
 

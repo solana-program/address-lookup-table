@@ -5,6 +5,7 @@ use {
         check_id,
         error::AddressLookupTableError,
         instruction::AddressLookupTableInstruction,
+        pod_slot_hashes::PodSlotHashes,
         state::{
             AddressLookupTable, ProgramState, LOOKUP_TABLE_MAX_ADDRESSES, LOOKUP_TABLE_META_SIZE,
         },
@@ -20,7 +21,7 @@ use {
         rent::Rent,
         slot_hashes::MAX_ENTRIES,
         system_instruction,
-        sysvar::{slot_hashes::SlotHashesSysvar, Sysvar},
+        sysvar::Sysvar,
     },
 };
 
@@ -34,6 +35,7 @@ enum LookupTableStatus {
 
 // Return the current status of the lookup table
 fn get_lookup_table_status(
+    pod_slot_hashes: &PodSlotHashes,
     deactivation_slot: Slot,
     current_slot: Slot,
 ) -> Result<LookupTableStatus, ProgramError> {
@@ -43,7 +45,7 @@ fn get_lookup_table_status(
         Ok(LookupTableStatus::Deactivating {
             remaining_blocks: MAX_ENTRIES.saturating_add(1),
         })
-    } else if let Some(slot_position) = SlotHashesSysvar::position(&deactivation_slot)? {
+    } else if let Some(slot_position) = pod_slot_hashes.position(&deactivation_slot)? {
         // Deactivation requires a cool-down period to give in-flight transactions
         // enough time to land and to remove indeterminism caused by transactions
         // loading addresses in the same slot when a table is closed. The
@@ -139,7 +141,8 @@ fn process_create_lookup_table(
     }
 
     let derivation_slot = {
-        if SlotHashesSysvar::get(&untrusted_recent_slot)?.is_some() {
+        let pod_slot_hashes = PodSlotHashes::fetch()?;
+        if pod_slot_hashes.get(&untrusted_recent_slot)?.is_some() {
             Ok(untrusted_recent_slot)
         } else {
             msg!("{} is not a recent slot", untrusted_recent_slot);
@@ -509,8 +512,13 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
         }
 
         let clock = <Clock as Sysvar>::get()?;
+        let pod_slot_hashes = PodSlotHashes::fetch()?;
 
-        match get_lookup_table_status(lookup_table.meta.deactivation_slot, clock.slot)? {
+        match get_lookup_table_status(
+            &pod_slot_hashes,
+            lookup_table.meta.deactivation_slot,
+            clock.slot,
+        )? {
             LookupTableStatus::Activated => {
                 msg!("Lookup table is not deactivated");
                 Err(ProgramError::InvalidArgument)
