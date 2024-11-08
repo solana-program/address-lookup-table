@@ -28,6 +28,8 @@ solana-program = "2.0.1"
 mollusk-svm = { version = "0.0.5", features = ["fuzz"] }
 mollusk-svm-bencher = "0.0.5"
 solana-sdk = "2.0.1"
+strum = "0.24"
+strum_macros = "0.24"
 test-case = "3.3.1"
 
 [lib]

@@ -60,16 +60,61 @@ fn get_lookup_table_status(
     }
 }
 
-// [Core BPF]: Locally-implemented
-// `solana_sdk::program_utils::limited_deserialize`.
-fn limited_deserialize<T>(input: &[u8]) -> Result<T, ProgramError>
-where
-    T: serde::de::DeserializeOwned,
-{
-    solana_program::program_utils::limited_deserialize(
-        input, 1232, // [Core BPF]: See `solana_sdk::packet::PACKET_DATA_SIZE`
-    )
-    .map_err(|_| ProgramError::InvalidInstructionData)
+// Maximum input buffer length that can be deserialized.
+// See `solana_sdk::packet::PACKET_DATA_SIZE`.
+const MAX_INPUT_LEN: usize = 1232;
+// Maximum vector length for new keys to be appended to a lookup table,
+// provided to the `ExtendLookupTable` instruction.
+// See comments below for `safe_deserialize_instruction`.
+//
+// Take the maximum input length and subtract 4 bytes for the discriminator,
+// 8 bytes for the vector length, then divide that by the size of a `Pubkey`.
+const MAX_NEW_KEYS_VECTOR_LEN: usize = (MAX_INPUT_LEN - 4 - 8) / 32;
+
+// Stub of `AddressLookupTableInstruction` for partial deserialization.
+// Keep in sync with the program's instructions in `instructions`.
+#[allow(clippy::enum_variant_names)]
+#[cfg_attr(test, derive(strum_macros::EnumIter))]
+#[derive(serde::Serialize, serde::Deserialize, PartialEq)]
+enum InstructionStub {
+    CreateLookupTable,
+    FreezeLookupTable,
+    ExtendLookupTable { vector_len: u64 },
+    DeactivateLookupTable,
+    CloseLookupTable,
+}
+
+// [Core BPF]: The original Address Lookup Table builtin leverages the
+// `solana_sdk::program_utils::limited_deserialize` method to cap the length of
+// the input buffer at `MAX_INPUT_LEN` (1232). As a result, any input buffer
+// larger than `MAX_INPUT_LEN` will abort deserialization and return
+// `InstructionError::InvalidInstructionData`.
+//
+// Howevever, since `ExtendLookupTable` contains a vector of `Pubkey`, the
+// `limited_deserialize` method will still read the vector's length and attempt
+// to allocate a vector of the designated size. For extremely large length
+// values, this can cause the initial allocation of a large vector to exhuast
+// the BPF program's heap before deserialization can proceed.
+//
+// To mitigate this memory issue, the BPF version of the program has been
+// designed to "peek" the length value for `ExtendLookupTable`, and ensure it
+// cannot allocate a vector that would otherwise violate the input buffer
+// length restriction.
+fn safe_deserialize_instruction(
+    input: &[u8],
+) -> Result<AddressLookupTableInstruction, ProgramError> {
+    match bincode::deserialize::<InstructionStub>(input)
+        .map_err(|_| ProgramError::InvalidInstructionData)?
+    {
+        InstructionStub::ExtendLookupTable { vector_len }
+            if vector_len as usize > MAX_NEW_KEYS_VECTOR_LEN =>
+        {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        _ => {}
+    }
+    solana_program::program_utils::limited_deserialize(input, MAX_INPUT_LEN as u64)
+        .map_err(|_| ProgramError::InvalidInstructionData)
 }
 
 // [Core BPF]: Feature "FKAcEvNgSY79RpqsPNUV5gDyumopH4cEHqUxyfm8b8Ap"
@@ -461,7 +506,7 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
 /// Processes a
 /// `solana_programs_address_lookup_table::instruction::AddressLookupTableInstruction`
 pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> ProgramResult {
-    let instruction = limited_deserialize(input)?;
+    let instruction = safe_deserialize_instruction(input)?;
     match instruction {
         AddressLookupTableInstruction::CreateLookupTable {
             recent_slot,
@@ -486,5 +531,60 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
             msg!("Instruction: CloseLookupTable");
             process_close_lookup_table(program_id, accounts)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_instruction_serialization(
+        stub: &InstructionStub,
+        instruction: &AddressLookupTableInstruction,
+        len: usize,
+    ) {
+        assert_eq!(
+            bincode::serialize(&stub).unwrap(),
+            bincode::serialize(&instruction).unwrap()[0..len],
+        )
+    }
+
+    #[test]
+    fn test_instruction_stubs() {
+        assert_eq!(
+            <InstructionStub as strum::IntoEnumIterator>::iter().count(),
+            <AddressLookupTableInstruction as strum::IntoEnumIterator>::iter().count(),
+        );
+
+        assert_instruction_serialization(
+            &InstructionStub::CreateLookupTable,
+            &AddressLookupTableInstruction::CreateLookupTable {
+                recent_slot: 0,
+                bump_seed: 0,
+            },
+            4,
+        );
+        assert_instruction_serialization(
+            &InstructionStub::FreezeLookupTable,
+            &AddressLookupTableInstruction::FreezeLookupTable,
+            4,
+        );
+        assert_instruction_serialization(
+            &InstructionStub::ExtendLookupTable { vector_len: 4 },
+            &AddressLookupTableInstruction::ExtendLookupTable {
+                new_addresses: vec![Pubkey::new_unique(); 4],
+            },
+            12, // Check the vector length as well.
+        );
+        assert_instruction_serialization(
+            &InstructionStub::DeactivateLookupTable,
+            &AddressLookupTableInstruction::DeactivateLookupTable,
+            4,
+        );
+        assert_instruction_serialization(
+            &InstructionStub::CloseLookupTable,
+            &AddressLookupTableInstruction::CloseLookupTable,
+            4,
+        );
     }
 }
