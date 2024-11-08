@@ -10,6 +10,7 @@ use {
     },
 };
 
+#[cfg_attr(test, derive(strum_macros::EnumIter))]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum AddressLookupTableInstruction {
     /// Create an address lookup table

@@ -72,13 +72,16 @@ const MAX_INPUT_LEN: usize = 1232;
 const MAX_NEW_KEYS_VECTOR_LEN: usize = (MAX_INPUT_LEN - 4 - 8) / 32;
 
 // Stub of `AddressLookupTableInstruction` for partial deserialization.
+// Keep in sync with the program's instructions in `instructions`.
+#[allow(clippy::enum_variant_names)]
+#[cfg_attr(test, derive(strum_macros::EnumIter))]
 #[derive(serde::Serialize, serde::Deserialize, PartialEq)]
 enum InstructionStub {
-    Create,
-    Freeze,
-    Extend { vector_len: u64 },
-    Deactivate,
-    Close,
+    CreateLookupTable,
+    FreezeLookupTable,
+    ExtendLookupTable { vector_len: u64 },
+    DeactivateLookupTable,
+    CloseLookupTable,
 }
 
 // [Core BPF]: The original Address Lookup Table builtin leverages the
@@ -103,7 +106,9 @@ fn safe_deserialize_instruction(
     match bincode::deserialize::<InstructionStub>(input)
         .map_err(|_| ProgramError::InvalidInstructionData)?
     {
-        InstructionStub::Extend { vector_len } if vector_len as usize > MAX_NEW_KEYS_VECTOR_LEN => {
+        InstructionStub::ExtendLookupTable { vector_len }
+            if vector_len as usize > MAX_NEW_KEYS_VECTOR_LEN =>
+        {
             return Err(ProgramError::InvalidInstructionData);
         }
         _ => {}
@@ -526,5 +531,60 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
             msg!("Instruction: CloseLookupTable");
             process_close_lookup_table(program_id, accounts)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_instruction_serialization(
+        stub: &InstructionStub,
+        instruction: &AddressLookupTableInstruction,
+        len: usize,
+    ) {
+        assert_eq!(
+            bincode::serialize(&stub).unwrap(),
+            bincode::serialize(&instruction).unwrap()[0..len],
+        )
+    }
+
+    #[test]
+    fn test_instruction_stubs() {
+        assert_eq!(
+            <InstructionStub as strum::IntoEnumIterator>::iter().count(),
+            <AddressLookupTableInstruction as strum::IntoEnumIterator>::iter().count(),
+        );
+
+        assert_instruction_serialization(
+            &InstructionStub::CreateLookupTable,
+            &AddressLookupTableInstruction::CreateLookupTable {
+                recent_slot: 0,
+                bump_seed: 0,
+            },
+            4,
+        );
+        assert_instruction_serialization(
+            &InstructionStub::FreezeLookupTable,
+            &AddressLookupTableInstruction::FreezeLookupTable,
+            4,
+        );
+        assert_instruction_serialization(
+            &InstructionStub::ExtendLookupTable { vector_len: 4 },
+            &AddressLookupTableInstruction::ExtendLookupTable {
+                new_addresses: vec![Pubkey::new_unique(); 4],
+            },
+            12, // Check the vector length as well.
+        );
+        assert_instruction_serialization(
+            &InstructionStub::DeactivateLookupTable,
+            &AddressLookupTableInstruction::DeactivateLookupTable,
+            4,
+        );
+        assert_instruction_serialization(
+            &InstructionStub::CloseLookupTable,
+            &AddressLookupTableInstruction::CloseLookupTable,
+            4,
+        );
     }
 }
