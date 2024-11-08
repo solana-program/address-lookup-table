@@ -2719,6 +2719,8 @@ dependencies = [
  "bytemuck",
  "mollusk-svm",
  "mollusk-svm-bencher",
+ "num-derive 0.4.2",
+ "num-traits",
  "serde",
  "solana-frozen-abi 2.0.1",
  "solana-frozen-abi-macro 2.0.1",
@@ -2727,6 +2729,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "test-case",
+ "thiserror",
 ]
 
 [[package]]

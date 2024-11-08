@@ -3,6 +3,7 @@
 use {
     crate::{
         check_id,
+        error::AddressLookupTableError,
         instruction::AddressLookupTableInstruction,
         state::{
             AddressLookupTable, ProgramState, LOOKUP_TABLE_MAX_ADDRESSES, LOOKUP_TABLE_META_SIZE,
@@ -342,6 +343,37 @@ fn process_extend_lookup_table(
         )
     };
 
+    // [Core BPF]:
+    // When a builtin program attempts to write to an executable or read-only
+    // account, it will be immediately rejected by the `TransactionContext`.
+    // For more information, see https://github.com/solana-program/config/pull/21.
+    //
+    // However, in the case of the Address Lookup Table program's
+    // `ExtendLookupTable` instruction, since the processor rejects any
+    // zero-length "new keys" vectors, and will gladly append the same keys
+    // again to the table, the issue here is slightly different than the linked
+    // PR.
+    //
+    // The builtin version of the Address Lookup Table program will throw
+    // when it attempts to overwrite the metadata, while the BPF version will
+    // continue. In the case where an executable or read-only lookup table
+    // account is provided, and some other requirement below is violated
+    // (ie. no payer or system program accounts provided, payer is not a
+    // signer, payer has insufficent balance, etc.), the BPF version will throw
+    // based on one of those violations, rather than throwing immediately when
+    // it encounters the executable or read-only lookup table account.
+    //
+    // In order to maximize backwards compatibility between the BPF version and
+    // its original builtin, we add this check from `TransactionContext` to the
+    // program directly, to throw even when the data being written is the same
+    // same as what's currently in the account.
+    //
+    // Since the account can never be executable and also owned by the ALT
+    // program, we'll just focus on readonly.
+    if !lookup_table_info.is_writable {
+        return Err(AddressLookupTableError::ReadonlyDataModified.into());
+    }
+
     AddressLookupTable::overwrite_meta_data(
         &mut lookup_table_info.try_borrow_mut_data()?[..],
         lookup_table_meta,
@@ -419,6 +451,7 @@ fn process_deactivate_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]
     };
 
     let clock = <Clock as Sysvar>::get()?;
+
     lookup_table_meta.deactivation_slot = clock.slot;
 
     AddressLookupTable::overwrite_meta_data(

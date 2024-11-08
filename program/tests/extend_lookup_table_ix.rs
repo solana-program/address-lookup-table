@@ -10,6 +10,7 @@ use {
         Mollusk,
     },
     solana_address_lookup_table_program::{
+        error::AddressLookupTableError,
         instruction::extend_lookup_table,
         state::{AddressLookupTable, LookupTableMeta},
     },
@@ -353,5 +354,42 @@ fn test_extend_prepaid_lookup_table_without_payer() {
             accounts,
             expected_result: Ok(expected_state),
         },
+    );
+}
+
+// Backwards compatibility test case.
+#[test]
+fn test_extend_readonly() {
+    let mollusk = setup();
+
+    let payer = Pubkey::new_unique();
+    let authority = Pubkey::new_unique();
+
+    let initialized_table = new_address_lookup_table(Some(authority), 0);
+
+    let lookup_table_address = Pubkey::new_unique();
+    let lookup_table_account = lookup_table_account(initialized_table);
+
+    let new_addresses = vec![Pubkey::new_unique()];
+    let mut instruction =
+        extend_lookup_table(lookup_table_address, authority, Some(payer), new_addresses);
+
+    // Make the lookup table account read-only.
+    instruction.accounts[0].is_writable = false;
+
+    mollusk.process_and_validate_instruction(
+        &instruction,
+        &[
+            (lookup_table_address, lookup_table_account),
+            (authority, AccountSharedData::default()),
+            (
+                payer,
+                AccountSharedData::new(100_000_000, 0, &system_program::id()),
+            ),
+            keyed_account_for_system_program(),
+        ],
+        &[Check::err(ProgramError::Custom(
+            AddressLookupTableError::ReadonlyDataModified as u32,
+        ))],
     );
 }
