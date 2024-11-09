@@ -15,7 +15,7 @@ use {
 pub enum AddressLookupTableError {
     /// Instruction modified data of a read-only account.
     #[error("Instruction modified data of a read-only account")]
-    ReadonlyDataModified = 10,
+    ReadonlyDataModified = 10, // Avoid collisions with System.
 }
 
 impl PrintProgramError for AddressLookupTableError {
