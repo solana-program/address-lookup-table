@@ -1,3 +1,29 @@
+#### Compute Units: 2024-11-13 09:15:26.655388 UTC
+
+| Name | CUs | Delta |
+|------|------|-------|
+| create_lookup_table | 10756 | -3 |
+| freeze_lookup_table | 1518 | -- |
+| extend_lookup_table_from_0_to_1 | 6227 | +1 |
+| extend_lookup_table_from_0_to_10 | 8846 | +1 |
+| extend_lookup_table_from_0_to_38 | 17082 | +1 |
+| extend_lookup_table_from_1_to_2 | 6227 | +1 |
+| extend_lookup_table_from_1_to_10 | 8552 | +1 |
+| extend_lookup_table_from_1_to_39 | 17082 | +1 |
+| extend_lookup_table_from_5_to_6 | 6227 | +1 |
+| extend_lookup_table_from_5_to_15 | 8847 | +1 |
+| extend_lookup_table_from_5_to_43 | 17082 | +1 |
+| extend_lookup_table_from_25_to_26 | 6230 | +1 |
+| extend_lookup_table_from_25_to_35 | 8849 | +1 |
+| extend_lookup_table_from_25_to_63 | 17085 | +1 |
+| extend_lookup_table_from_50_to_88 | 17088 | +1 |
+| extend_lookup_table_from_100_to_138 | 17094 | +1 |
+| extend_lookup_table_from_150_to_188 | 17101 | +1 |
+| extend_lookup_table_from_200_to_238 | 17107 | +1 |
+| extend_lookup_table_from_255_to_256 | 6259 | +1 |
+| deactivate_lookup_table | 3152 | -- |
+| close_lookup_table | 2228 | +1 |
+
 #### Compute Units: 2024-11-08 13:17:54.004441 UTC
 
 | Name | CUs | Delta |
