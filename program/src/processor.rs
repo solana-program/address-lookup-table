@@ -159,7 +159,8 @@ fn process_create_lookup_table(
         &derivation_slot.to_le_bytes(),
         &[bump_seed],
     ];
-    let derived_table_key = Pubkey::create_program_address(derived_table_seeds, program_id)?;
+    let derived_table_key = Pubkey::create_program_address(derived_table_seeds, program_id)
+        .map_err(AddressLookupTableError::from)?;
 
     if lookup_table_info.key != &derived_table_key {
         msg!(
