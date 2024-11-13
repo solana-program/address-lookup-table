@@ -136,7 +136,6 @@ fn process_create_lookup_table(
     let lookup_table_info = next_account_info(accounts_iter)?;
     let authority_info = next_account_info(accounts_iter)?;
     let payer_info = next_account_info(accounts_iter)?;
-    let _system_program_info = next_account_info(accounts_iter)?;
 
     if !payer_info.is_signer {
         msg!("Payer account must be a signer");
@@ -191,6 +190,8 @@ fn process_create_lookup_table(
         )?;
     }
 
+    let _system_program_info = next_account_info(accounts_iter)?;
+
     invoke_signed(
         &system_instruction::allocate(lookup_table_info.key, lookup_table_data_len as u64),
         &[lookup_table_info.clone()],
@@ -215,12 +216,13 @@ fn process_freeze_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) ->
     let accounts_iter = &mut accounts.iter();
 
     let lookup_table_info = next_account_info(accounts_iter)?;
-    let authority_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
         msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
+
+    let authority_info = next_account_info(accounts_iter)?;
 
     if !authority_info.is_signer {
         msg!("Authority account must be a signer");
@@ -268,12 +270,13 @@ fn process_extend_lookup_table(
     let accounts_iter = &mut accounts.iter();
 
     let lookup_table_info = next_account_info(accounts_iter)?;
-    let authority_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
         msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
+
+    let authority_info = next_account_info(accounts_iter)?;
 
     if !authority_info.is_signer {
         msg!("Authority account must be a signer");
@@ -398,12 +401,13 @@ fn process_extend_lookup_table(
 
     if required_lamports > 0 {
         let payer_info = next_account_info(accounts_iter)?;
-        let _system_program_info = next_account_info(accounts_iter)?;
 
         if !payer_info.is_signer {
             msg!("Payer account must be a signer");
             return Err(ProgramError::MissingRequiredSignature);
         }
+
+        let _system_program_info = next_account_info(accounts_iter)?;
 
         invoke(
             &system_instruction::transfer(payer_info.key, lookup_table_info.key, required_lamports),
@@ -418,12 +422,13 @@ fn process_deactivate_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]
     let accounts_iter = &mut accounts.iter();
 
     let lookup_table_info = next_account_info(accounts_iter)?;
-    let authority_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
         msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
+
+    let authority_info = next_account_info(accounts_iter)?;
 
     if !authority_info.is_signer {
         msg!("Authority account must be a signer");
@@ -466,18 +471,20 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
     let accounts_iter = &mut accounts.iter();
 
     let lookup_table_info = next_account_info(accounts_iter)?;
-    let authority_info = next_account_info(accounts_iter)?;
-    let recipient_info = next_account_info(accounts_iter)?;
 
     if lookup_table_info.owner != program_id {
         msg!("Lookup table owner should be the Address Lookup Table program");
         return Err(ProgramError::InvalidAccountOwner);
     }
 
+    let authority_info = next_account_info(accounts_iter)?;
+
     if !authority_info.is_signer {
         msg!("Authority account must be a signer");
         return Err(ProgramError::MissingRequiredSignature);
     }
+
+    let recipient_info = next_account_info(accounts_iter)?;
 
     // [Core BPF]: Here the legacy built-in version of ALT fallibly checks to
     // ensure the number of instruction accounts is 3.
