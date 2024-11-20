@@ -537,8 +537,8 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
     **recipient_info.try_borrow_mut_lamports()? = new_recipient_lamports;
 
     // Lookup tables are _not_ reassigned when closed.
-    **lookup_table_info.try_borrow_mut_lamports()? = 0;
     lookup_table_info.realloc(0, true)?;
+    **lookup_table_info.try_borrow_mut_lamports()? = 0;
 
     Ok(())
 }
