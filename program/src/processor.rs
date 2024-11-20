@@ -43,7 +43,9 @@ fn get_lookup_table_status(
         Ok(LookupTableStatus::Deactivating {
             remaining_blocks: MAX_ENTRIES.saturating_add(1),
         })
-    } else if let Some(slot_position) = SlotHashesSysvar::position(&deactivation_slot)? {
+    } else if let Some(slot_position) = SlotHashesSysvar::position(&deactivation_slot)
+        .map_err(|_| ProgramError::UnsupportedSysvar)?
+    {
         // Deactivation requires a cool-down period to give in-flight transactions
         // enough time to land and to remove indeterminism caused by transactions
         // loading addresses in the same slot when a table is closed. The
@@ -143,7 +145,10 @@ fn process_create_lookup_table(
     }
 
     let derivation_slot = {
-        if SlotHashesSysvar::get(&untrusted_recent_slot)?.is_some() {
+        if SlotHashesSysvar::get(&untrusted_recent_slot)
+            .map_err(|_| ProgramError::UnsupportedSysvar)?
+            .is_some()
+        {
             Ok(untrusted_recent_slot)
         } else {
             msg!("{} is not a recent slot", untrusted_recent_slot);
@@ -534,11 +539,20 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
         .lamports()
         .checked_add(recipient_info.lamports())
         .ok_or::<ProgramError>(ProgramError::ArithmeticOverflow)?;
+
+    if !recipient_info.is_writable {
+        return Err(AddressLookupTableError::ReadonlyLamportsChanged.into());
+    }
+
     **recipient_info.try_borrow_mut_lamports()? = new_recipient_lamports;
 
+    if !lookup_table_info.is_writable {
+        return Err(AddressLookupTableError::ReadonlyDataModified.into());
+    }
+
     // Lookup tables are _not_ reassigned when closed.
-    **lookup_table_info.try_borrow_mut_lamports()? = 0;
     lookup_table_info.realloc(0, true)?;
+    **lookup_table_info.try_borrow_mut_lamports()? = 0;
 
     Ok(())
 }
