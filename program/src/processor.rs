@@ -536,6 +536,10 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
         .ok_or::<ProgramError>(ProgramError::ArithmeticOverflow)?;
     **recipient_info.try_borrow_mut_lamports()? = new_recipient_lamports;
 
+    if !lookup_table_info.is_writable {
+        return Err(AddressLookupTableError::ReadonlyDataModified.into());
+    }
+
     // Lookup tables are _not_ reassigned when closed.
     lookup_table_info.realloc(0, true)?;
     **lookup_table_info.try_borrow_mut_lamports()? = 0;
