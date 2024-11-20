@@ -534,6 +534,11 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
         .lamports()
         .checked_add(recipient_info.lamports())
         .ok_or::<ProgramError>(ProgramError::ArithmeticOverflow)?;
+
+    if !recipient_info.is_writable {
+        return Err(AddressLookupTableError::ReadonlyLamportsChanged.into());
+    }
+
     **recipient_info.try_borrow_mut_lamports()? = new_recipient_lamports;
 
     if !lookup_table_info.is_writable {
