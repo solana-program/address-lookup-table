@@ -2747,7 +2747,7 @@ dependencies = [
 
 [[package]]
 name = "solana-address-lookup-table-program"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "bincode",
  "bytemuck",

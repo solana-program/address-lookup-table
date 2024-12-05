@@ -1,6 +1,6 @@
 [package]
 name = "solana-address-lookup-table-program"
-version = "0.1.0"
+version = "3.0.0"
 description = "Solana Address Lookup Table Program"
 authors = ["Anza Technology Maintainers <maintainers@anza.xyz>"]
 repository = "https://github.com/solana-program/address-lookup-table"
