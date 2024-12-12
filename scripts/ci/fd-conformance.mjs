@@ -17,7 +17,7 @@ const testVectorsPath = path.join(harnessPath, 'impl', 'test-vectors');
 await $`git clone https://github.com/firedancer-io/test-vectors.git ${testVectorsPath}`;
 
 // Add the Mollusk-generated fixtures to the test inputs.
-const firedancerFixturesPath = path.join(testVectorsPath, 'instr', 'fixtures', 'config');
+const firedancerFixturesPath = path.join(testVectorsPath, 'instr', 'fixtures', 'address-lookup-table');
 const molluskFixturesPath = path.join(workingDirectory, 'program', 'fuzz', 'blob');
 await $`cp -a ${molluskFixturesPath}/. ${firedancerFixturesPath}/`;
 
