@@ -41,6 +41,9 @@ const skipFixtures = [
     // flags are checked.
     // https://github.com/anza-xyz/agave/blob/970606e842d1027b5a34211219aacf3d39bb468d/programs/bpf_loader/src/lib.rs#L432-L436
     'b7e56ebaf6df34ab71ca9c1a42c0551cfb79dab7_2789718.fix',
+    // This one belongs to the Stake program, but it's in the wrong folder.
+    // See https://github.com/firedancer-io/test-vectors/pull/62.
+    'crash-f2e925185043128e1cda0e21f2ab338321383ee4.fix',
 ];
 for (const fixture of skipFixtures) {
     await $`rm -f ${path.join(firedancerFixturesPath, fixture)}`;
