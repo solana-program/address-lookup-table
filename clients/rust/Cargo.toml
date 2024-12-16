@@ -2,23 +2,22 @@
 name = "solana-address-lookup-table-client"
 version = "0.1.0"
 description = "A generated Rust library for the Address Lookup Table program"
-repository = "https://github.com/solana-program/address-lookup-table"
-edition = "2021"
-readme = "README.md"
-license-file = "../../LICENSE"
+authors = { workspace = true }
+repository = { workspace = true }
+readme = { workspace = true }
+license-file = { workspace = true }
+edition = { workspace = true }
 
 [features]
-anchor = ["dep:anchor-lang"]
 test-sbf = []
 serde = ["dep:serde", "dep:serde_with", "kaigan/serde"]
 
 [dependencies]
-anchor-lang = { version = "0.30.0", optional = true }
-borsh = "^0.10"
-kaigan = "^0.2.4"
-num-derive = "^0.3"
-num-traits = "^0.2"
-serde = { version = "^1.0", features = ["derive"], optional = true }
-serde_with = { version = "^3.0", optional = true }
-solana-program = "2.0.1"
-thiserror = "^1.0"
+borsh = { workspace = true }
+kaigan = { workspace = true }
+num-derive = { workspace = true }
+num-traits = { workspace = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+serde_with = { workspace = true, optional = true }
+solana-program = { workspace = true }
+thiserror = { workspace = true }
