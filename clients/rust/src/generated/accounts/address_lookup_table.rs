@@ -40,7 +40,7 @@ impl AddressLookupTable {
 
     pub fn find_pda(authority: &Pubkey, recent_slot: u64) -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
-            &[authority.as_ref(), recent_slot.to_string().as_ref()],
+            &[authority.as_ref(), recent_slot.to_le_bytes().as_ref()],
             &crate::ADDRESS_LOOKUP_TABLE_ID,
         )
     }
