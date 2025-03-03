@@ -7,6 +7,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
+#[derive(Debug)]
 pub struct CloseLookupTable {
     pub address: solana_program::pubkey::Pubkey,
 
@@ -38,7 +39,7 @@ impl CloseLookupTable {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = CloseLookupTableInstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&CloseLookupTableInstructionData::new()).unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::ADDRESS_LOOKUP_TABLE_ID,
@@ -48,7 +49,8 @@ impl CloseLookupTable {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CloseLookupTableInstructionData {
     discriminator: u32,
 }
@@ -215,7 +217,7 @@ impl<'a, 'b> CloseLookupTableCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = CloseLookupTableInstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&CloseLookupTableInstructionData::new()).unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::ADDRESS_LOOKUP_TABLE_ID,

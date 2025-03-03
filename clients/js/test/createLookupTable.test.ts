@@ -4,7 +4,7 @@ import {
   pipe,
   Account,
   some,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import test from 'ava';
 import {
   AddressLookupTable,
