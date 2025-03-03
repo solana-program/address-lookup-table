@@ -12,7 +12,7 @@ import {
   getU64Encoder,
   type Address,
   type ProgramDerivedAddress,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export type AddressLookupTableSeeds = {
   /** The address of the LUT's authority */

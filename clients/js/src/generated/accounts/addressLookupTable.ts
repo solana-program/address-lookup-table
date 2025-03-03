@@ -42,7 +42,7 @@ import {
   type MaybeEncodedAccount,
   type Option,
   type OptionOrNullable,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { AddressLookupTableSeeds, findAddressLookupTablePda } from '../pdas';
 
 export const ADDRESS_LOOKUP_TABLE_DISCRIMINATOR = 1;

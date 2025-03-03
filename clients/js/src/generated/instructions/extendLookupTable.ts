@@ -33,7 +33,7 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { resolveExtendLookupTableBytes } from '../../hooked';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import {
