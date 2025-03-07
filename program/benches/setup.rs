@@ -12,8 +12,7 @@ use {
         state::{AddressLookupTable, LookupTableMeta},
     },
     solana_sdk::{
-        account::AccountSharedData, instruction::Instruction, pubkey::Pubkey, rent::Rent,
-        system_program,
+        account::Account, instruction::Instruction, pubkey::Pubkey, rent::Rent, system_program,
     },
     std::borrow::Cow,
 };
@@ -24,7 +23,7 @@ pub const TEST_CLOCK_SLOT: u64 = 100_000;
 pub struct BenchContext {
     label: String,
     instruction: Instruction,
-    accounts: Vec<(Pubkey, AccountSharedData)>,
+    accounts: Vec<(Pubkey, Account)>,
 }
 
 impl BenchContext {
@@ -34,11 +33,7 @@ impl BenchContext {
     }
 }
 
-fn lookup_table_account(
-    authority: &Pubkey,
-    num_keys: usize,
-    deactivated: bool,
-) -> AccountSharedData {
+fn lookup_table_account(authority: &Pubkey, num_keys: usize, deactivated: bool) -> Account {
     let state = {
         let mut addresses = Vec::with_capacity(num_keys);
         addresses.resize_with(num_keys, Pubkey::new_unique);
@@ -54,12 +49,12 @@ fn lookup_table_account(
     let data = state.serialize_for_tests().unwrap();
     let data_len = data.len();
     let lamports = Rent::default().minimum_balance(data_len);
-    let mut account = AccountSharedData::new(
+    let mut account = Account::new(
         lamports,
         data_len,
         &solana_address_lookup_table_program::id(),
     );
-    account.set_data_from_slice(&data);
+    account.data = data;
     account
 }
 
@@ -70,11 +65,11 @@ pub fn create_lookup_table() -> BenchContext {
     let (instruction, lookup_table) = create_lookup_table_ix(authority, payer, TEST_CLOCK_SLOT - 1);
 
     let accounts = vec![
-        (lookup_table, AccountSharedData::default()),
-        (authority, AccountSharedData::default()),
+        (lookup_table, Account::default()),
+        (authority, Account::default()),
         (
             payer,
-            AccountSharedData::new(100_000_000_000, 0, &system_program::id()),
+            Account::new(100_000_000_000, 0, &system_program::id()),
         ),
         keyed_account_for_system_program(),
     ];
@@ -97,10 +92,10 @@ pub fn extend_lookup_table(from: usize, to: usize) -> BenchContext {
 
     let accounts = vec![
         (lookup_table, lookup_table_account(&authority, from, false)),
-        (authority, AccountSharedData::default()),
+        (authority, Account::default()),
         (
             payer,
-            AccountSharedData::new(100_000_000_000, 0, &system_program::id()),
+            Account::new(100_000_000_000, 0, &system_program::id()),
         ),
         keyed_account_for_system_program(),
     ];
@@ -120,7 +115,7 @@ pub fn freeze_lookup_table() -> BenchContext {
 
     let accounts = vec![
         (lookup_table, lookup_table_account(&authority, 1, false)),
-        (authority, AccountSharedData::default()),
+        (authority, Account::default()),
     ];
 
     BenchContext {
@@ -138,7 +133,7 @@ pub fn deactivate_lookup_table() -> BenchContext {
 
     let accounts = vec![
         (lookup_table, lookup_table_account(&authority, 1, false)),
-        (authority, AccountSharedData::default()),
+        (authority, Account::default()),
     ];
 
     BenchContext {
@@ -157,8 +152,8 @@ pub fn close_lookup_table() -> BenchContext {
 
     let accounts = vec![
         (lookup_table, lookup_table_account(&authority, 1, true)),
-        (authority, AccountSharedData::default()),
-        (recipient, AccountSharedData::default()),
+        (authority, Account::default()),
+        (recipient, Account::default()),
     ];
 
     BenchContext {

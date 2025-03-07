@@ -20,7 +20,7 @@ use {
         rent::Rent,
         slot_hashes::MAX_ENTRIES,
         system_instruction,
-        sysvar::{slot_hashes::SlotHashesSysvar, Sysvar},
+        sysvar::{slot_hashes::PodSlotHashes, Sysvar},
     },
 };
 
@@ -43,23 +43,27 @@ fn get_lookup_table_status(
         Ok(LookupTableStatus::Deactivating {
             remaining_blocks: MAX_ENTRIES.saturating_add(1),
         })
-    } else if let Some(slot_position) = SlotHashesSysvar::position(&deactivation_slot)
-        .map_err(|_| ProgramError::UnsupportedSysvar)?
-    {
-        // Deactivation requires a cool-down period to give in-flight transactions
-        // enough time to land and to remove indeterminism caused by transactions
-        // loading addresses in the same slot when a table is closed. The
-        // cool-down period is equivalent to the amount of time it takes for
-        // a slot to be removed from the slot hash list.
-        //
-        // By using the slot hash to enforce the cool-down, there is a side effect
-        // of not allowing lookup tables to be recreated at the same derived address
-        // because tables must be created at an address derived from a recent slot.
-        Ok(LookupTableStatus::Deactivating {
-            remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
-        })
     } else {
-        Ok(LookupTableStatus::Deactivated)
+        let slot_hashes = PodSlotHashes::fetch()?;
+        if let Some(slot_position) = slot_hashes
+            .position(&deactivation_slot)
+            .map_err(|_| ProgramError::UnsupportedSysvar)?
+        {
+            // Deactivation requires a cool-down period to give in-flight transactions
+            // enough time to land and to remove indeterminism caused by transactions
+            // loading addresses in the same slot when a table is closed. The
+            // cool-down period is equivalent to the amount of time it takes for
+            // a slot to be removed from the slot hash list.
+            //
+            // By using the slot hash to enforce the cool-down, there is a side effect
+            // of not allowing lookup tables to be recreated at the same derived address
+            // because tables must be created at an address derived from a recent slot.
+            Ok(LookupTableStatus::Deactivating {
+                remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
+            })
+        } else {
+            Ok(LookupTableStatus::Deactivated)
+        }
     }
 }
 
@@ -144,8 +148,10 @@ fn process_create_lookup_table(
         return Err(ProgramError::MissingRequiredSignature);
     }
 
+    let slot_hashes = PodSlotHashes::fetch()?;
     let derivation_slot = {
-        if SlotHashesSysvar::get(&untrusted_recent_slot)
+        if slot_hashes
+            .get(&untrusted_recent_slot)
             .map_err(|_| ProgramError::UnsupportedSysvar)?
             .is_some()
         {

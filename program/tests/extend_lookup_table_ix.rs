@@ -15,7 +15,7 @@ use {
         state::{AddressLookupTable, LookupTableMeta},
     },
     solana_sdk::{
-        account::{AccountSharedData, ReadableAccount, WritableAccount},
+        account::{Account, ReadableAccount, WritableAccount},
         instruction::Instruction,
         program_error::ProgramError,
         pubkey::{Pubkey, PUBKEY_BYTES},
@@ -33,7 +33,7 @@ struct ExpectedTableAccount {
 struct TestCase {
     lookup_table_address: Pubkey,
     instruction: Instruction,
-    accounts: Vec<(Pubkey, AccountSharedData)>,
+    accounts: Vec<(Pubkey, Account)>,
     expected_result: Result<ExpectedTableAccount, ProgramError>,
 }
 
@@ -103,11 +103,8 @@ fn test_extend_lookup_table() {
 
             let accounts = vec![
                 (lookup_table_address, lookup_table_account.clone()),
-                (authority, AccountSharedData::default()),
-                (
-                    payer,
-                    AccountSharedData::new(100_000_000, 0, &system_program::id()),
-                ),
+                (authority, Account::default()),
+                (payer, Account::new(100_000_000, 0, &system_program::id())),
                 keyed_account_for_system_program(),
             ];
 
@@ -176,11 +173,8 @@ fn test_extend_lookup_table_with_wrong_authority() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (wrong_authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (wrong_authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::IncorrectAuthority)],
@@ -207,11 +201,8 @@ fn test_extend_lookup_table_without_signing() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::MissingRequiredSignature)],
@@ -241,11 +232,8 @@ fn test_extend_deactivated_lookup_table() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::InvalidArgument)],
@@ -271,11 +259,8 @@ fn test_extend_immutable_lookup_table() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::Immutable)],
@@ -299,7 +284,7 @@ fn test_extend_lookup_table_without_payer() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::NotEnoughAccountKeys)],
     );
@@ -343,7 +328,7 @@ fn test_extend_prepaid_lookup_table_without_payer() {
 
     let accounts = vec![
         (lookup_table_address, lookup_table_account),
-        (authority, AccountSharedData::default()),
+        (authority, Account::default()),
     ];
 
     run_test_case(
@@ -381,11 +366,8 @@ fn test_extend_readonly() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::Custom(

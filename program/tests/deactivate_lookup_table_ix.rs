@@ -9,7 +9,7 @@ use {
         instruction::deactivate_lookup_table, state::AddressLookupTable,
     },
     solana_sdk::{
-        account::{AccountSharedData, ReadableAccount},
+        account::{Account, ReadableAccount},
         program_error::ProgramError,
         pubkey::Pubkey,
     },
@@ -29,7 +29,7 @@ fn test_deactivate_lookup_table() {
         &deactivate_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::success()],
     );
@@ -58,7 +58,7 @@ fn test_deactivate_immutable_lookup_table() {
         &deactivate_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::Immutable)],
     );
@@ -82,7 +82,7 @@ fn test_deactivate_already_deactivated() {
         &deactivate_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::InvalidArgument)],
     );
@@ -103,7 +103,7 @@ fn test_deactivate_lookup_table_with_wrong_authority() {
         &deactivate_lookup_table(lookup_table_address, wrong_authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (wrong_authority, AccountSharedData::default()),
+            (wrong_authority, Account::default()),
         ],
         &[Check::err(ProgramError::IncorrectAuthority)],
     );
@@ -126,7 +126,7 @@ fn test_deactivate_lookup_table_without_signing() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::MissingRequiredSignature)],
     );

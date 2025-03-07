@@ -12,7 +12,7 @@ importers:
         specifier: ^1.2.7
         version: 1.2.7(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)
       '@codama/renderers-rust':
-        specifier: ^1.0.15
+        specifier: ^1.0.16
         version: 1.0.16(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)
       '@iarna/toml':
         specifier: ^2.2.5
@@ -723,7 +723,7 @@ snapshots:
 
   '@solana/errors@2.0.0-rc.4(typescript@5.5.3)':
     dependencies:
-      chalk: 5.3.0
+      chalk: 5.4.1
       commander: 12.1.0
       typescript: 5.5.3
 

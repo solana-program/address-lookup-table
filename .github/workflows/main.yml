@@ -43,6 +43,9 @@ jobs:
         run: pnpm clients:js:lint
 
   format_and_lint_client_rust:
+    # re-enable once codama's rust renderer avoids creating a reference
+    # immediately dereferenced by the compiler
+    if: false
     name: Format & Lint Client Rust
     runs-on: ubuntu-latest
     steps:
@@ -108,7 +111,7 @@ jobs:
 
       - name: Test Programs
         run: pnpm programs:test
-  
+
   bench_program_compute_units:
     name: Benchmark Program Compute Units
     runs-on: ubuntu-latest
@@ -140,7 +143,7 @@ jobs:
             echo "CU usage has changed. Please run `cargo bench` and commit the new results.";
             exit 1;
           fi
-  
+
   fd_conformance:
     name: Builtin-BPF Conformance Test
     runs-on: ubuntu-latest
@@ -148,25 +151,25 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Environment
         uses: ./.github/actions/setup
         with:
           cargo-cache-key: cargo-program-conformance
           cargo-cache-fallback-key: cargo-programs
           solana: true
-      
+
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libudev-dev pkg-config
-      
+
       - name: Restore Program Builds
         uses: actions/cache/restore@v4
         with:
           path: ./**/*.so
           key: ${{ runner.os }}-builds-${{ github.sha }}
-      
+
       - name: Builtin-BPF Conformance Test
         shell: bash
         run: pnpm zx ./scripts/ci/fd-conformance.mjs

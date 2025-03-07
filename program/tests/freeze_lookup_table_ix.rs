@@ -9,7 +9,7 @@ use {
         instruction::freeze_lookup_table, state::AddressLookupTable,
     },
     solana_sdk::{
-        account::{AccountSharedData, ReadableAccount},
+        account::{Account, ReadableAccount},
         program_error::ProgramError,
         pubkey::Pubkey,
     },
@@ -29,7 +29,7 @@ fn test_freeze_lookup_table() {
         &freeze_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::success()],
     );
@@ -58,7 +58,7 @@ fn test_freeze_immutable_lookup_table() {
         &freeze_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::Immutable)],
     );
@@ -82,7 +82,7 @@ fn test_freeze_deactivated_lookup_table() {
         &freeze_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::InvalidArgument)],
     );
@@ -104,7 +104,7 @@ fn test_freeze_lookup_table_with_wrong_authority() {
         &freeze_lookup_table(lookup_table_address, wrong_authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (wrong_authority, AccountSharedData::default()),
+            (wrong_authority, Account::default()),
         ],
         &[Check::err(ProgramError::IncorrectAuthority)],
     );
@@ -127,7 +127,7 @@ fn test_freeze_lookup_table_without_signing() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::MissingRequiredSignature)],
     );
@@ -147,7 +147,7 @@ fn test_freeze_empty_lookup_table() {
         &freeze_lookup_table(lookup_table_address, authority),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
+            (authority, Account::default()),
         ],
         &[Check::err(ProgramError::InvalidInstructionData)],
     );
