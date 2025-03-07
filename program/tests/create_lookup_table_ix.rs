@@ -10,7 +10,7 @@ use {
         state::{AddressLookupTable, LOOKUP_TABLE_META_SIZE},
     },
     solana_sdk::{
-        account::{AccountSharedData, ReadableAccount},
+        account::{Account, ReadableAccount},
         clock::Slot,
         program_error::ProgramError,
         pubkey::Pubkey,
@@ -42,12 +42,9 @@ fn test_create_lookup_table_idempotent() {
     let result = mollusk.process_and_validate_instruction(
         &create_lookup_table_ix,
         &[
-            (lookup_table_address, AccountSharedData::default()),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (lookup_table_address, Account::default()),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::success()],
@@ -76,8 +73,8 @@ fn test_create_lookup_table_idempotent() {
         &create_lookup_table_ix,
         &[
             (lookup_table_address, lookup_table_account.clone()),
-            (authority, AccountSharedData::default()),
-            (payer, AccountSharedData::default()), // Note the lack of lamports.
+            (authority, Account::default()),
+            (payer, Account::default()), // Note the lack of lamports.
             keyed_account_for_system_program(),
         ],
         &[Check::success()],
@@ -94,7 +91,7 @@ fn test_create_lookup_table_use_payer_as_authority() {
     mollusk.warp_to_slot(test_recent_slot + 1);
 
     let payer = Pubkey::new_unique();
-    let payer_account = AccountSharedData::new(100_000_000, 0, &system_program::id());
+    let payer_account = Account::new(100_000_000, 0, &system_program::id());
 
     let (create_lookup_table_ix, lookup_table_address) =
         create_lookup_table(payer, payer, test_recent_slot);
@@ -102,7 +99,7 @@ fn test_create_lookup_table_use_payer_as_authority() {
     mollusk.process_and_validate_instruction(
         &create_lookup_table_ix,
         &[
-            (lookup_table_address, AccountSharedData::default()),
+            (lookup_table_address, Account::default()),
             (payer, payer_account.clone()),
             (payer, payer_account),
             keyed_account_for_system_program(),
@@ -123,12 +120,9 @@ fn test_create_lookup_table_not_recent_slot() {
     mollusk.process_and_validate_instruction(
         &create_lookup_table_ix,
         &[
-            (lookup_table_address, AccountSharedData::default()),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (lookup_table_address, Account::default()),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::InvalidInstructionData)],
@@ -153,12 +147,9 @@ fn test_create_lookup_table_pda_mismatch() {
     mollusk.process_and_validate_instruction(
         &create_lookup_table_ix,
         &[
-            (wrong_pda, AccountSharedData::default()),
-            (authority, AccountSharedData::default()),
-            (
-                payer,
-                AccountSharedData::new(100_000_000, 0, &system_program::id()),
-            ),
+            (wrong_pda, Account::default()),
+            (authority, Account::default()),
+            (payer, Account::new(100_000_000, 0, &system_program::id())),
             keyed_account_for_system_program(),
         ],
         &[Check::err(ProgramError::InvalidArgument)],
