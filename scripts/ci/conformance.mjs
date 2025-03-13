@@ -13,6 +13,7 @@ const baseBinaryPath = path.join(baseBinaryDirPath, 'base.so');
 const molluskFixturesPath = path.join(workingDirectory, 'program', 'fuzz', 'blob');
 
 // Clone the program from mainnet-beta.
+// TODO: Switch to clone from mainnet-beta once feature is activated.
 await $`mkdir -p ${baseBinaryDirPath}`;
 await $`solana program dump -ud ${programId} ${baseBinaryPath}`;
 
