@@ -501,7 +501,7 @@
     "version": "0.0.1",
     "origin": "shank"
   },
-  "additionalPrograms": [],
+  "additionalPrograms": [proposals/0042-svm-fraud-proofs.md],
   "standard": "codama",
   "version": "1.0.0"
 }
