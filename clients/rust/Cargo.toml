@@ -9,6 +9,7 @@ license-file = { workspace = true }
 edition = { workspace = true }
 
 [features]
+fetch = ["dep:solana-client", "dep:solana-sdk"]
 test-sbf = []
 serde = ["dep:serde", "dep:serde_with", "kaigan/serde"]
 
@@ -19,5 +20,7 @@ num-derive = { workspace = true }
 num-traits = { workspace = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_with = { workspace = true, optional = true }
+solana-client = { workspace = true, optional = true }
 solana-program = { workspace = true }
+solana-sdk = { workspace = true, optional = true }
 thiserror = { workspace = true }
