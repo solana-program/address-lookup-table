@@ -8,4 +8,4 @@ pub mod instruction;
 pub mod processor;
 pub mod state;
 
-solana_program::declare_id!("AddressLookupTab1e1111111111111111111111111");
+solana_pubkey::declare_id!("AddressLookupTab1e1111111111111111111111111");

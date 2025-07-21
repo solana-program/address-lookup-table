@@ -7,8 +7,7 @@ use {
     mollusk_svm::result::Check,
     solana_address_lookup_table_program::instruction::close_lookup_table,
     solana_sdk::{
-        account::AccountSharedData, program_error::ProgramError, pubkey::Pubkey,
-        slot_hashes::MAX_ENTRIES,
+        account::Account, program_error::ProgramError, pubkey::Pubkey, slot_hashes::MAX_ENTRIES,
     },
 };
 
@@ -33,8 +32,8 @@ fn test_close_lookup_table() {
         &close_lookup_table(lookup_table_address, authority, recipient),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (recipient, AccountSharedData::default()),
+            (authority, Account::default()),
+            (recipient, Account::default()),
         ],
         &[
             Check::success(),
@@ -67,8 +66,8 @@ fn test_close_lookup_table_not_deactivated() {
         &close_lookup_table(lookup_table_address, authority, recipient),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (recipient, AccountSharedData::default()),
+            (authority, Account::default()),
+            (recipient, Account::default()),
         ],
         &[
             // The ix should fail because the table hasn't been deactivated yet
@@ -152,8 +151,8 @@ fn test_close_lookup_table_deactivated() {
             &close_lookup_table(lookup_table_address, authority, recipient),
             &[
                 (lookup_table_address, lookup_table_account),
-                (authority, AccountSharedData::default()),
-                (recipient, AccountSharedData::default()),
+                (authority, Account::default()),
+                (recipient, Account::default()),
             ],
             &[Check::err(ProgramError::InvalidArgument)],
         );
@@ -175,8 +174,8 @@ fn test_close_immutable_lookup_table() {
         &close_lookup_table(lookup_table_address, authority, recipient),
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (recipient, AccountSharedData::default()),
+            (authority, Account::default()),
+            (recipient, Account::default()),
         ],
         &[Check::err(ProgramError::Immutable)],
     );
@@ -198,8 +197,8 @@ fn test_close_lookup_table_with_wrong_authority() {
         &close_lookup_table(lookup_table_address, wrong_authority, recipient),
         &[
             (lookup_table_address, lookup_table_account),
-            (wrong_authority, AccountSharedData::default()),
-            (recipient, AccountSharedData::default()),
+            (wrong_authority, Account::default()),
+            (recipient, Account::default()),
         ],
         &[Check::err(ProgramError::IncorrectAuthority)],
     );
@@ -223,8 +222,8 @@ fn test_close_lookup_table_without_signing() {
         &instruction,
         &[
             (lookup_table_address, lookup_table_account),
-            (authority, AccountSharedData::default()),
-            (recipient, AccountSharedData::default()),
+            (authority, Account::default()),
+            (recipient, Account::default()),
         ],
         &[Check::err(ProgramError::MissingRequiredSignature)],
     );

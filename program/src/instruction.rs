@@ -2,12 +2,10 @@
 
 use {
     serde::{Deserialize, Serialize},
-    solana_program::{
-        clock::Slot,
-        instruction::{AccountMeta, Instruction},
-        pubkey::Pubkey,
-        system_program,
-    },
+    solana_clock::Slot,
+    solana_instruction::{AccountMeta, Instruction},
+    solana_pubkey::Pubkey,
+    solana_sdk_ids::system_program,
 };
 
 #[cfg_attr(test, derive(strum_macros::EnumIter))]

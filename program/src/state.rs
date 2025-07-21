@@ -2,7 +2,9 @@
 use solana_frozen_abi_macro::{AbiEnumVisitor, AbiExample};
 use {
     serde::{Deserialize, Serialize},
-    solana_program::{clock::Slot, program_error::ProgramError, pubkey::Pubkey},
+    solana_clock::Slot,
+    solana_program_error::ProgramError,
+    solana_pubkey::Pubkey,
     std::borrow::Cow,
 };
 
