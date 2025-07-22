@@ -9,19 +9,16 @@ use {
             AddressLookupTable, ProgramState, LOOKUP_TABLE_MAX_ADDRESSES, LOOKUP_TABLE_META_SIZE,
         },
     },
-    solana_program::{
-        account_info::{next_account_info, AccountInfo},
-        clock::{Clock, Slot},
-        entrypoint::ProgramResult,
-        msg,
-        program::{invoke, invoke_signed},
-        program_error::ProgramError,
-        pubkey::{Pubkey, PUBKEY_BYTES},
-        rent::Rent,
-        slot_hashes::MAX_ENTRIES,
-        system_instruction,
-        sysvar::{slot_hashes::SlotHashesSysvar, Sysvar},
-    },
+    solana_account_info::{next_account_info, AccountInfo},
+    solana_clock::{Clock, Slot},
+    solana_cpi::{invoke, invoke_signed},
+    solana_msg::msg,
+    solana_program_error::{ProgramError, ProgramResult},
+    solana_pubkey::{Pubkey, PUBKEY_BYTES},
+    solana_rent::Rent,
+    solana_slot_hashes::MAX_ENTRIES,
+    solana_system_interface::instruction as system_instruction,
+    solana_sysvar::{slot_hashes::PodSlotHashes, Sysvar},
 };
 
 /// Activation status of a lookup table
@@ -43,23 +40,27 @@ fn get_lookup_table_status(
         Ok(LookupTableStatus::Deactivating {
             remaining_blocks: MAX_ENTRIES.saturating_add(1),
         })
-    } else if let Some(slot_position) = SlotHashesSysvar::position(&deactivation_slot)
-        .map_err(|_| ProgramError::UnsupportedSysvar)?
-    {
-        // Deactivation requires a cool-down period to give in-flight transactions
-        // enough time to land and to remove indeterminism caused by transactions
-        // loading addresses in the same slot when a table is closed. The
-        // cool-down period is equivalent to the amount of time it takes for
-        // a slot to be removed from the slot hash list.
-        //
-        // By using the slot hash to enforce the cool-down, there is a side effect
-        // of not allowing lookup tables to be recreated at the same derived address
-        // because tables must be created at an address derived from a recent slot.
-        Ok(LookupTableStatus::Deactivating {
-            remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
-        })
     } else {
-        Ok(LookupTableStatus::Deactivated)
+        let pod_slot_hashes = PodSlotHashes::fetch()?;
+        if let Some(slot_position) = pod_slot_hashes
+            .position(&deactivation_slot)
+            .map_err(|_| ProgramError::UnsupportedSysvar)?
+        {
+            // Deactivation requires a cool-down period to give in-flight transactions
+            // enough time to land and to remove indeterminism caused by transactions
+            // loading addresses in the same slot when a table is closed. The
+            // cool-down period is equivalent to the amount of time it takes for
+            // a slot to be removed from the slot hash list.
+            //
+            // By using the slot hash to enforce the cool-down, there is a side effect
+            // of not allowing lookup tables to be recreated at the same derived address
+            // because tables must be created at an address derived from a recent slot.
+            Ok(LookupTableStatus::Deactivating {
+                remaining_blocks: MAX_ENTRIES.saturating_sub(slot_position),
+            })
+        } else {
+            Ok(LookupTableStatus::Deactivated)
+        }
     }
 }
 
@@ -116,7 +117,7 @@ fn safe_deserialize_instruction(
         }
         _ => {}
     }
-    solana_program::program_utils::limited_deserialize(input, MAX_INPUT_LEN as u64)
+    solana_bincode::limited_deserialize(input, MAX_INPUT_LEN as u64)
         .map_err(|_| ProgramError::InvalidInstructionData)
 }
 
@@ -145,7 +146,9 @@ fn process_create_lookup_table(
     }
 
     let derivation_slot = {
-        if SlotHashesSysvar::get(&untrusted_recent_slot)
+        let pod_slot_hashes = PodSlotHashes::fetch()?;
+        if pod_slot_hashes
+            .get(&untrusted_recent_slot)
             .map_err(|_| ProgramError::UnsupportedSysvar)?
             .is_some()
         {
@@ -388,7 +391,7 @@ fn process_extend_lookup_table(
         lookup_table_meta,
     )?;
 
-    lookup_table_info.realloc(new_table_data_len, false)?;
+    lookup_table_info.resize(new_table_data_len)?;
 
     {
         let mut lookup_table_data = lookup_table_info.try_borrow_mut_data()?;
@@ -551,7 +554,7 @@ fn process_close_lookup_table(program_id: &Pubkey, accounts: &[AccountInfo]) -> 
     }
 
     // Lookup tables are _not_ reassigned when closed.
-    lookup_table_info.realloc(0, true)?;
+    lookup_table_info.resize(0)?;
     **lookup_table_info.try_borrow_mut_lamports()? = 0;
 
     Ok(())

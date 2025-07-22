@@ -78,7 +78,7 @@ const waitForValidator = spinner(
         const logs = fs.readFileSync(cliLogs, 'utf8');
         if (validator.exitCode !== null) {
           reject(logs);
-        } else if (logs.includes('Confirmed Slot: 1')) {
+        } else if (logs.includes('Confirmed Slot: 16')) {
           resolve();
         }
       }, 1000);

@@ -2,17 +2,15 @@
 
 use {
     num_derive::FromPrimitive,
-    solana_program::{
-        decode_error::DecodeError,
-        msg,
-        program_error::{PrintProgramError, ProgramError},
-        pubkey::PubkeyError,
-    },
+    num_enum::TryFromPrimitive,
+    solana_program_error::{ProgramError, ToStr},
+    solana_pubkey::PubkeyError,
     thiserror::Error,
 };
 
 /// Errors that can be returned by the Config program.
-#[derive(Error, Clone, Debug, Eq, PartialEq, FromPrimitive)]
+#[derive(Error, Clone, Debug, Eq, PartialEq, FromPrimitive, TryFromPrimitive)]
+#[repr(u32)]
 pub enum AddressLookupTableError {
     // Reimplementations of `PubkeyError` variants.
     //
@@ -34,21 +32,25 @@ pub enum AddressLookupTableError {
     ReadonlyLamportsChanged,
 }
 
-impl PrintProgramError for AddressLookupTableError {
-    fn print<E>(&self) {
-        msg!(&self.to_string());
+impl ToStr for AddressLookupTableError {
+    fn to_str<E>(&self) -> &'static str {
+        match self {
+            Self::PubkeyErrorMaxSeedLengthExceeded => {
+                "Length of the seed is too long for address generation"
+            }
+            Self::PubkeyErrorInvalidSeeds => "Provided seeds do not result in a valid address",
+            Self::PubkeyErrorIllegalOwner => "Provided owner is not allowed",
+            Self::ReadonlyDataModified => "Instruction modified data of a read-only account",
+            Self::ReadonlyLamportsChanged => {
+                "Instruction changed the balance of a read-only account"
+            }
+        }
     }
 }
 
 impl From<AddressLookupTableError> for ProgramError {
     fn from(e: AddressLookupTableError) -> Self {
         ProgramError::Custom(e as u32)
-    }
-}
-
-impl<T> DecodeError<T> for AddressLookupTableError {
-    fn type_of() -> &'static str {
-        "AddressLookupTableError"
     }
 }
 
