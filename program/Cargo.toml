@@ -42,7 +42,7 @@ solana-sysvar = { workspace = true, features = ["bincode", "bytemuck"] }
 thiserror = { workspace = true }
 
 [dev-dependencies]
-mollusk-svm = { workspace = true, features = ["fuzz-fd"] }
+mollusk-svm = { workspace = true, features = ["fuzz"] }
 mollusk-svm-bencher = { workspace = true }
 solana-sdk = { workspace = true }
 strum = { workspace = true }
