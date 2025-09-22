@@ -8,7 +8,7 @@ const workingDirectory = (await $`pwd`.quiet()).toString().trim();
 
 // Instanciate Codama.
 const codama = createFromRoot(
-  require(path.join(workingDirectory, 'interface', 'idl.json'))
+  require(path.join(workingDirectory, 'program', 'idl.json'))
 );
 
 // Render JavaScript.
