@@ -2,12 +2,13 @@
 import 'zx/globals';
 import { createFromRoot } from 'codama';
 import { renderVisitor as renderJavaScriptVisitor } from '@codama/renderers-js';
-import { renderVisitor as renderRustVisitor } from '@codama/renderers-rust';
-import { getToolchainArgument, workingDirectory } from './utils.mjs';
+// import { renderVisitor as renderRustVisitor } from "@codama/renderers-rust";
+
+const workingDirectory = (await $`pwd`.quiet()).toString().trim();
 
 // Instanciate Codama.
 const codama = createFromRoot(
-  require(path.join(workingDirectory, 'program', 'idl.json'))
+  require(path.join(workingDirectory, 'interface', 'idl.json'))
 );
 
 // Render JavaScript.
@@ -19,12 +20,10 @@ codama.accept(
 );
 
 // Render Rust.
-const rustClient = path.join(__dirname, '..', 'clients', 'rust');
-codama.accept(
-  renderRustVisitor(path.join(rustClient, 'src', 'generated'), {
-    anchorTraits: false,
-    formatCode: true,
-    crateFolder: rustClient,
-    toolchain: getToolchainArgument('format'),
-  })
-);
+// const rustClient = path.join(__dirname, "..", "clients", "rust");
+// codama.accept(
+//   renderRustVisitor(path.join(rustClient, "src", "generated"), {
+//     formatCode: true,
+//     crateFolder: rustClient,
+//   })
+// );

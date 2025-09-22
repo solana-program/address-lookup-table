@@ -1,7 +1,7 @@
 //! Address Lookup Table Program
 #![cfg_attr(feature = "frozen-abi", feature(min_specialization))]
 
-#[cfg(all(target_os = "solana", feature = "bpf-entrypoint"))]
+#[cfg(target_os = "solana")]
 mod entrypoint;
 pub mod error;
 pub mod instruction;

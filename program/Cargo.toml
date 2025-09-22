@@ -12,7 +12,6 @@ edition = { workspace = true }
 program-id = "AddressLookupTab1e1111111111111111111111111"
 
 [features]
-bpf-entrypoint = []
 frozen-abi = ["dep:solana-frozen-abi", "dep:solana-frozen-abi-macro"]
 test-sbf = []
 
