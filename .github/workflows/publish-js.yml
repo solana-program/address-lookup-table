@@ -10,7 +10,6 @@ on:
         type: choice
         options:
           - clients/js
-          - clients/js-legacy
       level:
         description: Version level
         required: true

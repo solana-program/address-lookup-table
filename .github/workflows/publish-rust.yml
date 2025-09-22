@@ -9,14 +9,7 @@ on:
         default: 'clients/cli'
         type: choice
         options:
-          - clients/cli
-          - clients/rust-legacy
-          - confidential-transfer/ciphertext-arithmetic
-          - confidential-transfer/elgamal-registry
-          - confidential-transfer/proof-extraction
-          - confidential-transfer/proof-generation
-          - confidential-transfer/proof-tests
-          - interface
+          - clients/rust
           - program
       level:
         description: Level
