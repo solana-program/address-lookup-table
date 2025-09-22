@@ -10,7 +10,6 @@ env:
   JS_PACKAGES: "['clients-js']"
   SBPF_PROGRAM_PACKAGES: "['program']"
   RUST_PACKAGES: "['clients-rust', 'program']"
-  WASM_PACKAGES: "['program']"
   BENCH_PACKAGES: "['program']"
   REGRESSION_PACKAGES: "['program']"
 
