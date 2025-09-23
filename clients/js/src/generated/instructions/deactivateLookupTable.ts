@@ -13,17 +13,16 @@ import {
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
-  type AccountMeta,
-  type AccountSignerMeta,
   type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
-  type Instruction,
-  type InstructionWithAccounts,
-  type InstructionWithData,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
   type ReadonlySignerAccount,
-  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -38,19 +37,19 @@ export function getDeactivateLookupTableDiscriminatorBytes() {
 
 export type DeactivateLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountAddress extends string | AccountMeta<string> = string,
-  TAccountAuthority extends string | AccountMeta<string> = string,
-  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
-> = Instruction<TProgram> &
-  InstructionWithData<ReadonlyUint8Array> &
-  InstructionWithAccounts<
+  TAccountAddress extends string | IAccountMeta<string> = string,
+  TAccountAuthority extends string | IAccountMeta<string> = string,
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
+> = IInstruction<TProgram> &
+  IInstructionWithData<Uint8Array> &
+  IInstructionWithAccounts<
     [
       TAccountAddress extends string
         ? WritableAccount<TAccountAddress>
         : TAccountAddress,
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+            IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
       ...TRemainingAccounts,
     ]
@@ -60,7 +59,7 @@ export type DeactivateLookupTableInstructionData = { discriminator: number };
 
 export type DeactivateLookupTableInstructionDataArgs = {};
 
-export function getDeactivateLookupTableInstructionDataEncoder(): FixedSizeEncoder<DeactivateLookupTableInstructionDataArgs> {
+export function getDeactivateLookupTableInstructionDataEncoder(): Encoder<DeactivateLookupTableInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
     (value) => ({
@@ -70,11 +69,11 @@ export function getDeactivateLookupTableInstructionDataEncoder(): FixedSizeEncod
   );
 }
 
-export function getDeactivateLookupTableInstructionDataDecoder(): FixedSizeDecoder<DeactivateLookupTableInstructionData> {
+export function getDeactivateLookupTableInstructionDataDecoder(): Decoder<DeactivateLookupTableInstructionData> {
   return getStructDecoder([['discriminator', getU32Decoder()]]);
 }
 
-export function getDeactivateLookupTableInstructionDataCodec(): FixedSizeCodec<
+export function getDeactivateLookupTableInstructionDataCodec(): Codec<
   DeactivateLookupTableInstructionDataArgs,
   DeactivateLookupTableInstructionData
 > {
@@ -137,7 +136,7 @@ export function getDeactivateLookupTableInstruction<
 
 export type ParsedDeactivateLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -149,11 +148,11 @@ export type ParsedDeactivateLookupTableInstruction<
 
 export function parseDeactivateLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[],
 >(
-  instruction: Instruction<TProgram> &
-    InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<ReadonlyUint8Array>
+  instruction: IInstruction<TProgram> &
+    IInstructionWithAccounts<TAccountMetas> &
+    IInstructionWithData<Uint8Array>
 ): ParsedDeactivateLookupTableInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
@@ -161,7 +160,7 @@ export function parseDeactivateLookupTableInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
+    const accountMeta = instruction.accounts![accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

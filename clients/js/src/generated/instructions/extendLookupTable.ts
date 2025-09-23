@@ -19,18 +19,17 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
-  type AccountMeta,
-  type AccountSignerMeta,
   type Address,
   type Codec,
   type Decoder,
   type Encoder,
-  type Instruction,
-  type InstructionWithAccounts,
-  type InstructionWithData,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
-  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
@@ -39,7 +38,7 @@ import { resolveExtendLookupTableBytes } from '../../hooked';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import {
   getAccountMetaFactory,
-  type InstructionWithByteDelta,
+  type IInstructionWithByteDelta,
   type ResolvedAccount,
 } from '../shared';
 
@@ -51,27 +50,27 @@ export function getExtendLookupTableDiscriminatorBytes() {
 
 export type ExtendLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountAddress extends string | AccountMeta<string> = string,
-  TAccountAuthority extends string | AccountMeta<string> = string,
-  TAccountPayer extends string | AccountMeta<string> = string,
+  TAccountAddress extends string | IAccountMeta<string> = string,
+  TAccountAuthority extends string | IAccountMeta<string> = string,
+  TAccountPayer extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
-    | AccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
-> = Instruction<TProgram> &
-  InstructionWithData<ReadonlyUint8Array> &
-  InstructionWithAccounts<
+    | IAccountMeta<string> = '11111111111111111111111111111111',
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
+> = IInstruction<TProgram> &
+  IInstructionWithData<Uint8Array> &
+  IInstructionWithAccounts<
     [
       TAccountAddress extends string
         ? WritableAccount<TAccountAddress>
         : TAccountAddress,
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+            IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
       TAccountPayer extends string
         ? WritableSignerAccount<TAccountPayer> &
-            AccountSignerMeta<TAccountPayer>
+            IAccountSignerMeta<TAccountPayer>
         : TAccountPayer,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
@@ -156,7 +155,7 @@ export function getExtendLookupTableInstruction<
   TAccountPayer,
   TAccountSystemProgram
 > &
-  InstructionWithByteDelta {
+  IInstructionWithByteDelta {
   // Program address.
   const programAddress =
     config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
@@ -215,7 +214,7 @@ export function getExtendLookupTableInstruction<
 
 export type ParsedExtendLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -229,11 +228,11 @@ export type ParsedExtendLookupTableInstruction<
 
 export function parseExtendLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[],
 >(
-  instruction: Instruction<TProgram> &
-    InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<ReadonlyUint8Array>
+  instruction: IInstruction<TProgram> &
+    IInstructionWithAccounts<TAccountMetas> &
+    IInstructionWithData<Uint8Array>
 ): ParsedExtendLookupTableInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 4) {
     // TODO: Coded error.
@@ -241,7 +240,7 @@ export function parseExtendLookupTableInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
+    const accountMeta = instruction.accounts![accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

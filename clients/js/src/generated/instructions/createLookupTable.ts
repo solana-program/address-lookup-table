@@ -18,19 +18,18 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
-  type AccountMeta,
-  type AccountSignerMeta,
   type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
-  type Instruction,
-  type InstructionWithAccounts,
-  type InstructionWithData,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
   type ProgramDerivedAddress,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
-  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
@@ -42,7 +41,7 @@ import {
   expectProgramDerivedAddress,
   expectSome,
   getAccountMetaFactory,
-  type InstructionWithByteDelta,
+  type IInstructionWithByteDelta,
   type ResolvedAccount,
 } from '../shared';
 
@@ -54,27 +53,27 @@ export function getCreateLookupTableDiscriminatorBytes() {
 
 export type CreateLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountAddress extends string | AccountMeta<string> = string,
-  TAccountAuthority extends string | AccountMeta<string> = string,
-  TAccountPayer extends string | AccountMeta<string> = string,
+  TAccountAddress extends string | IAccountMeta<string> = string,
+  TAccountAuthority extends string | IAccountMeta<string> = string,
+  TAccountPayer extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
-    | AccountMeta<string> = '11111111111111111111111111111111',
-  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
-> = Instruction<TProgram> &
-  InstructionWithData<ReadonlyUint8Array> &
-  InstructionWithAccounts<
+    | IAccountMeta<string> = '11111111111111111111111111111111',
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
+> = IInstruction<TProgram> &
+  IInstructionWithData<Uint8Array> &
+  IInstructionWithAccounts<
     [
       TAccountAddress extends string
         ? WritableAccount<TAccountAddress>
         : TAccountAddress,
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+            IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
       TAccountPayer extends string
         ? WritableSignerAccount<TAccountPayer> &
-            AccountSignerMeta<TAccountPayer>
+            IAccountSignerMeta<TAccountPayer>
         : TAccountPayer,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
@@ -94,7 +93,7 @@ export type CreateLookupTableInstructionDataArgs = {
   bump: number;
 };
 
-export function getCreateLookupTableInstructionDataEncoder(): FixedSizeEncoder<CreateLookupTableInstructionDataArgs> {
+export function getCreateLookupTableInstructionDataEncoder(): Encoder<CreateLookupTableInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -105,7 +104,7 @@ export function getCreateLookupTableInstructionDataEncoder(): FixedSizeEncoder<C
   );
 }
 
-export function getCreateLookupTableInstructionDataDecoder(): FixedSizeDecoder<CreateLookupTableInstructionData> {
+export function getCreateLookupTableInstructionDataDecoder(): Decoder<CreateLookupTableInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['recentSlot', getU64Decoder()],
@@ -113,7 +112,7 @@ export function getCreateLookupTableInstructionDataDecoder(): FixedSizeDecoder<C
   ]);
 }
 
-export function getCreateLookupTableInstructionDataCodec(): FixedSizeCodec<
+export function getCreateLookupTableInstructionDataCodec(): Codec<
   CreateLookupTableInstructionDataArgs,
   CreateLookupTableInstructionData
 > {
@@ -159,7 +158,7 @@ export async function getCreateLookupTableInstructionAsync<
     TAccountPayer,
     TAccountSystemProgram
   > &
-    InstructionWithByteDelta
+    IInstructionWithByteDelta
 > {
   // Program address.
   const programAddress =
@@ -259,7 +258,7 @@ export function getCreateLookupTableInstruction<
   TAccountPayer,
   TAccountSystemProgram
 > &
-  InstructionWithByteDelta {
+  IInstructionWithByteDelta {
   // Program address.
   const programAddress =
     config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
@@ -319,7 +318,7 @@ export function getCreateLookupTableInstruction<
 
 export type ParsedCreateLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -333,11 +332,11 @@ export type ParsedCreateLookupTableInstruction<
 
 export function parseCreateLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[],
 >(
-  instruction: Instruction<TProgram> &
-    InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<ReadonlyUint8Array>
+  instruction: IInstruction<TProgram> &
+    IInstructionWithAccounts<TAccountMetas> &
+    IInstructionWithData<Uint8Array>
 ): ParsedCreateLookupTableInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 4) {
     // TODO: Coded error.
@@ -345,7 +344,7 @@ export function parseCreateLookupTableInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
+    const accountMeta = instruction.accounts![accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

@@ -13,17 +13,16 @@ import {
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
-  type AccountMeta,
-  type AccountSignerMeta,
   type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
-  type Instruction,
-  type InstructionWithAccounts,
-  type InstructionWithData,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
   type ReadonlySignerAccount,
-  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -38,20 +37,20 @@ export function getCloseLookupTableDiscriminatorBytes() {
 
 export type CloseLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountAddress extends string | AccountMeta<string> = string,
-  TAccountAuthority extends string | AccountMeta<string> = string,
-  TAccountRecipient extends string | AccountMeta<string> = string,
-  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
-> = Instruction<TProgram> &
-  InstructionWithData<ReadonlyUint8Array> &
-  InstructionWithAccounts<
+  TAccountAddress extends string | IAccountMeta<string> = string,
+  TAccountAuthority extends string | IAccountMeta<string> = string,
+  TAccountRecipient extends string | IAccountMeta<string> = string,
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
+> = IInstruction<TProgram> &
+  IInstructionWithData<Uint8Array> &
+  IInstructionWithAccounts<
     [
       TAccountAddress extends string
         ? WritableAccount<TAccountAddress>
         : TAccountAddress,
       TAccountAuthority extends string
         ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+            IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
       TAccountRecipient extends string
         ? WritableAccount<TAccountRecipient>
@@ -64,18 +63,18 @@ export type CloseLookupTableInstructionData = { discriminator: number };
 
 export type CloseLookupTableInstructionDataArgs = {};
 
-export function getCloseLookupTableInstructionDataEncoder(): FixedSizeEncoder<CloseLookupTableInstructionDataArgs> {
+export function getCloseLookupTableInstructionDataEncoder(): Encoder<CloseLookupTableInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
     (value) => ({ ...value, discriminator: CLOSE_LOOKUP_TABLE_DISCRIMINATOR })
   );
 }
 
-export function getCloseLookupTableInstructionDataDecoder(): FixedSizeDecoder<CloseLookupTableInstructionData> {
+export function getCloseLookupTableInstructionDataDecoder(): Decoder<CloseLookupTableInstructionData> {
   return getStructDecoder([['discriminator', getU32Decoder()]]);
 }
 
-export function getCloseLookupTableInstructionDataCodec(): FixedSizeCodec<
+export function getCloseLookupTableInstructionDataCodec(): Codec<
   CloseLookupTableInstructionDataArgs,
   CloseLookupTableInstructionData
 > {
@@ -149,7 +148,7 @@ export function getCloseLookupTableInstruction<
 
 export type ParsedCloseLookupTableInstruction<
   TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -162,11 +161,11 @@ export type ParsedCloseLookupTableInstruction<
 
 export function parseCloseLookupTableInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly AccountMeta[],
+  TAccountMetas extends readonly IAccountMeta[],
 >(
-  instruction: Instruction<TProgram> &
-    InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<ReadonlyUint8Array>
+  instruction: IInstruction<TProgram> &
+    IInstructionWithAccounts<TAccountMetas> &
+    IInstructionWithData<Uint8Array>
 ): ParsedCloseLookupTableInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.
@@ -174,7 +173,7 @@ export function parseCloseLookupTableInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
+    const accountMeta = instruction.accounts![accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };
