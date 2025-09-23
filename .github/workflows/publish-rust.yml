@@ -6,7 +6,7 @@ on:
       package-path:
         description: Path to directory with package to release
         required: true
-        default: 'clients/cli'
+        default: 'clients/rust'
         type: choice
         options:
           - clients/rust
@@ -65,7 +65,7 @@ jobs:
     needs: set_env
     uses: solana-program/actions/.github/workflows/publish-rust.yml@main
     with:
-      sbpf-program-packages: "program confidential-elgamal-registry"
+      sbpf-program-packages: "program"
       solana-cli-version: ${{ needs.set_env.outputs.SOLANA_CLI_VERSION }}
       clippy-toolchain: ${{ needs.set_env.outputs.RUST_TOOLCHAIN_NIGHTLY }}
       rustfmt-toolchain: ${{ needs.set_env.outputs.RUST_TOOLCHAIN_NIGHTLY }}
