@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-#![cfg(feature = "test-sbf")]
-
 use {
     mollusk_svm::Mollusk,
     solana_address_lookup_table_program::state::{AddressLookupTable, LookupTableMeta},
