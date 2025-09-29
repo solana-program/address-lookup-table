@@ -10,7 +10,6 @@ edition = { workspace = true }
 
 [features]
 fetch = ["dep:solana-client", "dep:solana-sdk"]
-test-sbf = []
 serde = ["dep:serde", "dep:serde_with", "kaigan/serde"]
 
 [dependencies]
