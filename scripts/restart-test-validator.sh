@@ -31,7 +31,7 @@ for i in {1..8}; do
   fi
 
   SLOT=$(solana slot -ul 2>/dev/null)
-  if [[ "$SLOT" =~ ^[0-9]+$ ]] && [ "$SLOT" -gt 0 ]; then
+  if [[ "$SLOT" =~ ^[0-9]+$ ]] && [ "$SLOT" -gt 8 ]; then
     echo -e "\nTest validator is ready. Slot: $SLOT"
     exit 0
   fi
