@@ -2159,7 +2159,7 @@ dependencies = [
  "solana-program-error",
  "solana-program-runtime",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sdk-ids",
  "solana-slot-hashes",
  "solana-stake-interface",
@@ -2216,7 +2216,7 @@ dependencies = [
  "solana-instruction",
  "solana-keccak-hasher",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-slot-hashes",
  "solana-stake-interface",
  "which",
@@ -2259,7 +2259,7 @@ dependencies = [
  "solana-instruction",
  "solana-program-error",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
 ]
 
 [[package]]
@@ -3693,7 +3693,7 @@ dependencies = [
  "solana-program-entrypoint",
  "solana-program-error",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 3.0.0",
  "solana-sdk",
  "solana-sdk-ids",
  "solana-slot-hashes",
@@ -3896,7 +3896,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-sysvar-id",
 ]
 
@@ -4056,7 +4056,7 @@ dependencies = [
  "serde_derive",
  "solana-hash",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-sysvar-id",
 ]
 
@@ -4080,7 +4080,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-sysvar-id",
 ]
 
@@ -4119,7 +4119,7 @@ dependencies = [
  "solana-instruction",
  "solana-program-error",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sdk-ids",
  "solana-system-interface",
 ]
@@ -4216,7 +4216,7 @@ dependencies = [
  "solana-logger",
  "solana-poh-config",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sdk-ids",
  "solana-sha256-hasher",
  "solana-shred-version",
@@ -4337,7 +4337,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-sysvar-id",
 ]
 
@@ -4709,10 +4709,10 @@ dependencies = [
  "solana-program-option",
  "solana-program-pack",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sanitize",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-secp256k1-recover",
  "solana-serde-varint",
  "solana-serialize-utils",
@@ -4809,7 +4809,7 @@ dependencies = [
  "solana-metrics",
  "solana-program-entrypoint",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sbpf",
  "solana-sdk-ids",
  "solana-slot-hashes",
@@ -4936,8 +4936,17 @@ dependencies = [
  "serde",
  "serde_derive",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-sysvar-id",
+]
+
+[[package]]
+name = "solana-rent"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b702d8c43711e3c8a9284a4f1bbc6a3de2553deb25b0c8142f9a44ef0ce5ddc1"
+dependencies = [
+ "solana-sdk-macro 3.0.0",
 ]
 
 [[package]]
@@ -4953,7 +4962,7 @@ dependencies = [
  "solana-epoch-schedule",
  "solana-genesis-config",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sdk-ids",
 ]
 
@@ -5166,7 +5175,7 @@ dependencies = [
  "solana-reward-info",
  "solana-sanitize",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-secp256k1-program",
  "solana-secp256k1-recover",
  "solana-secp256r1-program",
@@ -5202,6 +5211,18 @@ name = "solana-sdk-macro"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86280da8b99d03560f6ab5aca9de2e38805681df34e0bb8f238e69b29433b9df"
+dependencies = [
+ "bs58",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
+]
+
+[[package]]
+name = "solana-sdk-macro"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6430000e97083460b71d9fbadc52a2ab2f88f53b3a4c5e58c5ae3640a0e8c00"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -5566,10 +5587,10 @@ dependencies = [
  "solana-program-error",
  "solana-program-memory",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sanitize",
  "solana-sdk-ids",
- "solana-sdk-macro",
+ "solana-sdk-macro 2.2.1",
  "solana-slot-hashes",
  "solana-slot-history",
  "solana-stake-interface",
@@ -5719,7 +5740,7 @@ dependencies = [
  "solana-instruction",
  "solana-instructions-sysvar",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sdk-ids",
 ]
 
@@ -5836,7 +5857,7 @@ dependencies = [
  "solana-hash",
  "solana-instruction",
  "solana-pubkey",
- "solana-rent",
+ "solana-rent 2.2.1",
  "solana-sdk-ids",
  "solana-serde-varint",
  "solana-serialize-utils",
