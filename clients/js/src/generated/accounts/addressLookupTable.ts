@@ -69,6 +69,7 @@ export type AddressLookupTableArgs = {
   addresses: Array<Address>;
 };
 
+/** Gets the encoder for {@link AddressLookupTableArgs} account data. */
 export function getAddressLookupTableEncoder(): Encoder<AddressLookupTableArgs> {
   return transformEncoder(
     getStructEncoder([
@@ -94,6 +95,7 @@ export function getAddressLookupTableEncoder(): Encoder<AddressLookupTableArgs> 
   );
 }
 
+/** Gets the decoder for {@link AddressLookupTable} account data. */
 export function getAddressLookupTableDecoder(): Decoder<AddressLookupTable> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
@@ -109,6 +111,7 @@ export function getAddressLookupTableDecoder(): Decoder<AddressLookupTable> {
   ]);
 }
 
+/** Gets the codec for {@link AddressLookupTable} account data. */
 export function getAddressLookupTableCodec(): Codec<
   AddressLookupTableArgs,
   AddressLookupTable
