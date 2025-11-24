@@ -29,7 +29,6 @@ import {
   type InstructionWithData,
   type ProgramDerivedAddress,
   type ReadonlyAccount,
-  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
@@ -69,8 +68,7 @@ export type CreateLookupTableInstruction<
         ? WritableAccount<TAccountAddress>
         : TAccountAddress,
       TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+        ? ReadonlyAccount<TAccountAuthority>
         : TAccountAuthority,
       TAccountPayer extends string
         ? WritableSignerAccount<TAccountPayer> &
@@ -130,7 +128,7 @@ export type CreateLookupTableAsyncInput<
   TAccountSystemProgram extends string = string,
 > = {
   address?: ProgramDerivedAddress<TAccountAddress>;
-  authority: TransactionSigner<TAccountAuthority>;
+  authority: Address<TAccountAuthority>;
   payer?: TransactionSigner<TAccountPayer>;
   systemProgram?: Address<TAccountSystemProgram>;
   recentSlot: CreateLookupTableInstructionDataArgs['recentSlot'];
@@ -231,7 +229,7 @@ export type CreateLookupTableInput<
   TAccountSystemProgram extends string = string,
 > = {
   address: ProgramDerivedAddress<TAccountAddress>;
-  authority: TransactionSigner<TAccountAuthority>;
+  authority: Address<TAccountAuthority>;
   payer?: TransactionSigner<TAccountPayer>;
   systemProgram?: Address<TAccountSystemProgram>;
   recentSlot: CreateLookupTableInstructionDataArgs['recentSlot'];
