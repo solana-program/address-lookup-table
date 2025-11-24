@@ -159,7 +159,7 @@
             "kind": "instructionAccountNode",
             "name": "authority",
             "isWritable": false,
-            "isSigner": true,
+            "isSigner": false,
             "isOptional": false,
             "docs": [],
             "defaultValue": { "kind": "identityValueNode" }

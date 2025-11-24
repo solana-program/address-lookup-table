@@ -39,7 +39,7 @@ impl CreateLookupTable {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
-            true,
+            false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.payer, true,
@@ -91,7 +91,7 @@ pub struct CreateLookupTableInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` address
-///   1. `[signer]` authority
+///   1. `[]` authority
 ///   2. `[writable, signer]` payer
 ///   3. `[optional]` system_program (default to
 ///      `11111111111111111111111111111111`)
@@ -261,7 +261,7 @@ impl<'a, 'b> CreateLookupTableCpi<'a, 'b> {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
-            true,
+            false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.payer.key,
@@ -310,7 +310,7 @@ impl<'a, 'b> CreateLookupTableCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` address
-///   1. `[signer]` authority
+///   1. `[]` authority
 ///   2. `[writable, signer]` payer
 ///   3. `[]` system_program
 #[derive(Clone, Debug)]
