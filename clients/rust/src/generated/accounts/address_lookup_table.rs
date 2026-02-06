@@ -7,7 +7,7 @@
 use {
     borsh::{BorshDeserialize, BorshSerialize},
     kaigan::types::RemainderVec,
-    solana_program::pubkey::Pubkey,
+    solana_pubkey::Pubkey,
 };
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
@@ -22,13 +22,15 @@ pub struct AddressLookupTable {
     pub addresses: RemainderVec<Pubkey>,
 }
 
+pub const ADDRESS_LOOKUP_TABLE_DISCRIMINATOR: u32 = 1;
+
 impl AddressLookupTable {
     pub fn create_pda(
         authority: Pubkey,
         recent_slot: u64,
         bump: u8,
-    ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
-        solana_program::pubkey::Pubkey::create_program_address(
+    ) -> Result<solana_pubkey::Pubkey, solana_pubkey::PubkeyError> {
+        solana_pubkey::Pubkey::create_program_address(
             &[
                 authority.as_ref(),
                 recent_slot.to_string().as_ref(),
@@ -38,8 +40,8 @@ impl AddressLookupTable {
         )
     }
 
-    pub fn find_pda(authority: &Pubkey, recent_slot: u64) -> (solana_program::pubkey::Pubkey, u8) {
-        solana_program::pubkey::Pubkey::find_program_address(
+    pub fn find_pda(authority: &Pubkey, recent_slot: u64) -> (solana_pubkey::Pubkey, u8) {
+        solana_pubkey::Pubkey::find_program_address(
             &[authority.as_ref(), recent_slot.to_string().as_ref()],
             &crate::ADDRESS_LOOKUP_TABLE_ID,
         )
@@ -52,12 +54,10 @@ impl AddressLookupTable {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for AddressLookupTable {
+impl<'a> TryFrom<&solana_account_info::AccountInfo<'a>> for AddressLookupTable {
     type Error = std::io::Error;
 
-    fn try_from(
-        account_info: &solana_program::account_info::AccountInfo<'a>,
-    ) -> Result<Self, Self::Error> {
+    fn try_from(account_info: &solana_account_info::AccountInfo<'a>) -> Result<Self, Self::Error> {
         let mut data: &[u8] = &(*account_info.data).borrow();
         Self::deserialize(&mut data)
     }
@@ -66,7 +66,7 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for AddressLook
 #[cfg(feature = "fetch")]
 pub fn fetch_address_lookup_table(
     rpc: &solana_client::rpc_client::RpcClient,
-    address: &solana_program::pubkey::Pubkey,
+    address: &solana_pubkey::Pubkey,
 ) -> Result<crate::shared::DecodedAccount<AddressLookupTable>, std::io::Error> {
     let accounts = fetch_all_address_lookup_table(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -75,7 +75,7 @@ pub fn fetch_address_lookup_table(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_address_lookup_table(
     rpc: &solana_client::rpc_client::RpcClient,
-    addresses: &[solana_program::pubkey::Pubkey],
+    addresses: &[solana_pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::DecodedAccount<AddressLookupTable>>, std::io::Error> {
     let accounts = rpc
         .get_multiple_accounts(addresses)
@@ -100,7 +100,7 @@ pub fn fetch_all_address_lookup_table(
 #[cfg(feature = "fetch")]
 pub fn fetch_maybe_address_lookup_table(
     rpc: &solana_client::rpc_client::RpcClient,
-    address: &solana_program::pubkey::Pubkey,
+    address: &solana_pubkey::Pubkey,
 ) -> Result<crate::shared::MaybeAccount<AddressLookupTable>, std::io::Error> {
     let accounts = fetch_all_maybe_address_lookup_table(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -109,7 +109,7 @@ pub fn fetch_maybe_address_lookup_table(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_maybe_address_lookup_table(
     rpc: &solana_client::rpc_client::RpcClient,
-    addresses: &[solana_program::pubkey::Pubkey],
+    addresses: &[solana_pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::MaybeAccount<AddressLookupTable>>, std::io::Error> {
     let accounts = rpc
         .get_multiple_accounts(addresses)

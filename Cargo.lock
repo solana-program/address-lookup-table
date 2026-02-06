@@ -3647,9 +3647,13 @@ dependencies = [
  "num-traits",
  "serde",
  "serde_with",
+ "solana-account",
+ "solana-account-info",
  "solana-client",
- "solana-program",
- "solana-sdk",
+ "solana-cpi",
+ "solana-instruction",
+ "solana-program-error",
+ "solana-pubkey",
  "thiserror 2.0.17",
 ]
 
