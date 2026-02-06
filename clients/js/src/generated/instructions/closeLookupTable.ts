@@ -7,25 +7,25 @@
  */
 
 import {
-  combineCodec,
-  getStructDecoder,
-  getStructEncoder,
-  getU32Decoder,
-  getU32Encoder,
-  transformEncoder,
-  type AccountMeta,
-  type AccountSignerMeta,
-  type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
-  type Instruction,
-  type InstructionWithAccounts,
-  type InstructionWithData,
-  type ReadonlySignerAccount,
-  type ReadonlyUint8Array,
-  type TransactionSigner,
-  type WritableAccount,
+    combineCodec,
+    getStructDecoder,
+    getStructEncoder,
+    getU32Decoder,
+    getU32Encoder,
+    transformEncoder,
+    type AccountMeta,
+    type AccountSignerMeta,
+    type Address,
+    type FixedSizeCodec,
+    type FixedSizeDecoder,
+    type FixedSizeEncoder,
+    type Instruction,
+    type InstructionWithAccounts,
+    type InstructionWithData,
+    type ReadonlySignerAccount,
+    type ReadonlyUint8Array,
+    type TransactionSigner,
+    type WritableAccount,
 } from '@solana/kit';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
@@ -33,156 +33,127 @@ import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 export const CLOSE_LOOKUP_TABLE_DISCRIMINATOR = 4;
 
 export function getCloseLookupTableDiscriminatorBytes() {
-  return getU32Encoder().encode(CLOSE_LOOKUP_TABLE_DISCRIMINATOR);
+    return getU32Encoder().encode(CLOSE_LOOKUP_TABLE_DISCRIMINATOR);
 }
 
 export type CloseLookupTableInstruction<
-  TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountAddress extends string | AccountMeta<string> = string,
-  TAccountAuthority extends string | AccountMeta<string> = string,
-  TAccountRecipient extends string | AccountMeta<string> = string,
-  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+    TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TAccountAddress extends string | AccountMeta<string> = string,
+    TAccountAuthority extends string | AccountMeta<string> = string,
+    TAccountRecipient extends string | AccountMeta<string> = string,
+    TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<ReadonlyUint8Array> &
-  InstructionWithAccounts<
-    [
-      TAccountAddress extends string
-        ? WritableAccount<TAccountAddress>
-        : TAccountAddress,
-      TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
-        : TAccountAuthority,
-      TAccountRecipient extends string
-        ? WritableAccount<TAccountRecipient>
-        : TAccountRecipient,
-      ...TRemainingAccounts,
-    ]
-  >;
+    InstructionWithData<ReadonlyUint8Array> &
+    InstructionWithAccounts<
+        [
+            TAccountAddress extends string ? WritableAccount<TAccountAddress> : TAccountAddress,
+            TAccountAuthority extends string
+                ? ReadonlySignerAccount<TAccountAuthority> & AccountSignerMeta<TAccountAuthority>
+                : TAccountAuthority,
+            TAccountRecipient extends string ? WritableAccount<TAccountRecipient> : TAccountRecipient,
+            ...TRemainingAccounts,
+        ]
+    >;
 
 export type CloseLookupTableInstructionData = { discriminator: number };
 
 export type CloseLookupTableInstructionDataArgs = {};
 
 export function getCloseLookupTableInstructionDataEncoder(): FixedSizeEncoder<CloseLookupTableInstructionDataArgs> {
-  return transformEncoder(
-    getStructEncoder([['discriminator', getU32Encoder()]]),
-    (value) => ({ ...value, discriminator: CLOSE_LOOKUP_TABLE_DISCRIMINATOR })
-  );
+    return transformEncoder(getStructEncoder([['discriminator', getU32Encoder()]]), value => ({
+        ...value,
+        discriminator: CLOSE_LOOKUP_TABLE_DISCRIMINATOR,
+    }));
 }
 
 export function getCloseLookupTableInstructionDataDecoder(): FixedSizeDecoder<CloseLookupTableInstructionData> {
-  return getStructDecoder([['discriminator', getU32Decoder()]]);
+    return getStructDecoder([['discriminator', getU32Decoder()]]);
 }
 
 export function getCloseLookupTableInstructionDataCodec(): FixedSizeCodec<
-  CloseLookupTableInstructionDataArgs,
-  CloseLookupTableInstructionData
+    CloseLookupTableInstructionDataArgs,
+    CloseLookupTableInstructionData
 > {
-  return combineCodec(
-    getCloseLookupTableInstructionDataEncoder(),
-    getCloseLookupTableInstructionDataDecoder()
-  );
+    return combineCodec(getCloseLookupTableInstructionDataEncoder(), getCloseLookupTableInstructionDataDecoder());
 }
 
 export type CloseLookupTableInput<
-  TAccountAddress extends string = string,
-  TAccountAuthority extends string = string,
-  TAccountRecipient extends string = string,
+    TAccountAddress extends string = string,
+    TAccountAuthority extends string = string,
+    TAccountRecipient extends string = string,
 > = {
-  address: Address<TAccountAddress>;
-  authority: TransactionSigner<TAccountAuthority>;
-  recipient: Address<TAccountRecipient>;
+    address: Address<TAccountAddress>;
+    authority: TransactionSigner<TAccountAuthority>;
+    recipient: Address<TAccountRecipient>;
 };
 
 export function getCloseLookupTableInstruction<
-  TAccountAddress extends string,
-  TAccountAuthority extends string,
-  TAccountRecipient extends string,
-  TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TAccountAddress extends string,
+    TAccountAuthority extends string,
+    TAccountRecipient extends string,
+    TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
-  input: CloseLookupTableInput<
-    TAccountAddress,
-    TAccountAuthority,
-    TAccountRecipient
-  >,
-  config?: { programAddress?: TProgramAddress }
-): CloseLookupTableInstruction<
-  TProgramAddress,
-  TAccountAddress,
-  TAccountAuthority,
-  TAccountRecipient
-> {
-  // Program address.
-  const programAddress =
-    config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    input: CloseLookupTableInput<TAccountAddress, TAccountAuthority, TAccountRecipient>,
+    config?: { programAddress?: TProgramAddress },
+): CloseLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority, TAccountRecipient> {
+    // Program address.
+    const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
-  // Original accounts.
-  const originalAccounts = {
-    address: { value: input.address ?? null, isWritable: true },
-    authority: { value: input.authority ?? null, isWritable: false },
-    recipient: { value: input.recipient ?? null, isWritable: true },
-  };
-  const accounts = originalAccounts as Record<
-    keyof typeof originalAccounts,
-    ResolvedAccount
-  >;
+    // Original accounts.
+    const originalAccounts = {
+        address: { value: input.address ?? null, isWritable: true },
+        authority: { value: input.authority ?? null, isWritable: false },
+        recipient: { value: input.recipient ?? null, isWritable: true },
+    };
+    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedAccount>;
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
-  return Object.freeze({
-    accounts: [
-      getAccountMeta(accounts.address),
-      getAccountMeta(accounts.authority),
-      getAccountMeta(accounts.recipient),
-    ],
-    data: getCloseLookupTableInstructionDataEncoder().encode({}),
-    programAddress,
-  } as CloseLookupTableInstruction<
-    TProgramAddress,
-    TAccountAddress,
-    TAccountAuthority,
-    TAccountRecipient
-  >);
+    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+    return Object.freeze({
+        accounts: [
+            getAccountMeta(accounts.address),
+            getAccountMeta(accounts.authority),
+            getAccountMeta(accounts.recipient),
+        ],
+        data: getCloseLookupTableInstructionDataEncoder().encode({}),
+        programAddress,
+    } as CloseLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority, TAccountRecipient>);
 }
 
 export type ParsedCloseLookupTableInstruction<
-  TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
+    TProgram extends string = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
+    TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
-  programAddress: Address<TProgram>;
-  accounts: {
-    address: TAccountMetas[0];
-    authority: TAccountMetas[1];
-    recipient: TAccountMetas[2];
-  };
-  data: CloseLookupTableInstructionData;
+    programAddress: Address<TProgram>;
+    accounts: {
+        address: TAccountMetas[0];
+        authority: TAccountMetas[1];
+        recipient: TAccountMetas[2];
+    };
+    data: CloseLookupTableInstructionData;
 };
 
-export function parseCloseLookupTableInstruction<
-  TProgram extends string,
-  TAccountMetas extends readonly AccountMeta[],
->(
-  instruction: Instruction<TProgram> &
-    InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<ReadonlyUint8Array>
+export function parseCloseLookupTableInstruction<TProgram extends string, TAccountMetas extends readonly AccountMeta[]>(
+    instruction: Instruction<TProgram> &
+        InstructionWithAccounts<TAccountMetas> &
+        InstructionWithData<ReadonlyUint8Array>,
 ): ParsedCloseLookupTableInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
-    // TODO: Coded error.
-    throw new Error('Not enough accounts');
-  }
-  let accountIndex = 0;
-  const getNextAccount = () => {
-    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
-    accountIndex += 1;
-    return accountMeta;
-  };
-  return {
-    programAddress: instruction.programAddress,
-    accounts: {
-      address: getNextAccount(),
-      authority: getNextAccount(),
-      recipient: getNextAccount(),
-    },
-    data: getCloseLookupTableInstructionDataDecoder().decode(instruction.data),
-  };
+    if (instruction.accounts.length < 3) {
+        // TODO: Coded error.
+        throw new Error('Not enough accounts');
+    }
+    let accountIndex = 0;
+    const getNextAccount = () => {
+        const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
+        accountIndex += 1;
+        return accountMeta;
+    };
+    return {
+        programAddress: instruction.programAddress,
+        accounts: {
+            address: getNextAccount(),
+            authority: getNextAccount(),
+            recipient: getNextAccount(),
+        },
+        data: getCloseLookupTableInstructionDataDecoder().decode(instruction.data),
+    };
 }
