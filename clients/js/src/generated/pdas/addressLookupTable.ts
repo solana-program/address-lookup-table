@@ -7,32 +7,29 @@
  */
 
 import {
-  getAddressEncoder,
-  getProgramDerivedAddress,
-  getU64Encoder,
-  type Address,
-  type ProgramDerivedAddress,
+    getAddressEncoder,
+    getProgramDerivedAddress,
+    getU64Encoder,
+    type Address,
+    type ProgramDerivedAddress,
 } from '@solana/kit';
 
 export type AddressLookupTableSeeds = {
-  /** The address of the LUT's authority */
-  authority: Address;
-  /** The recent slot associated with the LUT */
-  recentSlot: number | bigint;
+    /** The address of the LUT's authority */
+    authority: Address;
+    /** The recent slot associated with the LUT */
+    recentSlot: number | bigint;
 };
 
 export async function findAddressLookupTablePda(
-  seeds: AddressLookupTableSeeds,
-  config: { programAddress?: Address | undefined } = {}
+    seeds: AddressLookupTableSeeds,
+    config: { programAddress?: Address | undefined } = {},
 ): Promise<ProgramDerivedAddress> {
-  const {
-    programAddress = 'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>,
-  } = config;
-  return await getProgramDerivedAddress({
-    programAddress,
-    seeds: [
-      getAddressEncoder().encode(seeds.authority),
-      getU64Encoder().encode(seeds.recentSlot),
-    ],
-  });
+    const {
+        programAddress = 'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>,
+    } = config;
+    return await getProgramDerivedAddress({
+        programAddress,
+        seeds: [getAddressEncoder().encode(seeds.authority), getU64Encoder().encode(seeds.recentSlot)],
+    });
 }

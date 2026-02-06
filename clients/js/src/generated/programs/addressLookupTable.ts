@@ -7,85 +7,134 @@
  */
 
 import {
-  containsBytes,
-  getU32Encoder,
-  type Address,
-  type ReadonlyUint8Array,
+    assertIsInstructionWithAccounts,
+    containsBytes,
+    getU32Encoder,
+    type Address,
+    type Instruction,
+    type InstructionWithData,
+    type ReadonlyUint8Array,
 } from '@solana/kit';
 import {
-  type ParsedCloseLookupTableInstruction,
-  type ParsedCreateLookupTableInstruction,
-  type ParsedDeactivateLookupTableInstruction,
-  type ParsedExtendLookupTableInstruction,
-  type ParsedFreezeLookupTableInstruction,
+    parseCloseLookupTableInstruction,
+    parseCreateLookupTableInstruction,
+    parseDeactivateLookupTableInstruction,
+    parseExtendLookupTableInstruction,
+    parseFreezeLookupTableInstruction,
+    type ParsedCloseLookupTableInstruction,
+    type ParsedCreateLookupTableInstruction,
+    type ParsedDeactivateLookupTableInstruction,
+    type ParsedExtendLookupTableInstruction,
+    type ParsedFreezeLookupTableInstruction,
 } from '../instructions';
 
 export const ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS =
-  'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
+    'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
 
 export enum AddressLookupTableAccount {
-  AddressLookupTable,
+    AddressLookupTable,
 }
 
 export function identifyAddressLookupTableAccount(
-  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
+    account: { data: ReadonlyUint8Array } | ReadonlyUint8Array,
 ): AddressLookupTableAccount {
-  const data = 'data' in account ? account.data : account;
-  if (containsBytes(data, getU32Encoder().encode(1), 0)) {
-    return AddressLookupTableAccount.AddressLookupTable;
-  }
-  throw new Error(
-    'The provided account could not be identified as a addressLookupTable account.'
-  );
+    const data = 'data' in account ? account.data : account;
+    if (containsBytes(data, getU32Encoder().encode(1), 0)) {
+        return AddressLookupTableAccount.AddressLookupTable;
+    }
+    throw new Error('The provided account could not be identified as a addressLookupTable account.');
 }
 
 export enum AddressLookupTableInstruction {
-  CreateLookupTable,
-  FreezeLookupTable,
-  ExtendLookupTable,
-  DeactivateLookupTable,
-  CloseLookupTable,
+    CreateLookupTable,
+    FreezeLookupTable,
+    ExtendLookupTable,
+    DeactivateLookupTable,
+    CloseLookupTable,
 }
 
 export function identifyAddressLookupTableInstruction(
-  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
+    instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array,
 ): AddressLookupTableInstruction {
-  const data = 'data' in instruction ? instruction.data : instruction;
-  if (containsBytes(data, getU32Encoder().encode(0), 0)) {
-    return AddressLookupTableInstruction.CreateLookupTable;
-  }
-  if (containsBytes(data, getU32Encoder().encode(1), 0)) {
-    return AddressLookupTableInstruction.FreezeLookupTable;
-  }
-  if (containsBytes(data, getU32Encoder().encode(2), 0)) {
-    return AddressLookupTableInstruction.ExtendLookupTable;
-  }
-  if (containsBytes(data, getU32Encoder().encode(3), 0)) {
-    return AddressLookupTableInstruction.DeactivateLookupTable;
-  }
-  if (containsBytes(data, getU32Encoder().encode(4), 0)) {
-    return AddressLookupTableInstruction.CloseLookupTable;
-  }
-  throw new Error(
-    'The provided instruction could not be identified as a addressLookupTable instruction.'
-  );
+    const data = 'data' in instruction ? instruction.data : instruction;
+    if (containsBytes(data, getU32Encoder().encode(0), 0)) {
+        return AddressLookupTableInstruction.CreateLookupTable;
+    }
+    if (containsBytes(data, getU32Encoder().encode(1), 0)) {
+        return AddressLookupTableInstruction.FreezeLookupTable;
+    }
+    if (containsBytes(data, getU32Encoder().encode(2), 0)) {
+        return AddressLookupTableInstruction.ExtendLookupTable;
+    }
+    if (containsBytes(data, getU32Encoder().encode(3), 0)) {
+        return AddressLookupTableInstruction.DeactivateLookupTable;
+    }
+    if (containsBytes(data, getU32Encoder().encode(4), 0)) {
+        return AddressLookupTableInstruction.CloseLookupTable;
+    }
+    throw new Error('The provided instruction could not be identified as a addressLookupTable instruction.');
 }
 
 export type ParsedAddressLookupTableInstruction<
-  TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
+    TProgram extends string = 'AddressLookupTab1e1111111111111111111111111',
 > =
-  | ({
-      instructionType: AddressLookupTableInstruction.CreateLookupTable;
-    } & ParsedCreateLookupTableInstruction<TProgram>)
-  | ({
-      instructionType: AddressLookupTableInstruction.FreezeLookupTable;
-    } & ParsedFreezeLookupTableInstruction<TProgram>)
-  | ({
-      instructionType: AddressLookupTableInstruction.ExtendLookupTable;
-    } & ParsedExtendLookupTableInstruction<TProgram>)
-  | ({
-      instructionType: AddressLookupTableInstruction.DeactivateLookupTable;
-    } & ParsedDeactivateLookupTableInstruction<TProgram>)
-  | ({
-      instructionType: AddressLookupTableInstruction.CloseLookupTable;
-    } & ParsedCloseLookupTableInstruction<TProgram>);
+    | ({
+          instructionType: AddressLookupTableInstruction.CreateLookupTable;
+      } & ParsedCreateLookupTableInstruction<TProgram>)
+    | ({
+          instructionType: AddressLookupTableInstruction.FreezeLookupTable;
+      } & ParsedFreezeLookupTableInstruction<TProgram>)
+    | ({
+          instructionType: AddressLookupTableInstruction.ExtendLookupTable;
+      } & ParsedExtendLookupTableInstruction<TProgram>)
+    | ({
+          instructionType: AddressLookupTableInstruction.DeactivateLookupTable;
+      } & ParsedDeactivateLookupTableInstruction<TProgram>)
+    | ({
+          instructionType: AddressLookupTableInstruction.CloseLookupTable;
+      } & ParsedCloseLookupTableInstruction<TProgram>);
+
+export function parseAddressLookupTableInstruction<TProgram extends string>(
+    instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>,
+): ParsedAddressLookupTableInstruction<TProgram> {
+    const instructionType = identifyAddressLookupTableInstruction(instruction);
+    switch (instructionType) {
+        case AddressLookupTableInstruction.CreateLookupTable: {
+            assertIsInstructionWithAccounts(instruction);
+            return {
+                instructionType: AddressLookupTableInstruction.CreateLookupTable,
+                ...parseCreateLookupTableInstruction(instruction),
+            };
+        }
+        case AddressLookupTableInstruction.FreezeLookupTable: {
+            assertIsInstructionWithAccounts(instruction);
+            return {
+                instructionType: AddressLookupTableInstruction.FreezeLookupTable,
+                ...parseFreezeLookupTableInstruction(instruction),
+            };
+        }
+        case AddressLookupTableInstruction.ExtendLookupTable: {
+            assertIsInstructionWithAccounts(instruction);
+            return {
+                instructionType: AddressLookupTableInstruction.ExtendLookupTable,
+                ...parseExtendLookupTableInstruction(instruction),
+            };
+        }
+        case AddressLookupTableInstruction.DeactivateLookupTable: {
+            assertIsInstructionWithAccounts(instruction);
+            return {
+                instructionType: AddressLookupTableInstruction.DeactivateLookupTable,
+                ...parseDeactivateLookupTableInstruction(instruction),
+            };
+        }
+        case AddressLookupTableInstruction.CloseLookupTable: {
+            assertIsInstructionWithAccounts(instruction);
+            return {
+                instructionType: AddressLookupTableInstruction.CloseLookupTable,
+                ...parseCloseLookupTableInstruction(instruction),
+            };
+        }
+        default:
+            throw new Error(`Unrecognized instruction type: ${instructionType as string}`);
+    }
+}
