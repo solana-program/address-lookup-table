@@ -149,11 +149,7 @@ export function parseCloseLookupTableInstruction<TProgram extends string, TAccou
     };
     return {
         programAddress: instruction.programAddress,
-        accounts: {
-            address: getNextAccount(),
-            authority: getNextAccount(),
-            recipient: getNextAccount(),
-        },
+        accounts: { address: getNextAccount(), authority: getNextAccount(), recipient: getNextAccount() },
         data: getCloseLookupTableInstructionDataDecoder().decode(instruction.data),
     };
 }

@@ -81,11 +81,7 @@ export function getAddressLookupTableEncoder(): Encoder<AddressLookupTableArgs> 
             ['padding', getU16Encoder()],
             ['addresses', getArrayEncoder(getAddressEncoder(), { size: 'remainder' })],
         ]),
-        value => ({
-            ...value,
-            discriminator: ADDRESS_LOOKUP_TABLE_DISCRIMINATOR,
-            padding: 0,
-        }),
+        value => ({ ...value, discriminator: ADDRESS_LOOKUP_TABLE_DISCRIMINATOR, padding: 0 }),
     );
 }
 

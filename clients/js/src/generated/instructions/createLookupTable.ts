@@ -72,16 +72,9 @@ export type CreateLookupTableInstruction<
         ]
     >;
 
-export type CreateLookupTableInstructionData = {
-    discriminator: number;
-    recentSlot: bigint;
-    bump: number;
-};
+export type CreateLookupTableInstructionData = { discriminator: number; recentSlot: bigint; bump: number };
 
-export type CreateLookupTableInstructionDataArgs = {
-    recentSlot: number | bigint;
-    bump: number;
-};
+export type CreateLookupTableInstructionDataArgs = { recentSlot: number | bigint; bump: number };
 
 export function getCreateLookupTableInstructionDataEncoder(): FixedSizeEncoder<CreateLookupTableInstructionDataArgs> {
     return transformEncoder(

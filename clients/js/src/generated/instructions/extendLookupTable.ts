@@ -68,14 +68,9 @@ export type ExtendLookupTableInstruction<
         ]
     >;
 
-export type ExtendLookupTableInstructionData = {
-    discriminator: number;
-    addresses: Array<Address>;
-};
+export type ExtendLookupTableInstructionData = { discriminator: number; addresses: Array<Address> };
 
-export type ExtendLookupTableInstructionDataArgs = {
-    addresses: Array<Address>;
-};
+export type ExtendLookupTableInstructionDataArgs = { addresses: Array<Address> };
 
 export function getExtendLookupTableInstructionDataEncoder(): Encoder<ExtendLookupTableInstructionDataArgs> {
     return transformEncoder(
