@@ -23,7 +23,7 @@ version = "2.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "842ac28d0f5202fc8dbe8322ee06c328b27ef5fe7b0c5828409d39b6664beac5"
 dependencies = [
- "ahash",
+ "ahash 0.8.11",
  "solana-epoch-schedule",
  "solana-hash",
  "solana-pubkey",
@@ -51,6 +51,17 @@ dependencies = [
  "solana-sdk-ids",
  "solana-secp256k1-program",
  "solana-secp256r1-program",
+]
+
+[[package]]
+name = "ahash"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
+dependencies = [
+ "getrandom 0.2.15",
+ "once_cell",
+ "version_check",
 ]
 
 [[package]]
@@ -443,12 +454,12 @@ dependencies = [
 
 [[package]]
 name = "borsh"
-version = "0.10.3"
+version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
+checksum = "115e54d64eb62cdebad391c19efc9dce4981c690c85a33a12199d99bb9546fee"
 dependencies = [
  "borsh-derive 0.10.3",
- "hashbrown 0.13.2",
+ "hashbrown 0.12.3",
 ]
 
 [[package]]
@@ -1448,6 +1459,9 @@ name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
+dependencies = [
+ "ahash 0.7.8",
+]
 
 [[package]]
 name = "hashbrown"
@@ -1455,7 +1469,7 @@ version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
 dependencies = [
- "ahash",
+ "ahash 0.8.11",
 ]
 
 [[package]]
@@ -1960,7 +1974,7 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ba15de5aeb137f0f65aa3bf82187647f1285abfe5b20c80c2c37f7007ad519a"
 dependencies = [
- "borsh 0.10.3",
+ "borsh 0.10.4",
  "serde",
 ]
 
@@ -3641,7 +3655,7 @@ dependencies = [
 name = "solana-address-lookup-table-client"
 version = "0.1.0"
 dependencies = [
- "borsh 0.10.3",
+ "borsh 1.5.7",
  "kaigan",
  "num-derive",
  "num-traits",
@@ -3769,7 +3783,7 @@ version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "718333bcd0a1a7aed6655aa66bef8d7fb047944922b2d3a18f49cbc13e73d004"
 dependencies = [
- "borsh 0.10.3",
+ "borsh 0.10.4",
  "borsh 1.5.7",
 ]
 
@@ -4136,7 +4150,7 @@ version = "2.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93b93971e289d6425f88e6e3cb6668c4b05df78b3c518c249be55ced8efd6b6d"
 dependencies = [
- "ahash",
+ "ahash 0.8.11",
  "lazy_static",
  "solana-epoch-schedule",
  "solana-hash",
@@ -4579,7 +4593,7 @@ version = "2.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d43a35a7c2b2aad5db286e78b943d148afc1e3b300734bcba437b6d79d00516"
 dependencies = [
- "ahash",
+ "ahash 0.8.11",
  "bincode",
  "bv",
  "bytes",
@@ -4673,7 +4687,7 @@ checksum = "98eca145bd3545e2fbb07166e895370576e47a00a7d824e325390d33bf467210"
 dependencies = [
  "bincode",
  "blake3",
- "borsh 0.10.3",
+ "borsh 0.10.4",
  "borsh 1.5.7",
  "bs58",
  "bytemuck",
@@ -4846,7 +4860,7 @@ version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b62adb9c3261a052ca1f999398c388f1daf558a1b492f60a6d9e64857db4ff1"
 dependencies = [
- "borsh 0.10.3",
+ "borsh 0.10.4",
  "borsh 1.5.7",
  "bytemuck",
  "bytemuck_derive",
@@ -5417,7 +5431,7 @@ version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5269e89fde216b4d7e1d1739cf5303f8398a1ff372a81232abbee80e554a838c"
 dependencies = [
- "borsh 0.10.3",
+ "borsh 0.10.4",
  "borsh 1.5.7",
  "num-traits",
  "serde",
