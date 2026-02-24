@@ -33,7 +33,7 @@ pub enum AddressLookupTableError {
 }
 
 impl ToStr for AddressLookupTableError {
-    fn to_str<E>(&self) -> &'static str {
+    fn to_str(&self) -> &'static str {
         match self {
             Self::PubkeyErrorMaxSeedLengthExceeded => {
                 "Length of the seed is too long for address generation"

@@ -1,6 +1,7 @@
 use {
     mollusk_svm::program::keyed_account_for_system_program,
     mollusk_svm_bencher::Bench,
+    solana_account::Account,
     solana_address_lookup_table_program::{
         instruction::{
             close_lookup_table as close_lookup_table_ix,
@@ -11,7 +12,9 @@ use {
         },
         state::{AddressLookupTable, LookupTableMeta},
     },
-    solana_sdk::{account::Account, instruction::Instruction, pubkey::Pubkey, rent::Rent},
+    solana_instruction::Instruction,
+    solana_pubkey::Pubkey,
+    solana_rent::Rent,
     solana_sdk_ids::system_program,
     std::borrow::Cow,
 };

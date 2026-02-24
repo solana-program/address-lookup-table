@@ -3,10 +3,11 @@ mod common;
 use {
     common::{lookup_table_account, new_address_lookup_table, setup},
     mollusk_svm::result::Check,
+    solana_account::Account,
     solana_address_lookup_table_program::instruction::close_lookup_table,
-    solana_sdk::{
-        account::Account, program_error::ProgramError, pubkey::Pubkey, slot_hashes::MAX_ENTRIES,
-    },
+    solana_program_error::ProgramError,
+    solana_pubkey::Pubkey,
+    solana_slot_hashes::MAX_ENTRIES,
 };
 
 #[test]

@@ -3,17 +3,15 @@ mod common;
 use {
     common::setup,
     mollusk_svm::{program::keyed_account_for_system_program, result::Check},
+    solana_account::{Account, ReadableAccount},
     solana_address_lookup_table_program::{
         instruction::create_lookup_table,
         state::{AddressLookupTable, LOOKUP_TABLE_META_SIZE},
     },
-    solana_sdk::{
-        account::{Account, ReadableAccount},
-        clock::Slot,
-        program_error::ProgramError,
-        pubkey::Pubkey,
-        rent::Rent,
-    },
+    solana_clock::Slot,
+    solana_program_error::ProgramError,
+    solana_pubkey::Pubkey,
+    solana_rent::Rent,
     solana_sdk_ids::system_program,
 };
 

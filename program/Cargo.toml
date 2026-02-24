@@ -31,7 +31,7 @@ solana-instruction = { workspace = true, features = ["std"] }
 solana-msg = { workspace = true }
 solana-program-entrypoint = { workspace = true }
 solana-program-error = { workspace = true }
-solana-pubkey = { workspace = true, features = ["bytemuck"] }
+solana-pubkey = { workspace = true, features = ["bytemuck", "curve25519"] }
 solana-rent = { workspace = true }
 solana-sdk-ids = { workspace = true }
 solana-slot-hashes = { workspace = true }
@@ -42,7 +42,7 @@ thiserror = { workspace = true }
 [dev-dependencies]
 mollusk-svm = { workspace = true, features = ["fuzz"] }
 mollusk-svm-bencher = { workspace = true }
-solana-sdk = { workspace = true }
+solana-account = { workspace = true }
 strum = { workspace = true }
 strum_macros = { workspace = true }
 test-case = { workspace = true }
