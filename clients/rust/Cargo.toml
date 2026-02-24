@@ -10,7 +10,7 @@ edition = { workspace = true }
 
 [features]
 fetch = ["dep:solana-account", "dep:solana-client"]
-serde = ["dep:serde", "dep:serde_with", "kaigan/serde"]
+serde = ["dep:serde", "dep:serde_with", "kaigan/serde", "solana-pubkey/serde"]
 
 [dependencies]
 borsh = { workspace = true }
