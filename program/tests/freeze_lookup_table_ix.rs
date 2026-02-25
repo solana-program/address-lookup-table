@@ -3,14 +3,12 @@ mod common;
 use {
     common::{lookup_table_account, new_address_lookup_table, setup},
     mollusk_svm::result::Check,
+    solana_account::{Account, ReadableAccount},
     solana_address_lookup_table_program::{
         instruction::freeze_lookup_table, state::AddressLookupTable,
     },
-    solana_sdk::{
-        account::{Account, ReadableAccount},
-        program_error::ProgramError,
-        pubkey::Pubkey,
-    },
+    solana_program_error::ProgramError,
+    solana_pubkey::Pubkey,
 };
 
 #[test]

@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 use {
     mollusk_svm::Mollusk,
+    solana_account::Account,
     solana_address_lookup_table_program::state::{AddressLookupTable, LookupTableMeta},
-    solana_sdk::{account::Account, pubkey::Pubkey, rent::Rent},
+    solana_pubkey::Pubkey,
+    solana_rent::Rent,
     std::borrow::Cow,
 };
 

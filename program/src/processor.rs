@@ -203,13 +203,13 @@ fn process_create_lookup_table(
 
     invoke_signed(
         &system_instruction::allocate(lookup_table_info.key, lookup_table_data_len as u64),
-        &[lookup_table_info.clone()],
+        core::slice::from_ref(lookup_table_info),
         &[derived_table_seeds],
     )?;
 
     invoke_signed(
         &system_instruction::assign(lookup_table_info.key, program_id),
-        &[lookup_table_info.clone()],
+        core::slice::from_ref(lookup_table_info),
         &[derived_table_seeds],
     )?;
 

@@ -7,17 +7,15 @@ use {
         result::{Check, ProgramResult},
         Mollusk,
     },
+    solana_account::{Account, ReadableAccount, WritableAccount},
     solana_address_lookup_table_program::{
         error::AddressLookupTableError,
         instruction::extend_lookup_table,
         state::{AddressLookupTable, LookupTableMeta},
     },
-    solana_sdk::{
-        account::{Account, ReadableAccount, WritableAccount},
-        instruction::Instruction,
-        program_error::ProgramError,
-        pubkey::{Pubkey, PUBKEY_BYTES},
-    },
+    solana_instruction::Instruction,
+    solana_program_error::ProgramError,
+    solana_pubkey::{Pubkey, PUBKEY_BYTES},
     solana_sdk_ids::system_program,
     std::{borrow::Cow, result::Result},
 };
