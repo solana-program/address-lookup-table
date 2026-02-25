@@ -1,30 +1,30 @@
-#### 2026-02-25 12:54:04.016395943 UTC
+#### 2026-02-25 13:10:00.323460350 UTC
 
 Solana CLI Version: Unknown
 
 | Name | CUs | Delta |
 |------|------|-------|
-| create_lookup_table | 9840 | -619 |
-| freeze_lookup_table | 1758 | -2 |
-| extend_lookup_table_from_0_to_1 | 5587 | -307 |
-| extend_lookup_table_from_0_to_10 | 7757 | -334 |
-| extend_lookup_table_from_0_to_38 | 14509 | -418 |
-| extend_lookup_table_from_1_to_2 | 5587 | -307 |
-| extend_lookup_table_from_1_to_10 | 7516 | -331 |
-| extend_lookup_table_from_1_to_39 | 14509 | -418 |
-| extend_lookup_table_from_5_to_6 | 5587 | -307 |
-| extend_lookup_table_from_5_to_15 | 7758 | -334 |
-| extend_lookup_table_from_5_to_43 | 14509 | -418 |
-| extend_lookup_table_from_25_to_26 | 5590 | -307 |
-| extend_lookup_table_from_25_to_35 | 7760 | -334 |
-| extend_lookup_table_from_25_to_63 | 14512 | -418 |
-| extend_lookup_table_from_50_to_88 | 14515 | -418 |
-| extend_lookup_table_from_100_to_138 | 14521 | -418 |
-| extend_lookup_table_from_150_to_188 | 14528 | -418 |
-| extend_lookup_table_from_200_to_238 | 14534 | -418 |
-| extend_lookup_table_from_255_to_256 | 5619 | -307 |
-| deactivate_lookup_table | 2856 | -17 |
-| close_lookup_table | 2742 | +6 |
+| create_lookup_table | 9833 | -626 |
+| freeze_lookup_table | 1810 | +50 |
+| extend_lookup_table_from_0_to_1 | 5604 | -290 |
+| extend_lookup_table_from_0_to_10 | 7765 | -326 |
+| extend_lookup_table_from_0_to_38 | 14489 | -438 |
+| extend_lookup_table_from_1_to_2 | 5604 | -290 |
+| extend_lookup_table_from_1_to_10 | 7525 | -322 |
+| extend_lookup_table_from_1_to_39 | 14489 | -438 |
+| extend_lookup_table_from_5_to_6 | 5604 | -290 |
+| extend_lookup_table_from_5_to_15 | 7766 | -326 |
+| extend_lookup_table_from_5_to_43 | 14489 | -438 |
+| extend_lookup_table_from_25_to_26 | 5607 | -290 |
+| extend_lookup_table_from_25_to_35 | 7768 | -326 |
+| extend_lookup_table_from_25_to_63 | 14492 | -438 |
+| extend_lookup_table_from_50_to_88 | 14495 | -438 |
+| extend_lookup_table_from_100_to_138 | 14501 | -438 |
+| extend_lookup_table_from_150_to_188 | 14508 | -438 |
+| extend_lookup_table_from_200_to_238 | 14514 | -438 |
+| extend_lookup_table_from_255_to_256 | 5636 | -290 |
+| deactivate_lookup_table | 2893 | +20 |
+| close_lookup_table | 2777 | +41 |
 
 #### 2025-07-21 17:49:50.839000271 UTC
 
