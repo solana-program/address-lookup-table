@@ -1,3 +1,31 @@
+#### 2026-02-25 12:54:04.016395943 UTC
+
+Solana CLI Version: Unknown
+
+| Name | CUs | Delta |
+|------|------|-------|
+| create_lookup_table | 9840 | -619 |
+| freeze_lookup_table | 1758 | -2 |
+| extend_lookup_table_from_0_to_1 | 5587 | -307 |
+| extend_lookup_table_from_0_to_10 | 7757 | -334 |
+| extend_lookup_table_from_0_to_38 | 14509 | -418 |
+| extend_lookup_table_from_1_to_2 | 5587 | -307 |
+| extend_lookup_table_from_1_to_10 | 7516 | -331 |
+| extend_lookup_table_from_1_to_39 | 14509 | -418 |
+| extend_lookup_table_from_5_to_6 | 5587 | -307 |
+| extend_lookup_table_from_5_to_15 | 7758 | -334 |
+| extend_lookup_table_from_5_to_43 | 14509 | -418 |
+| extend_lookup_table_from_25_to_26 | 5590 | -307 |
+| extend_lookup_table_from_25_to_35 | 7760 | -334 |
+| extend_lookup_table_from_25_to_63 | 14512 | -418 |
+| extend_lookup_table_from_50_to_88 | 14515 | -418 |
+| extend_lookup_table_from_100_to_138 | 14521 | -418 |
+| extend_lookup_table_from_150_to_188 | 14528 | -418 |
+| extend_lookup_table_from_200_to_238 | 14534 | -418 |
+| extend_lookup_table_from_255_to_256 | 5619 | -307 |
+| deactivate_lookup_table | 2856 | -17 |
+| close_lookup_table | 2742 | +6 |
+
 #### 2025-07-21 17:49:50.839000271 UTC
 
 Solana CLI Version: solana-cli 2.3.4 (src:bbf10bfb; feat:3640012085, client:Agave)
