@@ -20,7 +20,7 @@ num-traits = { workspace = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_with = { workspace = true, optional = true }
 solana-account = { version = "2", optional = true }
-solana-account-info = "2"
+solana-account-info = "3"
 solana-client = { version = "2", optional = true }
 solana-cpi = "2"
 solana-instruction = "2"
