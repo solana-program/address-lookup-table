@@ -22,7 +22,7 @@ serde_with = { workspace = true, optional = true }
 solana-account = { version = "2", optional = true }
 solana-account-info = "2"
 solana-client = { version = "2", optional = true }
-solana-cpi = "2"
+solana-cpi = "3"
 solana-instruction = "2"
 solana-program-error = "2"
 solana-pubkey = { version = "2", features = ["borsh", "curve25519"] }
