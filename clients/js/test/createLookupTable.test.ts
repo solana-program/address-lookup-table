@@ -1,5 +1,5 @@
 import { Address, appendTransactionMessageInstruction, pipe, Account, some } from '@solana/kit';
-import test from 'ava';
+import { expect, it } from 'vitest';
 import {
     AddressLookupTable,
     fetchAddressLookupTable,
@@ -13,7 +13,7 @@ import {
     signAndSendTransaction,
 } from './_setup';
 
-test('it creates a new empty address lookup table', async t => {
+it('creates a new empty address lookup table', async () => {
     // Given an authority wallet with SOL and a recent slot.
     const client = createDefaultSolanaClient();
     const [authority, recentSlot] = await Promise.all([
@@ -35,7 +35,7 @@ test('it creates a new empty address lookup table', async t => {
         recentSlot,
     });
     const lutAccount = await fetchAddressLookupTable(client.rpc, lut);
-    t.like(lutAccount, <Account<AddressLookupTable>>{
+    expect(lutAccount).toMatchObject(<Account<AddressLookupTable>>{
         address: lut,
         data: {
             addresses: [] as Address[],
