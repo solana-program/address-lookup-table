@@ -11,11 +11,11 @@ pub const CLOSE_LOOKUP_TABLE_DISCRIMINATOR: u32 = 4;
 /// Accounts.
 #[derive(Debug)]
 pub struct CloseLookupTable {
-    pub address: solana_pubkey::Pubkey,
+    pub address: solana_address::Address,
 
-    pub authority: solana_pubkey::Pubkey,
+    pub authority: solana_address::Address,
 
-    pub recipient: solana_pubkey::Pubkey,
+    pub recipient: solana_address::Address,
 }
 
 impl CloseLookupTable {
@@ -47,7 +47,6 @@ impl CloseLookupTable {
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CloseLookupTableInstructionData {
     discriminator: u32,
 }
@@ -77,9 +76,9 @@ impl Default for CloseLookupTableInstructionData {
 ///   2. `[writable]` recipient
 #[derive(Clone, Debug, Default)]
 pub struct CloseLookupTableBuilder {
-    address: Option<solana_pubkey::Pubkey>,
-    authority: Option<solana_pubkey::Pubkey>,
-    recipient: Option<solana_pubkey::Pubkey>,
+    address: Option<solana_address::Address>,
+    authority: Option<solana_address::Address>,
+    recipient: Option<solana_address::Address>,
     __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
@@ -88,17 +87,17 @@ impl CloseLookupTableBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn address(&mut self, address: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn address(&mut self, address: solana_address::Address) -> &mut Self {
         self.address = Some(address);
         self
     }
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn authority(&mut self, authority: solana_address::Address) -> &mut Self {
         self.authority = Some(authority);
         self
     }
     #[inline(always)]
-    pub fn recipient(&mut self, recipient: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn recipient(&mut self, recipient: solana_address::Address) -> &mut Self {
         self.recipient = Some(recipient);
         self
     }

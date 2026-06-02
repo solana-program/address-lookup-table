@@ -17,6 +17,8 @@ import {
     getU64Encoder,
     getU8Decoder,
     getU8Encoder,
+    SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS,
+    SolanaError,
     transformEncoder,
     type AccountMeta,
     type AccountSignerMeta,
@@ -34,20 +36,20 @@ import {
     type WritableAccount,
     type WritableSignerAccount,
 } from '@solana/kit';
+import {
+    getAccountMetaFactory,
+    getAddressFromResolvedInstructionAccount,
+    getNonNullResolvedInstructionInput,
+    getResolvedInstructionAccountAsProgramDerivedAddress,
+    type InstructionWithByteDelta,
+    type ResolvedInstructionAccount,
+} from '@solana/kit/program-client-core';
 import { findAddressLookupTablePda } from '../pdas';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
-import {
-    expectAddress,
-    expectProgramDerivedAddress,
-    expectSome,
-    getAccountMetaFactory,
-    type InstructionWithByteDelta,
-    type ResolvedAccount,
-} from '../shared';
 
 export const CREATE_LOOKUP_TABLE_DISCRIMINATOR = 0;
 
-export function getCreateLookupTableDiscriminatorBytes() {
+export function getCreateLookupTableDiscriminatorBytes(): ReadonlyUint8Array {
     return getU32Encoder().encode(CREATE_LOOKUP_TABLE_DISCRIMINATOR);
 }
 
@@ -145,7 +147,7 @@ export async function getCreateLookupTableInstructionAsync<
         payer: { value: input.payer ?? null, isWritable: true },
         systemProgram: { value: input.systemProgram ?? null, isWritable: false },
     };
-    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedAccount>;
+    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
     // Original args.
     const args = { ...input };
@@ -153,19 +155,19 @@ export async function getCreateLookupTableInstructionAsync<
     // Resolve default values.
     if (!accounts.address.value) {
         accounts.address.value = await findAddressLookupTablePda({
-            authority: expectAddress(accounts.authority.value),
-            recentSlot: expectSome(args.recentSlot),
+            authority: getAddressFromResolvedInstructionAccount('authority', accounts.authority.value),
+            recentSlot: getNonNullResolvedInstructionInput('recentSlot', args.recentSlot),
         });
     }
     if (!accounts.payer.value) {
-        accounts.payer.value = expectSome(accounts.authority.value);
+        accounts.payer.value = getNonNullResolvedInstructionInput('authority', accounts.authority.value);
     }
     if (!accounts.systemProgram.value) {
         accounts.systemProgram.value =
             '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
     }
     if (!args.bump) {
-        args.bump = expectProgramDerivedAddress(accounts.address.value)[1];
+        args.bump = getResolvedInstructionAccountAsProgramDerivedAddress('address', accounts.address.value)[1];
     }
 
     // Bytes created or reallocated by the instruction.
@@ -174,10 +176,10 @@ export async function getCreateLookupTableInstructionAsync<
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
         accounts: [
-            getAccountMeta(accounts.address),
-            getAccountMeta(accounts.authority),
-            getAccountMeta(accounts.payer),
-            getAccountMeta(accounts.systemProgram),
+            getAccountMeta('address', accounts.address),
+            getAccountMeta('authority', accounts.authority),
+            getAccountMeta('payer', accounts.payer),
+            getAccountMeta('systemProgram', accounts.systemProgram),
         ],
         byteDelta,
         data: getCreateLookupTableInstructionDataEncoder().encode(args as CreateLookupTableInstructionDataArgs),
@@ -233,21 +235,21 @@ export function getCreateLookupTableInstruction<
         payer: { value: input.payer ?? null, isWritable: true },
         systemProgram: { value: input.systemProgram ?? null, isWritable: false },
     };
-    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedAccount>;
+    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
     // Original args.
     const args = { ...input };
 
     // Resolve default values.
     if (!accounts.payer.value) {
-        accounts.payer.value = expectSome(accounts.authority.value);
+        accounts.payer.value = getNonNullResolvedInstructionInput('authority', accounts.authority.value);
     }
     if (!accounts.systemProgram.value) {
         accounts.systemProgram.value =
             '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
     }
     if (!args.bump) {
-        args.bump = expectProgramDerivedAddress(accounts.address.value)[1];
+        args.bump = getResolvedInstructionAccountAsProgramDerivedAddress('address', accounts.address.value)[1];
     }
 
     // Bytes created or reallocated by the instruction.
@@ -256,10 +258,10 @@ export function getCreateLookupTableInstruction<
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
         accounts: [
-            getAccountMeta(accounts.address),
-            getAccountMeta(accounts.authority),
-            getAccountMeta(accounts.payer),
-            getAccountMeta(accounts.systemProgram),
+            getAccountMeta('address', accounts.address),
+            getAccountMeta('authority', accounts.authority),
+            getAccountMeta('payer', accounts.payer),
+            getAccountMeta('systemProgram', accounts.systemProgram),
         ],
         byteDelta,
         data: getCreateLookupTableInstructionDataEncoder().encode(args as CreateLookupTableInstructionDataArgs),
@@ -297,8 +299,10 @@ export function parseCreateLookupTableInstruction<
         InstructionWithData<ReadonlyUint8Array>,
 ): ParsedCreateLookupTableInstruction<TProgram, TAccountMetas> {
     if (instruction.accounts.length < 4) {
-        // TODO: Coded error.
-        throw new Error('Not enough accounts');
+        throw new SolanaError(SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS, {
+            actualAccountMetas: instruction.accounts.length,
+            expectedAccountMetas: 4,
+        });
     }
     let accountIndex = 0;
     const getNextAccount = () => {

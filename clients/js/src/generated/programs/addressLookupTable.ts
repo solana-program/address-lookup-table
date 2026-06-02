@@ -9,24 +9,53 @@
 import {
     assertIsInstructionWithAccounts,
     containsBytes,
+    extendClient,
     getU32Encoder,
+    SOLANA_ERROR__PROGRAM_CLIENTS__FAILED_TO_IDENTIFY_ACCOUNT,
+    SOLANA_ERROR__PROGRAM_CLIENTS__FAILED_TO_IDENTIFY_INSTRUCTION,
+    SOLANA_ERROR__PROGRAM_CLIENTS__UNRECOGNIZED_INSTRUCTION_TYPE,
+    SolanaError,
     type Address,
+    type ClientWithPayer,
+    type ClientWithRpc,
+    type ClientWithTransactionPlanning,
+    type ClientWithTransactionSending,
+    type GetAccountInfoApi,
+    type GetMultipleAccountsApi,
     type Instruction,
     type InstructionWithData,
     type ReadonlyUint8Array,
 } from '@solana/kit';
 import {
+    addSelfFetchFunctions,
+    addSelfPlanAndSendFunctions,
+    type SelfFetchFunctions,
+    type SelfPlanAndSendFunctions,
+} from '@solana/kit/program-client-core';
+import { getAddressLookupTableCodec, type AddressLookupTable, type AddressLookupTableArgs } from '../accounts';
+import {
+    getCloseLookupTableInstruction,
+    getCreateLookupTableInstructionAsync,
+    getDeactivateLookupTableInstruction,
+    getExtendLookupTableInstruction,
+    getFreezeLookupTableInstruction,
     parseCloseLookupTableInstruction,
     parseCreateLookupTableInstruction,
     parseDeactivateLookupTableInstruction,
     parseExtendLookupTableInstruction,
     parseFreezeLookupTableInstruction,
+    type CloseLookupTableInput,
+    type CreateLookupTableAsyncInput,
+    type DeactivateLookupTableInput,
+    type ExtendLookupTableInput,
+    type FreezeLookupTableInput,
     type ParsedCloseLookupTableInstruction,
     type ParsedCreateLookupTableInstruction,
     type ParsedDeactivateLookupTableInstruction,
     type ParsedExtendLookupTableInstruction,
     type ParsedFreezeLookupTableInstruction,
 } from '../instructions';
+import { findAddressLookupTablePda } from '../pdas';
 
 export const ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS =
     'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>;
@@ -42,7 +71,10 @@ export function identifyAddressLookupTableAccount(
     if (containsBytes(data, getU32Encoder().encode(1), 0)) {
         return AddressLookupTableAccount.AddressLookupTable;
     }
-    throw new Error('The provided account could not be identified as a addressLookupTable account.');
+    throw new SolanaError(SOLANA_ERROR__PROGRAM_CLIENTS__FAILED_TO_IDENTIFY_ACCOUNT, {
+        accountData: data,
+        programName: 'addressLookupTable',
+    });
 }
 
 export enum AddressLookupTableInstruction {
@@ -72,7 +104,10 @@ export function identifyAddressLookupTableInstruction(
     if (containsBytes(data, getU32Encoder().encode(4), 0)) {
         return AddressLookupTableInstruction.CloseLookupTable;
     }
-    throw new Error('The provided instruction could not be identified as a addressLookupTable instruction.');
+    throw new SolanaError(SOLANA_ERROR__PROGRAM_CLIENTS__FAILED_TO_IDENTIFY_INSTRUCTION, {
+        instructionData: data,
+        programName: 'addressLookupTable',
+    });
 }
 
 export type ParsedAddressLookupTableInstruction<
@@ -135,6 +170,75 @@ export function parseAddressLookupTableInstruction<TProgram extends string>(
             };
         }
         default:
-            throw new Error(`Unrecognized instruction type: ${instructionType as string}`);
+            throw new SolanaError(SOLANA_ERROR__PROGRAM_CLIENTS__UNRECOGNIZED_INSTRUCTION_TYPE, {
+                instructionType: instructionType as string,
+                programName: 'addressLookupTable',
+            });
     }
 }
+
+export type AddressLookupTablePlugin = {
+    accounts: AddressLookupTablePluginAccounts;
+    instructions: AddressLookupTablePluginInstructions;
+    pdas: AddressLookupTablePluginPdas;
+};
+
+export type AddressLookupTablePluginAccounts = {
+    addressLookupTable: ReturnType<typeof getAddressLookupTableCodec> &
+        SelfFetchFunctions<AddressLookupTableArgs, AddressLookupTable>;
+};
+
+export type AddressLookupTablePluginInstructions = {
+    createLookupTable: (
+        input: CreateLookupTableAsyncInput,
+    ) => ReturnType<typeof getCreateLookupTableInstructionAsync> & SelfPlanAndSendFunctions;
+    freezeLookupTable: (
+        input: FreezeLookupTableInput,
+    ) => ReturnType<typeof getFreezeLookupTableInstruction> & SelfPlanAndSendFunctions;
+    extendLookupTable: (
+        input: MakeOptional<ExtendLookupTableInput, 'payer'>,
+    ) => ReturnType<typeof getExtendLookupTableInstruction> & SelfPlanAndSendFunctions;
+    deactivateLookupTable: (
+        input: DeactivateLookupTableInput,
+    ) => ReturnType<typeof getDeactivateLookupTableInstruction> & SelfPlanAndSendFunctions;
+    closeLookupTable: (
+        input: CloseLookupTableInput,
+    ) => ReturnType<typeof getCloseLookupTableInstruction> & SelfPlanAndSendFunctions;
+};
+
+export type AddressLookupTablePluginPdas = { addressLookupTable: typeof findAddressLookupTablePda };
+
+export type AddressLookupTablePluginRequirements = ClientWithRpc<GetAccountInfoApi & GetMultipleAccountsApi> &
+    ClientWithPayer &
+    ClientWithTransactionPlanning &
+    ClientWithTransactionSending;
+
+export function addressLookupTableProgram() {
+    return <T extends AddressLookupTablePluginRequirements>(
+        client: T,
+    ): Omit<T, 'addressLookupTable'> & { addressLookupTable: AddressLookupTablePlugin } => {
+        return extendClient(client, {
+            addressLookupTable: <AddressLookupTablePlugin>{
+                accounts: { addressLookupTable: addSelfFetchFunctions(client, getAddressLookupTableCodec()) },
+                instructions: {
+                    createLookupTable: input =>
+                        addSelfPlanAndSendFunctions(client, getCreateLookupTableInstructionAsync(input)),
+                    freezeLookupTable: input =>
+                        addSelfPlanAndSendFunctions(client, getFreezeLookupTableInstruction(input)),
+                    extendLookupTable: input =>
+                        addSelfPlanAndSendFunctions(
+                            client,
+                            getExtendLookupTableInstruction({ ...input, payer: input.payer ?? client.payer }),
+                        ),
+                    deactivateLookupTable: input =>
+                        addSelfPlanAndSendFunctions(client, getDeactivateLookupTableInstruction(input)),
+                    closeLookupTable: input =>
+                        addSelfPlanAndSendFunctions(client, getCloseLookupTableInstruction(input)),
+                },
+                pdas: { addressLookupTable: findAddressLookupTablePda },
+            },
+        });
+    };
+}
+
+type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

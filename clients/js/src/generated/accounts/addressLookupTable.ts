@@ -42,12 +42,13 @@ import {
     type MaybeEncodedAccount,
     type Option,
     type OptionOrNullable,
+    type ReadonlyUint8Array,
 } from '@solana/kit';
 import { AddressLookupTableSeeds, findAddressLookupTablePda } from '../pdas';
 
 export const ADDRESS_LOOKUP_TABLE_DISCRIMINATOR = 1;
 
-export function getAddressLookupTableDiscriminatorBytes() {
+export function getAddressLookupTableDiscriminatorBytes(): ReadonlyUint8Array {
     return getU32Encoder().encode(ADDRESS_LOOKUP_TABLE_DISCRIMINATOR);
 }
 

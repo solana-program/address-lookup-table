@@ -11,9 +11,9 @@ pub const DEACTIVATE_LOOKUP_TABLE_DISCRIMINATOR: u32 = 3;
 /// Accounts.
 #[derive(Debug)]
 pub struct DeactivateLookupTable {
-    pub address: solana_pubkey::Pubkey,
+    pub address: solana_address::Address,
 
-    pub authority: solana_pubkey::Pubkey,
+    pub authority: solana_address::Address,
 }
 
 impl DeactivateLookupTable {
@@ -46,7 +46,6 @@ impl DeactivateLookupTable {
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeactivateLookupTableInstructionData {
     discriminator: u32,
 }
@@ -75,8 +74,8 @@ impl Default for DeactivateLookupTableInstructionData {
 ///   1. `[signer]` authority
 #[derive(Clone, Debug, Default)]
 pub struct DeactivateLookupTableBuilder {
-    address: Option<solana_pubkey::Pubkey>,
-    authority: Option<solana_pubkey::Pubkey>,
+    address: Option<solana_address::Address>,
+    authority: Option<solana_address::Address>,
     __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
@@ -85,12 +84,12 @@ impl DeactivateLookupTableBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn address(&mut self, address: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn address(&mut self, address: solana_address::Address) -> &mut Self {
         self.address = Some(address);
         self
     }
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn authority(&mut self, authority: solana_address::Address) -> &mut Self {
         self.authority = Some(authority);
         self
     }

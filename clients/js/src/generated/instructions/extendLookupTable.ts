@@ -18,6 +18,8 @@ import {
     getU32Encoder,
     getU64Decoder,
     getU64Encoder,
+    SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS,
+    SolanaError,
     transformEncoder,
     type AccountMeta,
     type AccountSignerMeta,
@@ -35,13 +37,17 @@ import {
     type WritableAccount,
     type WritableSignerAccount,
 } from '@solana/kit';
+import {
+    getAccountMetaFactory,
+    type InstructionWithByteDelta,
+    type ResolvedInstructionAccount,
+} from '@solana/kit/program-client-core';
 import { resolveExtendLookupTableBytes } from '../../hooked';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type InstructionWithByteDelta, type ResolvedAccount } from '../shared';
 
 export const EXTEND_LOOKUP_TABLE_DISCRIMINATOR = 2;
 
-export function getExtendLookupTableDiscriminatorBytes() {
+export function getExtendLookupTableDiscriminatorBytes(): ReadonlyUint8Array {
     return getU32Encoder().encode(EXTEND_LOOKUP_TABLE_DISCRIMINATOR);
 }
 
@@ -136,7 +142,7 @@ export function getExtendLookupTableInstruction<
         payer: { value: input.payer ?? null, isWritable: true },
         systemProgram: { value: input.systemProgram ?? null, isWritable: false },
     };
-    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedAccount>;
+    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
     // Original args.
     const args = { ...input };
@@ -156,10 +162,10 @@ export function getExtendLookupTableInstruction<
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
         accounts: [
-            getAccountMeta(accounts.address),
-            getAccountMeta(accounts.authority),
-            getAccountMeta(accounts.payer),
-            getAccountMeta(accounts.systemProgram),
+            getAccountMeta('address', accounts.address),
+            getAccountMeta('authority', accounts.authority),
+            getAccountMeta('payer', accounts.payer),
+            getAccountMeta('systemProgram', accounts.systemProgram),
         ],
         byteDelta,
         data: getExtendLookupTableInstructionDataEncoder().encode(args as ExtendLookupTableInstructionDataArgs),
@@ -197,8 +203,10 @@ export function parseExtendLookupTableInstruction<
         InstructionWithData<ReadonlyUint8Array>,
 ): ParsedExtendLookupTableInstruction<TProgram, TAccountMetas> {
     if (instruction.accounts.length < 4) {
-        // TODO: Coded error.
-        throw new Error('Not enough accounts');
+        throw new SolanaError(SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS, {
+            actualAccountMetas: instruction.accounts.length,
+            expectedAccountMetas: 4,
+        });
     }
     let accountIndex = 0;
     const getNextAccount = () => {
