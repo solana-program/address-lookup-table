@@ -11,13 +11,13 @@ pub const CREATE_LOOKUP_TABLE_DISCRIMINATOR: u32 = 0;
 /// Accounts.
 #[derive(Debug)]
 pub struct CreateLookupTable {
-    pub address: solana_pubkey::Pubkey,
+    pub address: solana_address::Address,
 
-    pub authority: solana_pubkey::Pubkey,
+    pub authority: solana_address::Address,
 
-    pub payer: solana_pubkey::Pubkey,
+    pub payer: solana_address::Address,
 
-    pub system_program: solana_pubkey::Pubkey,
+    pub system_program: solana_address::Address,
 }
 
 impl CreateLookupTable {
@@ -61,7 +61,6 @@ impl CreateLookupTable {
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CreateLookupTableInstructionData {
     discriminator: u32,
 }
@@ -83,7 +82,6 @@ impl Default for CreateLookupTableInstructionData {
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CreateLookupTableInstructionArgs {
     pub recent_slot: u64,
     pub bump: u8,
@@ -106,10 +104,10 @@ impl CreateLookupTableInstructionArgs {
 ///      `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct CreateLookupTableBuilder {
-    address: Option<solana_pubkey::Pubkey>,
-    authority: Option<solana_pubkey::Pubkey>,
-    payer: Option<solana_pubkey::Pubkey>,
-    system_program: Option<solana_pubkey::Pubkey>,
+    address: Option<solana_address::Address>,
+    authority: Option<solana_address::Address>,
+    payer: Option<solana_address::Address>,
+    system_program: Option<solana_address::Address>,
     recent_slot: Option<u64>,
     bump: Option<u8>,
     __remaining_accounts: Vec<solana_instruction::AccountMeta>,
@@ -120,23 +118,23 @@ impl CreateLookupTableBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn address(&mut self, address: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn address(&mut self, address: solana_address::Address) -> &mut Self {
         self.address = Some(address);
         self
     }
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn authority(&mut self, authority: solana_address::Address) -> &mut Self {
         self.authority = Some(authority);
         self
     }
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn payer(&mut self, payer: solana_address::Address) -> &mut Self {
         self.payer = Some(payer);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_pubkey::Pubkey) -> &mut Self {
+    pub fn system_program(&mut self, system_program: solana_address::Address) -> &mut Self {
         self.system_program = Some(system_program);
         self
     }
@@ -173,7 +171,7 @@ impl CreateLookupTableBuilder {
             payer: self.payer.expect("payer is not set"),
             system_program: self
                 .system_program
-                .unwrap_or(solana_pubkey::pubkey!("11111111111111111111111111111111")),
+                .unwrap_or(solana_address::address!("11111111111111111111111111111111")),
         };
         let args = CreateLookupTableInstructionArgs {
             recent_slot: self.recent_slot.clone().expect("recent_slot is not set"),

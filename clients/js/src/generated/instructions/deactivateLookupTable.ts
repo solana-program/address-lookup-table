@@ -12,6 +12,8 @@ import {
     getStructEncoder,
     getU32Decoder,
     getU32Encoder,
+    SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS,
+    SolanaError,
     transformEncoder,
     type AccountMeta,
     type AccountSignerMeta,
@@ -27,12 +29,12 @@ import {
     type TransactionSigner,
     type WritableAccount,
 } from '@solana/kit';
+import { getAccountMetaFactory, type ResolvedInstructionAccount } from '@solana/kit/program-client-core';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const DEACTIVATE_LOOKUP_TABLE_DISCRIMINATOR = 3;
 
-export function getDeactivateLookupTableDiscriminatorBytes() {
+export function getDeactivateLookupTableDiscriminatorBytes(): ReadonlyUint8Array {
     return getU32Encoder().encode(DEACTIVATE_LOOKUP_TABLE_DISCRIMINATOR);
 }
 
@@ -102,11 +104,11 @@ export function getDeactivateLookupTableInstruction<
         address: { value: input.address ?? null, isWritable: true },
         authority: { value: input.authority ?? null, isWritable: false },
     };
-    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedAccount>;
+    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
-        accounts: [getAccountMeta(accounts.address), getAccountMeta(accounts.authority)],
+        accounts: [getAccountMeta('address', accounts.address), getAccountMeta('authority', accounts.authority)],
         data: getDeactivateLookupTableInstructionDataEncoder().encode({}),
         programAddress,
     } as DeactivateLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority>);
@@ -133,8 +135,10 @@ export function parseDeactivateLookupTableInstruction<
         InstructionWithData<ReadonlyUint8Array>,
 ): ParsedDeactivateLookupTableInstruction<TProgram, TAccountMetas> {
     if (instruction.accounts.length < 2) {
-        // TODO: Coded error.
-        throw new Error('Not enough accounts');
+        throw new SolanaError(SOLANA_ERROR__PROGRAM_CLIENTS__INSUFFICIENT_ACCOUNT_METAS, {
+            actualAccountMetas: instruction.accounts.length,
+            expectedAccountMetas: 2,
+        });
     }
     let accountIndex = 0;
     const getNextAccount = () => {

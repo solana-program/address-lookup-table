@@ -4,7 +4,8 @@
 //!
 //! <https://github.com/codama-idl/codama>
 
-use solana_pubkey::{pubkey, Pubkey};
+use solana_address::{address, Address};
 
 /// `address_lookup_table` program ID.
-pub const ADDRESS_LOOKUP_TABLE_ID: Pubkey = pubkey!("AddressLookupTab1e1111111111111111111111111");
+pub const ADDRESS_LOOKUP_TABLE_ID: Address =
+    address!("AddressLookupTab1e1111111111111111111111111");

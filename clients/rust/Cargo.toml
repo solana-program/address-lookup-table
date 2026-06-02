@@ -9,21 +9,15 @@ license-file = { workspace = true }
 edition = { workspace = true }
 
 [features]
-fetch = ["dep:solana-account", "dep:solana-client"]
-serde = ["dep:serde", "dep:serde_with", "kaigan/serde", "solana-pubkey/serde"]
+fetch = ["dep:solana-account", "dep:solana-rpc-client"]
 
 [dependencies]
-borsh = { workspace = true }
-kaigan = { workspace = true }
-num-derive = { workspace = true }
-num-traits = { workspace = true }
-serde = { workspace = true, features = ["derive"], optional = true }
-serde_with = { workspace = true, optional = true }
-solana-account = { version = "2", optional = true }
-solana-account-info = "2"
-solana-client = { version = "2", optional = true }
-solana-cpi = "2"
-solana-instruction = "2"
-solana-program-error = "2"
-solana-pubkey = { version = "2", features = ["borsh", "curve25519"] }
-thiserror = { workspace = true }
+borsh = "1.0"
+solana-account = { version = "3.0", optional = true }
+solana-account-info = "3.1"
+solana-address = { version = "2.2", features = ["borsh", "curve25519"] }
+solana-cpi = "3.1"
+solana-instruction = "3.2"
+solana-program-error = "3.0"
+solana-rpc-client = { version = "3.0", optional = true }
+spl-collections = { version = "0.1", features = ["borsh"] }
