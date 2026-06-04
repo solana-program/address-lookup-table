@@ -1,45 +1,30 @@
-import { Address, appendTransactionMessageInstruction, pipe, Account, some } from '@solana/kit';
+import { Account, Address, some } from '@solana/kit';
 import { expect, it } from 'vitest';
-import {
-    AddressLookupTable,
-    fetchAddressLookupTable,
-    findAddressLookupTablePda,
-    getCreateLookupTableInstructionAsync,
-} from '../src';
-import {
-    createDefaultSolanaClient,
-    createDefaultTransaction,
-    generateKeyPairSignerWithSol,
-    signAndSendTransaction,
-} from './_setup';
+
+import { AddressLookupTable } from '../src';
+import { createTestClient } from './_setup';
 
 it('creates a new empty address lookup table', async () => {
-    // Given an authority wallet with SOL and a recent slot.
-    const client = createDefaultSolanaClient();
-    const [authority, recentSlot] = await Promise.all([
-        generateKeyPairSignerWithSol(client),
-        client.rpc.getSlot({ commitment: 'finalized' }).send(),
-    ]);
+    // Given a test client whose payer is funded with SOL and a recent slot.
+    const client = await createTestClient();
+    const recentSlot = await client.rpc.getSlot({ commitment: 'finalized' }).send();
 
     // When we create a new LUT using these parameters.
-    const createLut = await getCreateLookupTableInstructionAsync({ authority: authority.address, recentSlot });
-    await pipe(
-        await createDefaultTransaction(client, authority),
-        tx => appendTransactionMessageInstruction(createLut, tx),
-        tx => signAndSendTransaction(client, tx),
-    );
+    await client.addressLookupTable.instructions
+        .createLookupTable({ authority: client.payer.address, payer: client.payer, recentSlot })
+        .sendTransaction();
 
     // Then a new account was created with the correct data.
-    const [lut] = await findAddressLookupTablePda({
-        authority: authority.address,
+    const [lut] = await client.addressLookupTable.pdas.addressLookupTable({
+        authority: client.payer.address,
         recentSlot,
     });
-    const lutAccount = await fetchAddressLookupTable(client.rpc, lut);
+    const lutAccount = await client.addressLookupTable.accounts.addressLookupTable.fetch(lut);
     expect(lutAccount).toMatchObject(<Account<AddressLookupTable>>{
         address: lut,
         data: {
             addresses: [] as Address[],
-            authority: some(authority.address),
+            authority: some(client.payer.address),
             deactivationSlot: BigInt(`0x${'ff'.repeat(8)}`),
             lastExtendedSlot: 0n,
             lastExtendedSlotStartIndex: 0,
