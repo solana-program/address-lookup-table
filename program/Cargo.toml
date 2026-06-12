@@ -25,7 +25,7 @@ solana-account-info = { workspace = true }
 solana-bincode = { workspace = true }
 solana-clock = { workspace = true }
 solana-cpi = { workspace = true }
-solana-frozen-abi = { workspace = true, optional = true }
+solana-frozen-abi = { workspace = true, features = ["frozen-abi"], optional = true }
 solana-frozen-abi-macro = { workspace = true, optional = true }
 solana-instruction = { workspace = true, features = ["std"] }
 solana-msg = { workspace = true }
