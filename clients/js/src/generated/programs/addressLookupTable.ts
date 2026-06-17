@@ -20,6 +20,7 @@ import {
     type ClientWithRpc,
     type ClientWithTransactionPlanning,
     type ClientWithTransactionSending,
+    type ExtendedClient,
     type GetAccountInfoApi,
     type GetMultipleAccountsApi,
     type Instruction,
@@ -181,6 +182,9 @@ export type AddressLookupTablePlugin = {
     accounts: AddressLookupTablePluginAccounts;
     instructions: AddressLookupTablePluginInstructions;
     pdas: AddressLookupTablePluginPdas;
+    identifyAccount: typeof identifyAddressLookupTableAccount;
+    identifyInstruction: typeof identifyAddressLookupTableInstruction;
+    parseInstruction: typeof parseAddressLookupTableInstruction;
 };
 
 export type AddressLookupTablePluginAccounts = {
@@ -216,7 +220,7 @@ export type AddressLookupTablePluginRequirements = ClientWithRpc<GetAccountInfoA
 export function addressLookupTableProgram() {
     return <T extends AddressLookupTablePluginRequirements>(
         client: T,
-    ): Omit<T, 'addressLookupTable'> & { addressLookupTable: AddressLookupTablePlugin } => {
+    ): ExtendedClient<T, { addressLookupTable: AddressLookupTablePlugin }> => {
         return extendClient(client, {
             addressLookupTable: <AddressLookupTablePlugin>{
                 accounts: { addressLookupTable: addSelfFetchFunctions(client, getAddressLookupTableCodec()) },
@@ -236,6 +240,9 @@ export function addressLookupTableProgram() {
                         addSelfPlanAndSendFunctions(client, getCloseLookupTableInstruction(input)),
                 },
                 pdas: { addressLookupTable: findAddressLookupTablePda },
+                identifyAccount: identifyAddressLookupTableAccount,
+                identifyInstruction: identifyAddressLookupTableInstruction,
+                parseInstruction: parseAddressLookupTableInstruction,
             },
         });
     };
