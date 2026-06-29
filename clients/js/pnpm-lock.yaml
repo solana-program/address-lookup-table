@@ -15,8 +15,8 @@ importers:
         specifier: ^6.10.0
         version: 6.10.0(typescript@5.9.3)
       '@solana/kit-plugin-litesvm':
-        specifier: ^0.10.0
-        version: 0.10.0(@solana/kit@6.10.0(typescript@5.9.3))(typescript@5.9.3)
+        specifier: ^0.12.1
+        version: 0.12.1(@solana/kit@6.10.0(typescript@5.9.3))(typescript@5.9.3)
       '@solana/kit-plugin-signer':
         specifier: ^0.10.0
         version: 0.10.0(@solana/kit@6.10.0(typescript@5.9.3))
@@ -37,7 +37,7 @@ importers:
         version: 6.1.3
       tsup:
         specifier: ^8.1.2
-        version: 8.5.1(postcss@8.5.15)(typescript@5.9.3)(yaml@2.9.0)
+        version: 8.5.1(postcss@8.5.16)(typescript@5.9.3)(yaml@2.9.0)
       typedoc:
         specifier: ^0.28.13
         version: 0.28.19(typescript@5.9.3)
@@ -231,8 +231,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@napi-rs/wasm-runtime@1.1.5':
-    resolution: {integrity: sha512-AWPoBRJ9tsnVhor4sjO7rkni+7p+2IAEFj6cx06UgP10jkQHqay/36uRV/bFkgrh18D9vb4cr8Q0Pthskgzy+Q==}
+  '@napi-rs/wasm-runtime@1.1.6':
+    resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
@@ -746,8 +746,9 @@ packages:
     peerDependencies:
       '@solana/kit': ^6.4.0
 
-  '@solana-program/token@0.13.0':
-    resolution: {integrity: sha512-/Apjrd5lwOJGrPB0J5Rv7EBeclvyEBQPAGA85Scm7wBH+GpkbdLDM9uK3TNg8jjFKyWQYai/JtPHbrx7VgFLSg==}
+  '@solana-program/token@0.14.0':
+    resolution: {integrity: sha512-zpLMr6JZndlsQCQvrm0gezfwdr1lmzOGqN6v2WIYXjtDmbF+xg6zh/MAp2UFHRpv3uDmylEdjtQo05pa2OeaYg==}
+    engines: {node: '>=24.0.0'}
     peerDependencies:
       '@solana/kit': ^6.5.0
 
@@ -890,15 +891,15 @@ packages:
       typescript:
         optional: true
 
-  '@solana/kit-plugin-instruction-plan@0.10.0':
-    resolution: {integrity: sha512-h99B+1Vp5QWU/M/q0UXlTxKJt781vWw5aAopnbgVCy0F3hNaSDZ/gio126Oz0/cipGOnyaJf3NnV79GvxaEqZA==}
+  '@solana/kit-plugin-instruction-plan@0.12.1':
+    resolution: {integrity: sha512-+uDMOHwFEEYAP5hWleWAaBMQYMiJmczRotTDZY1h/7yILHESZHUBFdn1FHFHKOv6JxXfC9Xp8siWKB4PsAymXw==}
     peerDependencies:
-      '@solana/kit': ^6.8.0
+      '@solana/kit': ^6.10.0
 
-  '@solana/kit-plugin-litesvm@0.10.0':
-    resolution: {integrity: sha512-ks/sbFyYJOpa4BrdzEpp2karA66N4b1DFnWol3bui/UzJm+YJZ65xnOyeX9U8PC8uF/TPVkgf6oYvsxyLqrxIw==}
+  '@solana/kit-plugin-litesvm@0.12.1':
+    resolution: {integrity: sha512-Jtwm+UxzcLDu5oZaIKL655adDQ0Tzg6tqkQ8QAZFXW6Ur3AA9zkdJ0zAsI3h3UWXmetxJ7VBY3TzMZroRbifcQ==}
     peerDependencies:
-      '@solana/kit': ^6.8.0
+      '@solana/kit': ^6.10.0
 
   '@solana/kit-plugin-signer@0.10.0':
     resolution: {integrity: sha512-3Gw3R6nQg/2r2+4cSaUZHj5zdbtb0SuA1mkDMd6uH7B+fdH1Ouxnulv1/sN8J0VxBo7tS+YDQA5t0arxX5gj+w==}
@@ -1151,8 +1152,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tybys/wasm-util@0.10.2':
-    resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
+  '@tybys/wasm-util@0.10.3':
+    resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -1401,44 +1402,44 @@ packages:
   linkify-it@5.0.1:
     resolution: {integrity: sha512-wVoTjP4Q6R0NW5hiZkVJaFZPWgtXfoGF+6LucL3/FtiNjmcHhYjEr5f1Kqjirc1nBW07J/ZuRFumqr2oqccEWg==}
 
-  litesvm-darwin-arm64@1.1.0:
-    resolution: {integrity: sha512-SjcivEOOjBk65U6TgIeMJ7CCnHNKQXHx0qf6K6GIFZC1aHTg7ePrEi+WhAQD6VUBMdDHIMCVKC/uXnXPi6EKIw==}
+  litesvm-darwin-arm64@1.2.0:
+    resolution: {integrity: sha512-gI4oPp/aNY/OAFce70gKmiGHZHq0WJV6GT/o55ixztsvCBTPJ0njITUDcYuViGds9riUGfHGWxNca9Uwu0QL7A==}
     engines: {node: '>= 20'}
     cpu: [arm64]
     os: [darwin]
 
-  litesvm-darwin-x64@1.1.0:
-    resolution: {integrity: sha512-hTs+eZ9sHVZXhjggpnn/8A/E+Nt/E6Gf8E2ejdWWL9bBQKmq1Y0VcrDpORbIvqqRpTLHXqbxCuH1wQB2C8frJg==}
+  litesvm-darwin-x64@1.2.0:
+    resolution: {integrity: sha512-XeIgtWLKM4TKk/1uNU8BnTd9XiQBVkZMz10Jg183wrgaC2a/iiFBmg9Kt3CQfHdr8XY4Q+cpvrT47olftL6wjA==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [darwin]
 
-  litesvm-linux-arm64-gnu@1.1.0:
-    resolution: {integrity: sha512-6EjJ6+E+1SUXdJmCyeyhvlKhNncccqQNH241+P8d4E72rE3zuFxeCtLHhusCQk2p/Xau3dBI0qTLogZ1F1IGSA==}
+  litesvm-linux-arm64-gnu@1.2.0:
+    resolution: {integrity: sha512-gy9AK/0C0xc4socBeE4udgooOn7v5lLAeTNz48Kv6D0p1m+aDbvo6a8hgpX6im3nJxwSlHTxW3KOcMAoIP1/6g==}
     engines: {node: '>= 20'}
     cpu: [arm64]
     os: [linux]
 
-  litesvm-linux-arm64-musl@1.1.0:
-    resolution: {integrity: sha512-mNuBOfX6GnDFT2i/kYPWud7eZGe57dDP0u4lwiSTQPRE0BxQbGZT2aEwX8LTwbonhbc6HSt50LamaZZzK4h4ig==}
+  litesvm-linux-arm64-musl@1.2.0:
+    resolution: {integrity: sha512-2v+OdqT1qm1S+n1NBagR7zWcnWOsyR8ZpNdD0vXO/91Uc/2VN0JT25wPdri5bmhtUrv2ad7LaNkdRMlXhHxOjQ==}
     engines: {node: '>= 20'}
     cpu: [arm64]
     os: [linux]
 
-  litesvm-linux-x64-gnu@1.1.0:
-    resolution: {integrity: sha512-Ot8RgUVlMKzKJi2nVDxaHVo0hjB5vtYTomYNIf26mIA32DOy0+dQfwOqUhynhvvSMxN3VFec3r/OtCnk6lRBrw==}
+  litesvm-linux-x64-gnu@1.2.0:
+    resolution: {integrity: sha512-UO5EOJRy90Sb0864iDtqedN5ctXaIp1eM8w+bVx+EwLIVIESR6R3VZseUjj3cRLyhZpe4lCbrzz37GdGHXgRYQ==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
 
-  litesvm-linux-x64-musl@1.1.0:
-    resolution: {integrity: sha512-6kmneOIsTBSActELRTwxIYVJOVaLm3P6uwlmkqc9BUtDAQ7bRdRmwREWSbM8XxKBGw2LjiUfgRJ5WJGYo8fUFg==}
+  litesvm-linux-x64-musl@1.2.0:
+    resolution: {integrity: sha512-Ysdi9IzhXAYkQtrqejGryt1nzIqzBXLGgv/sfyVXJLiDfRsaVW03Dn+FYHmm2kMSchNP2XAAwO1ymYN14xJPvg==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
 
-  litesvm@1.1.0:
-    resolution: {integrity: sha512-UOlMIEst50gSUyPnC2pGjGLygH8iC/GOqnNXQIHc8iGwD76m44ReeA/0h0vu/AIieZ2zG5/ERLxFV0kdNxkNsA==}
+  litesvm@1.2.0:
+    resolution: {integrity: sha512-r/uGAeSGuCnIa/Aqb4skQDY3/+HXg8UdIHHzIt9u714t+FwL6tk6lj2I65WimQX3Qg3Hzua1ygK1bxkGtQFuwQ==}
     engines: {node: '>= 20'}
 
   load-tsconfig@0.2.5:
@@ -1479,8 +1480,8 @@ packages:
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
 
-  nanoid@3.3.13:
-    resolution: {integrity: sha512-sPdqC6ByMVVGvF1ynvvMo0/o+oD1VX7DaHhijt1bFgjvBkHBib4t49GoNDhf2NDta4oeUNlaGbSt5K7qjZ955Q==}
+  nanoid@3.3.15:
+    resolution: {integrity: sha512-y7Wygv/7mEOvxTuEQDB8StXdMRBWf1kR/tlhAzBRUFkB2jfcLOAxO/SHmOO2zgz1pVgK29/kyupn059/bCHdjA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -1564,8 +1565,8 @@ packages:
       yaml:
         optional: true
 
-  postcss@8.5.15:
-    resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
+  postcss@8.5.16:
+    resolution: {integrity: sha512-vuwillviilfKZsg0VGj5R/YwwcHx4SLsIOI/7K6mQkWx+l5cUHTjj5g0AasTBcyXsbfTgrwsUNmVUb5xVwyPwg==}
     engines: {node: ^10 || ^12 || >=14}
 
   punycode.js@2.3.1:
@@ -1923,11 +1924,11 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@napi-rs/wasm-runtime@1.1.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+  '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
-      '@tybys/wasm-util': 0.10.2
+      '@tybys/wasm-util': 0.10.3
     optional: true
 
   '@oxc-project/types@0.133.0': {}
@@ -2104,7 +2105,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
-      '@napi-rs/wasm-runtime': 1.1.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.1.6(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     optional: true
 
   '@rolldown/binding-win32-arm64-msvc@1.0.3':
@@ -2219,7 +2220,7 @@ snapshots:
     dependencies:
       '@solana/kit': 6.10.0(typescript@5.9.3)
 
-  '@solana-program/token@0.13.0(@solana/kit@6.10.0(typescript@5.9.3))':
+  '@solana-program/token@0.14.0(@solana/kit@6.10.0(typescript@5.9.3))':
     dependencies:
       '@solana-program/system': 0.12.2(@solana/kit@6.10.0(typescript@5.9.3))
       '@solana/kit': 6.10.0(typescript@5.9.3)
@@ -2352,15 +2353,15 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/kit-plugin-instruction-plan@0.10.0(@solana/kit@6.10.0(typescript@5.9.3))':
+  '@solana/kit-plugin-instruction-plan@0.12.1(@solana/kit@6.10.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 6.10.0(typescript@5.9.3)
 
-  '@solana/kit-plugin-litesvm@0.10.0(@solana/kit@6.10.0(typescript@5.9.3))(typescript@5.9.3)':
+  '@solana/kit-plugin-litesvm@0.12.1(@solana/kit@6.10.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@solana/kit': 6.10.0(typescript@5.9.3)
-      '@solana/kit-plugin-instruction-plan': 0.10.0(@solana/kit@6.10.0(typescript@5.9.3))
-      litesvm: 1.1.0(typescript@5.9.3)
+      '@solana/kit-plugin-instruction-plan': 0.12.1(@solana/kit@6.10.0(typescript@5.9.3))
+      litesvm: 1.2.0(typescript@5.9.3)
     transitivePeerDependencies:
       - bufferutil
       - fastestsmallesttextencoderdecoder
@@ -2716,7 +2717,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tybys/wasm-util@0.10.2':
+  '@tybys/wasm-util@0.10.3':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -2943,36 +2944,36 @@ snapshots:
     dependencies:
       uc.micro: 2.1.0
 
-  litesvm-darwin-arm64@1.1.0:
+  litesvm-darwin-arm64@1.2.0:
     optional: true
 
-  litesvm-darwin-x64@1.1.0:
+  litesvm-darwin-x64@1.2.0:
     optional: true
 
-  litesvm-linux-arm64-gnu@1.1.0:
+  litesvm-linux-arm64-gnu@1.2.0:
     optional: true
 
-  litesvm-linux-arm64-musl@1.1.0:
+  litesvm-linux-arm64-musl@1.2.0:
     optional: true
 
-  litesvm-linux-x64-gnu@1.1.0:
+  litesvm-linux-x64-gnu@1.2.0:
     optional: true
 
-  litesvm-linux-x64-musl@1.1.0:
+  litesvm-linux-x64-musl@1.2.0:
     optional: true
 
-  litesvm@1.1.0(typescript@5.9.3):
+  litesvm@1.2.0(typescript@5.9.3):
     dependencies:
       '@solana-program/system': 0.12.2(@solana/kit@6.10.0(typescript@5.9.3))
-      '@solana-program/token': 0.13.0(@solana/kit@6.10.0(typescript@5.9.3))
+      '@solana-program/token': 0.14.0(@solana/kit@6.10.0(typescript@5.9.3))
       '@solana/kit': 6.10.0(typescript@5.9.3)
     optionalDependencies:
-      litesvm-darwin-arm64: 1.1.0
-      litesvm-darwin-x64: 1.1.0
-      litesvm-linux-arm64-gnu: 1.1.0
-      litesvm-linux-arm64-musl: 1.1.0
-      litesvm-linux-x64-gnu: 1.1.0
-      litesvm-linux-x64-musl: 1.1.0
+      litesvm-darwin-arm64: 1.2.0
+      litesvm-darwin-x64: 1.2.0
+      litesvm-linux-arm64-gnu: 1.2.0
+      litesvm-linux-arm64-musl: 1.2.0
+      litesvm-linux-x64-gnu: 1.2.0
+      litesvm-linux-x64-musl: 1.2.0
     transitivePeerDependencies:
       - bufferutil
       - fastestsmallesttextencoderdecoder
@@ -3021,7 +3022,7 @@ snapshots:
       object-assign: 4.1.1
       thenify-all: 1.6.0
 
-  nanoid@3.3.13: {}
+  nanoid@3.3.15: {}
 
   object-assign@4.1.1: {}
 
@@ -3104,16 +3105,16 @@ snapshots:
       mlly: 1.8.2
       pathe: 2.0.3
 
-  postcss-load-config@6.0.1(postcss@8.5.15)(yaml@2.9.0):
+  postcss-load-config@6.0.1(postcss@8.5.16)(yaml@2.9.0):
     dependencies:
       lilconfig: 3.1.3
     optionalDependencies:
-      postcss: 8.5.15
+      postcss: 8.5.16
       yaml: 2.9.0
 
-  postcss@8.5.15:
+  postcss@8.5.16:
     dependencies:
-      nanoid: 3.3.13
+      nanoid: 3.3.15
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -3230,7 +3231,7 @@ snapshots:
   tslib@2.8.1:
     optional: true
 
-  tsup@8.5.1(postcss@8.5.15)(typescript@5.9.3)(yaml@2.9.0):
+  tsup@8.5.1(postcss@8.5.16)(typescript@5.9.3)(yaml@2.9.0):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.7)
       cac: 6.7.14
@@ -3241,7 +3242,7 @@ snapshots:
       fix-dts-default-cjs-exports: 1.0.1
       joycon: 3.1.1
       picocolors: 1.1.1
-      postcss-load-config: 6.0.1(postcss@8.5.15)(yaml@2.9.0)
+      postcss-load-config: 6.0.1(postcss@8.5.16)(yaml@2.9.0)
       resolve-from: 5.0.0
       rollup: 4.62.0
       source-map: 0.7.6
@@ -3250,7 +3251,7 @@ snapshots:
       tinyglobby: 0.2.17
       tree-kill: 1.2.2
     optionalDependencies:
-      postcss: 8.5.15
+      postcss: 8.5.16
       typescript: 5.9.3
     transitivePeerDependencies:
       - jiti
@@ -3281,7 +3282,7 @@ snapshots:
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
-      postcss: 8.5.15
+      postcss: 8.5.16
       rolldown: 1.0.3
       tinyglobby: 0.2.17
     optionalDependencies:
