@@ -1,6 +1,6 @@
 {
     "name": "@solana-program/address-lookup-table",
-    "version": "0.12.1",
+    "version": "0.13.0",
     "description": "The Solana Address Lookup Table program and its clients",
     "homepage": "https://github.com/solana-program/address-lookup-table#readme",
     "bugs": {
