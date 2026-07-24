@@ -2484,9 +2484,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pastey"
-version = "0.2.1"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b867cad97c0791bbd3aaa6472142568c6c9e8f71937e98379f584cfb0cf35bec"
+checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
 
 [[package]]
 name = "pbkdf2"
@@ -3463,7 +3463,7 @@ dependencies = [
  "solana-program-error",
  "solana-sanitize",
  "solana-sha256-hasher",
- "wincode",
+ "wincode 0.5.1",
 ]
 
 [[package]]
@@ -3809,9 +3809,9 @@ checksum = "5e2abdb1223eea8ec64136f39cb1ffcf257e00f915c957c35c0dd9e3f4e700b0"
 
 [[package]]
 name = "solana-frozen-abi"
-version = "3.7.0"
+version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "038494fd91f75199a233ff12bc922b8e02da04bd6dd8fed26e710572733d39d5"
+checksum = "117d0e878f5a8447ac4a8677bf1f225308e292331bcb035378450d679609b425"
 dependencies = [
  "bincode",
  "boxcar",
@@ -3831,7 +3831,7 @@ dependencies = [
  "sha2 0.10.9",
  "solana-frozen-abi-macro",
  "thiserror 2.0.19",
- "wincode",
+ "wincode 0.6.0",
 ]
 
 [[package]]
@@ -5780,7 +5780,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "thiserror 2.0.19",
- "wincode-derive",
+ "wincode-derive 0.4.3",
+]
+
+[[package]]
+name = "wincode"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5d39d1a984eb7ae37afa348f058216d62a6d5f71640f4113a8114386c2a812a"
+dependencies = [
+ "pastey",
+ "proc-macro2",
+ "quote",
+ "thiserror 2.0.19",
+ "wincode-derive 0.5.0",
 ]
 
 [[package]]
@@ -5790,6 +5803,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fca057fc9a13dd19cdb64ef558635d43c42667c0afa1ae7915ea1fa66993fd1a"
 dependencies = [
  "darling 0.21.3",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "wincode-derive"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cb427b174d0f50b407f003623db1d892986e780651ee9d4231f3c9fe9ffcbb7"
+dependencies = [
+ "darling 0.23.0",
  "proc-macro2",
  "quote",
  "syn 2.0.117",
