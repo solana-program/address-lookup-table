@@ -34,6 +34,10 @@
           "fields": [
             {
               "kind": "structFieldTypeNode",
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              },
               "name": "discriminator",
               "type": {
                 "kind": "numberTypeNode",
@@ -92,6 +96,10 @@
             },
             {
               "kind": "structFieldTypeNode",
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              },
               "name": "padding",
               "type": {
                 "kind": "numberTypeNode",
@@ -130,9 +138,18 @@
     "instructions": [
       {
         "kind": "instructionNode",
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create lookup table",
+          "interpolatedIntent": "Create lookup table ${accounts.address}"
+        },
         "accounts": [
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            },
             "name": "address",
             "isWritable": true,
             "isSigner": false,
@@ -175,6 +192,10 @@
           },
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            },
             "name": "systemProgram",
             "isWritable": false,
             "isSigner": false,
@@ -190,6 +211,10 @@
         "arguments": [
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            },
             "name": "discriminator",
             "type": {
               "kind": "numberTypeNode",
@@ -212,6 +237,10 @@
           },
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            },
             "name": "bump",
             "type": {
               "kind": "numberTypeNode",
@@ -246,9 +275,18 @@
       },
       {
         "kind": "instructionNode",
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Freeze lookup table",
+          "interpolatedIntent": "Freeze lookup table ${accounts.address}"
+        },
         "accounts": [
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            },
             "name": "address",
             "isWritable": true,
             "isSigner": false,
@@ -268,6 +306,10 @@
         "arguments": [
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            },
             "name": "discriminator",
             "type": {
               "kind": "numberTypeNode",
@@ -293,9 +335,18 @@
       },
       {
         "kind": "instructionNode",
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Extend lookup table",
+          "interpolatedIntent": "Extend lookup table ${accounts.address}"
+        },
         "accounts": [
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            },
             "name": "address",
             "isWritable": true,
             "isSigner": false,
@@ -322,6 +373,10 @@
           },
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            },
             "name": "systemProgram",
             "isWritable": false,
             "isSigner": false,
@@ -337,6 +392,10 @@
         "arguments": [
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            },
             "name": "discriminator",
             "type": {
               "kind": "numberTypeNode",
@@ -349,6 +408,10 @@
           },
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Addresses"
+            },
             "name": "addresses",
             "type": {
               "kind": "arrayTypeNode",
@@ -392,9 +455,18 @@
       },
       {
         "kind": "instructionNode",
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deactivate lookup table",
+          "interpolatedIntent": "Deactivate lookup table ${accounts.address}"
+        },
         "accounts": [
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            },
             "name": "address",
             "isWritable": true,
             "isSigner": false,
@@ -414,6 +486,10 @@
         "arguments": [
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            },
             "name": "discriminator",
             "type": {
               "kind": "numberTypeNode",
@@ -439,9 +515,18 @@
       },
       {
         "kind": "instructionNode",
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close lookup table",
+          "interpolatedIntent": "Close lookup table ${accounts.address} and send its balance to ${accounts.recipient}"
+        },
         "accounts": [
           {
             "kind": "instructionAccountNode",
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            },
             "name": "address",
             "isWritable": true,
             "isSigner": false,
@@ -469,6 +554,10 @@
         "arguments": [
           {
             "kind": "instructionArgumentNode",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            },
             "name": "discriminator",
             "type": {
               "kind": "numberTypeNode",
