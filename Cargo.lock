@@ -2161,7 +2161,7 @@ dependencies = [
  "solana-pubkey 4.3.0",
  "solana-rent 3.1.0",
  "solana-sdk-ids",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
  "solana-stake-interface",
  "solana-svm-callback",
  "solana-svm-log-collector",
@@ -2221,7 +2221,7 @@ dependencies = [
  "solana-keccak-hasher",
  "solana-pubkey 4.3.0",
  "solana-rent 3.1.0",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
  "solana-stake-interface",
  "solana-sysvar 3.1.1",
 ]
@@ -3358,7 +3358,7 @@ dependencies = [
  "solana-pubkey 3.0.0",
  "solana-rent 3.1.0",
  "solana-sdk-ids",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
  "solana-slot-history",
  "solana-stake-interface",
  "solana-sysvar 3.1.1",
@@ -3461,7 +3461,7 @@ dependencies = [
  "solana-instruction-error",
  "solana-pubkey 4.3.0",
  "solana-sdk-ids",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
 ]
 
 [[package]]
@@ -3490,7 +3490,7 @@ dependencies = [
  "solana-pubkey 4.3.0",
  "solana-rent 4.3.0",
  "solana-sdk-ids",
- "solana-slot-hashes",
+ "solana-slot-hashes 4.0.0",
  "solana-system-interface 3.3.0",
  "solana-sysvar 4.1.0",
  "strum",
@@ -4139,7 +4139,7 @@ dependencies = [
  "solana-rent 3.1.0",
  "solana-sbpf",
  "solana-sdk-ids",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
  "solana-stable-layout",
  "solana-stake-interface",
  "solana-svm-callback",
@@ -4453,6 +4453,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-slot-hashes"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3da667c6de47dd04fa03cd3a29f2ce046627407f0de0dc56c5d78ed1ba23785"
+dependencies = [
+ "solana-hash 4.6.0",
+]
+
+[[package]]
 name = "solana-slot-history"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4659,7 +4668,7 @@ dependencies = [
  "solana-rent 3.1.0",
  "solana-sdk-ids",
  "solana-sdk-macro",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
  "solana-slot-history",
  "solana-sysvar-id",
 ]
@@ -4694,7 +4703,7 @@ dependencies = [
  "solana-rent 4.3.0",
  "solana-sdk-ids",
  "solana-sdk-macro",
- "solana-slot-hashes",
+ "solana-slot-hashes 3.2.0",
  "solana-slot-history",
  "solana-stake-history",
  "solana-sysvar-id",
