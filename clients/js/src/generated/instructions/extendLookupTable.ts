@@ -33,14 +33,17 @@ import {
     type ReadonlyAccount,
     type ReadonlySignerAccount,
     type ReadonlyUint8Array,
-    type TransactionSigner,
     type WritableAccount,
     type WritableSignerAccount,
 } from '@solana/kit';
 import {
     getAccountMetaFactory,
+    type InstructionAccountInput,
+    type InstructionAccountInputAddress,
+    type InstructionSignerInput,
     type InstructionWithByteDelta,
     type ResolvedInstructionAccount,
+    type ResolvedInstructionAccountMeta,
 } from '@solana/kit/program-client-core';
 import { resolveExtendLookupTableBytes } from '../../hooked';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
@@ -103,44 +106,47 @@ export function getExtendLookupTableInstructionDataCodec(): Codec<
 }
 
 export type ExtendLookupTableInput<
-    TAccountAddress extends string = string,
-    TAccountAuthority extends string = string,
-    TAccountPayer extends string = string,
-    TAccountSystemProgram extends string = string,
+    TAccountAddress extends InstructionAccountInput = InstructionAccountInput,
+    TAccountAuthority extends InstructionSignerInput = InstructionSignerInput,
+    TAccountPayer extends InstructionSignerInput = InstructionSignerInput,
+    TAccountSystemProgram extends InstructionAccountInput = InstructionAccountInput,
 > = {
-    address: Address<TAccountAddress>;
-    authority: TransactionSigner<TAccountAuthority>;
-    payer: TransactionSigner<TAccountPayer>;
-    systemProgram?: Address<TAccountSystemProgram>;
+    address: TAccountAddress;
+    authority: TAccountAuthority;
+    payer: TAccountPayer;
+    systemProgram?: TAccountSystemProgram;
     addresses: ExtendLookupTableInstructionDataArgs['addresses'];
 };
 
 export function getExtendLookupTableInstruction<
-    TAccountAddress extends string,
-    TAccountAuthority extends string,
-    TAccountPayer extends string,
-    TAccountSystemProgram extends string,
+    TAccountAddress extends InstructionAccountInput,
+    TAccountAuthority extends InstructionSignerInput,
+    TAccountPayer extends InstructionSignerInput,
+    TAccountSystemProgram extends InstructionAccountInput,
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: ExtendLookupTableInput<TAccountAddress, TAccountAuthority, TAccountPayer, TAccountSystemProgram>,
     config?: { programAddress?: TProgramAddress },
 ): ExtendLookupTableInstruction<
     TProgramAddress,
-    TAccountAddress,
-    TAccountAuthority,
-    TAccountPayer,
-    TAccountSystemProgram
+    ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
+    ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>,
+    ResolvedInstructionAccountMeta<TAccountPayer, InstructionAccountInputAddress<TAccountPayer>>,
+    ResolvedInstructionAccountMeta<TAccountSystemProgram, InstructionAccountInputAddress<TAccountSystemProgram>>
 > &
     InstructionWithByteDelta {
     // Program address.
     const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
+    // Account meta helper.
+    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+
     // Original accounts.
     const originalAccounts = {
-        address: { value: input.address ?? null, isWritable: true },
-        authority: { value: input.authority ?? null, isWritable: false },
-        payer: { value: input.payer ?? null, isWritable: true },
-        systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+        address: { value: input.address ?? null, isSigner: false, isWritable: true },
+        authority: { value: input.authority ?? null, isSigner: true, isWritable: false },
+        payer: { value: input.payer ?? null, isSigner: true, isWritable: true },
+        systemProgram: { value: input.systemProgram ?? null, isSigner: false, isWritable: false },
     };
     const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
@@ -159,7 +165,6 @@ export function getExtendLookupTableInstruction<
     // Bytes created or reallocated by the instruction.
     const byteDelta: number = [resolveExtendLookupTableBytes(resolverScope)].reduce((a, b) => a + b, 0);
 
-    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
         accounts: [
             getAccountMeta('address', accounts.address),
@@ -172,10 +177,10 @@ export function getExtendLookupTableInstruction<
         programAddress,
     } as ExtendLookupTableInstruction<
         TProgramAddress,
-        TAccountAddress,
-        TAccountAuthority,
-        TAccountPayer,
-        TAccountSystemProgram
+        ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
+        ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>,
+        ResolvedInstructionAccountMeta<TAccountPayer, InstructionAccountInputAddress<TAccountPayer>>,
+        ResolvedInstructionAccountMeta<TAccountSystemProgram, InstructionAccountInputAddress<TAccountSystemProgram>>
     > &
         InstructionWithByteDelta);
 }

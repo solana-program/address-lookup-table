@@ -30,18 +30,14 @@ impl AddressLookupTable {
         bump: u8,
     ) -> Result<solana_address::Address, solana_address::error::AddressError> {
         solana_address::Address::create_program_address(
-            &[
-                authority.as_ref(),
-                recent_slot.to_string().as_ref(),
-                &[bump],
-            ],
+            &[authority.as_ref(), &recent_slot.to_le_bytes(), &[bump]],
             &crate::ADDRESS_LOOKUP_TABLE_ID,
         )
     }
 
     pub fn find_pda(authority: &Address, recent_slot: u64) -> (solana_address::Address, u8) {
         solana_address::Address::find_program_address(
-            &[authority.as_ref(), recent_slot.to_string().as_ref()],
+            &[authority.as_ref(), &recent_slot.to_le_bytes()],
             &crate::ADDRESS_LOOKUP_TABLE_ID,
         )
     }

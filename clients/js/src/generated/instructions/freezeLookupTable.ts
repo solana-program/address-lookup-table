@@ -26,10 +26,16 @@ import {
     type InstructionWithData,
     type ReadonlySignerAccount,
     type ReadonlyUint8Array,
-    type TransactionSigner,
     type WritableAccount,
 } from '@solana/kit';
-import { getAccountMetaFactory, type ResolvedInstructionAccount } from '@solana/kit/program-client-core';
+import {
+    getAccountMetaFactory,
+    type InstructionAccountInput,
+    type InstructionAccountInputAddress,
+    type InstructionSignerInput,
+    type ResolvedInstructionAccount,
+    type ResolvedInstructionAccountMeta,
+} from '@solana/kit/program-client-core';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 
 export const FREEZE_LOOKUP_TABLE_DISCRIMINATOR = 1;
@@ -78,37 +84,47 @@ export function getFreezeLookupTableInstructionDataCodec(): FixedSizeCodec<
 }
 
 export type FreezeLookupTableInput<
-    TAccountAddress extends string = string,
-    TAccountAuthority extends string = string,
+    TAccountAddress extends InstructionAccountInput = InstructionAccountInput,
+    TAccountAuthority extends InstructionSignerInput = InstructionSignerInput,
 > = {
-    address: Address<TAccountAddress>;
-    authority: TransactionSigner<TAccountAuthority>;
+    address: TAccountAddress;
+    authority: TAccountAuthority;
 };
 
 export function getFreezeLookupTableInstruction<
-    TAccountAddress extends string,
-    TAccountAuthority extends string,
+    TAccountAddress extends InstructionAccountInput,
+    TAccountAuthority extends InstructionSignerInput,
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: FreezeLookupTableInput<TAccountAddress, TAccountAuthority>,
     config?: { programAddress?: TProgramAddress },
-): FreezeLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority> {
+): FreezeLookupTableInstruction<
+    TProgramAddress,
+    ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
+    ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>
+> {
     // Program address.
     const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
+    // Account meta helper.
+    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+
     // Original accounts.
     const originalAccounts = {
-        address: { value: input.address ?? null, isWritable: true },
-        authority: { value: input.authority ?? null, isWritable: false },
+        address: { value: input.address ?? null, isSigner: false, isWritable: true },
+        authority: { value: input.authority ?? null, isSigner: true, isWritable: false },
     };
     const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
-    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
         accounts: [getAccountMeta('address', accounts.address), getAccountMeta('authority', accounts.authority)],
         data: getFreezeLookupTableInstructionDataEncoder().encode({}),
         programAddress,
-    } as FreezeLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority>);
+    } as FreezeLookupTableInstruction<
+        TProgramAddress,
+        ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
+        ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>
+    >);
 }
 
 export type ParsedFreezeLookupTableInstruction<
