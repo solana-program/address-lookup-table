@@ -26,10 +26,16 @@ import {
     type InstructionWithData,
     type ReadonlySignerAccount,
     type ReadonlyUint8Array,
-    type TransactionSigner,
     type WritableAccount,
 } from '@solana/kit';
-import { getAccountMetaFactory, type ResolvedInstructionAccount } from '@solana/kit/program-client-core';
+import {
+    getAccountMetaFactory,
+    type InstructionAccountInput,
+    type InstructionAccountInputAddress,
+    type InstructionSignerInput,
+    type ResolvedInstructionAccount,
+    type ResolvedInstructionAccountMeta,
+} from '@solana/kit/program-client-core';
 import { ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS } from '../programs';
 
 export const CLOSE_LOOKUP_TABLE_DISCRIMINATOR = 4;
@@ -80,36 +86,43 @@ export function getCloseLookupTableInstructionDataCodec(): FixedSizeCodec<
 }
 
 export type CloseLookupTableInput<
-    TAccountAddress extends string = string,
-    TAccountAuthority extends string = string,
-    TAccountRecipient extends string = string,
+    TAccountAddress extends InstructionAccountInput = InstructionAccountInput,
+    TAccountAuthority extends InstructionSignerInput = InstructionSignerInput,
+    TAccountRecipient extends InstructionAccountInput = InstructionAccountInput,
 > = {
-    address: Address<TAccountAddress>;
-    authority: TransactionSigner<TAccountAuthority>;
-    recipient: Address<TAccountRecipient>;
+    address: TAccountAddress;
+    authority: TAccountAuthority;
+    recipient: TAccountRecipient;
 };
 
 export function getCloseLookupTableInstruction<
-    TAccountAddress extends string,
-    TAccountAuthority extends string,
-    TAccountRecipient extends string,
+    TAccountAddress extends InstructionAccountInput,
+    TAccountAuthority extends InstructionSignerInput,
+    TAccountRecipient extends InstructionAccountInput,
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: CloseLookupTableInput<TAccountAddress, TAccountAuthority, TAccountRecipient>,
     config?: { programAddress?: TProgramAddress },
-): CloseLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority, TAccountRecipient> {
+): CloseLookupTableInstruction<
+    TProgramAddress,
+    ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
+    ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>,
+    ResolvedInstructionAccountMeta<TAccountRecipient, InstructionAccountInputAddress<TAccountRecipient>>
+> {
     // Program address.
     const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
 
+    // Account meta helper.
+    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+
     // Original accounts.
     const originalAccounts = {
-        address: { value: input.address ?? null, isWritable: true },
-        authority: { value: input.authority ?? null, isWritable: false },
-        recipient: { value: input.recipient ?? null, isWritable: true },
+        address: { value: input.address ?? null, isSigner: false, isWritable: true },
+        authority: { value: input.authority ?? null, isSigner: true, isWritable: false },
+        recipient: { value: input.recipient ?? null, isSigner: false, isWritable: true },
     };
     const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedInstructionAccount>;
 
-    const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
     return Object.freeze({
         accounts: [
             getAccountMeta('address', accounts.address),
@@ -118,7 +131,12 @@ export function getCloseLookupTableInstruction<
         ],
         data: getCloseLookupTableInstructionDataEncoder().encode({}),
         programAddress,
-    } as CloseLookupTableInstruction<TProgramAddress, TAccountAddress, TAccountAuthority, TAccountRecipient>);
+    } as CloseLookupTableInstruction<
+        TProgramAddress,
+        ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
+        ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>,
+        ResolvedInstructionAccountMeta<TAccountRecipient, InstructionAccountInputAddress<TAccountRecipient>>
+    >);
 }
 
 export type ParsedCloseLookupTableInstruction<

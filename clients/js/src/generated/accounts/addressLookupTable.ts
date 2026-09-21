@@ -44,7 +44,7 @@ import {
     type OptionOrNullable,
     type ReadonlyUint8Array,
 } from '@solana/kit';
-import { AddressLookupTableSeeds, findAddressLookupTablePda } from '../pdas';
+import { findAddressLookupTablePda, type AddressLookupTableSeeds } from '../pdas';
 
 export const ADDRESS_LOOKUP_TABLE_DISCRIMINATOR = 1;
 
