@@ -97,14 +97,15 @@ export function getFreezeLookupTableInstruction<
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: FreezeLookupTableInput<TAccountAddress, TAccountAuthority>,
-    config?: { programAddress?: TProgramAddress },
+    config?: { programAddress?: TProgramAddress | { readonly address: TProgramAddress } },
 ): FreezeLookupTableInstruction<
     TProgramAddress,
     ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
     ResolvedInstructionAccountMeta<TAccountAuthority, InstructionAccountInputAddress<TAccountAuthority>>
 > {
     // Program address.
-    const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddressInput = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddress = typeof programAddressInput === 'string' ? programAddressInput : programAddressInput.address;
 
     // Account meta helper.
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');

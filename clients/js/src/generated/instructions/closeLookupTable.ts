@@ -102,7 +102,7 @@ export function getCloseLookupTableInstruction<
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: CloseLookupTableInput<TAccountAddress, TAccountAuthority, TAccountRecipient>,
-    config?: { programAddress?: TProgramAddress },
+    config?: { programAddress?: TProgramAddress | { readonly address: TProgramAddress } },
 ): CloseLookupTableInstruction<
     TProgramAddress,
     ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
@@ -110,7 +110,8 @@ export function getCloseLookupTableInstruction<
     ResolvedInstructionAccountMeta<TAccountRecipient, InstructionAccountInputAddress<TAccountRecipient>>
 > {
     // Program address.
-    const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddressInput = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddress = typeof programAddressInput === 'string' ? programAddressInput : programAddressInput.address;
 
     // Account meta helper.
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');

@@ -11,23 +11,26 @@ import {
     getProgramDerivedAddress,
     getU64Encoder,
     type Address,
+    type HasAddress,
     type ProgramDerivedAddress,
 } from '@solana/kit';
 
 export type AddressLookupTableSeeds = {
     /** The address of the LUT's authority */
-    authority: Address;
+    authority: Address | HasAddress;
     /** The recent slot associated with the LUT */
     recentSlot: number | bigint;
 };
 
 export async function findAddressLookupTablePda(
     seeds: AddressLookupTableSeeds,
-    config: { programAddress?: Address | undefined } = {},
+    config: { programAddress?: Address | HasAddress | undefined } = {},
 ): Promise<ProgramDerivedAddress> {
     const {
-        programAddress = 'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>,
+        programAddress:
+            programAddressInput = 'AddressLookupTab1e1111111111111111111111111' as Address<'AddressLookupTab1e1111111111111111111111111'>,
     } = config;
+    const programAddress = typeof programAddressInput === 'string' ? programAddressInput : programAddressInput.address;
     return await getProgramDerivedAddress({
         programAddress,
         seeds: [getAddressEncoder().encode(seeds.authority), getU64Encoder().encode(seeds.recentSlot)],

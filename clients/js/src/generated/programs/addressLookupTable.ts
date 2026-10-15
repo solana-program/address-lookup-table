@@ -23,6 +23,7 @@ import {
     type ExtendedClient,
     type GetAccountInfoApi,
     type GetMultipleAccountsApi,
+    type HasAddress,
     type Instruction,
     type InstructionWithData,
     type ReadonlyUint8Array,
@@ -195,18 +196,23 @@ export type AddressLookupTablePluginAccounts = {
 export type AddressLookupTablePluginInstructions = {
     createLookupTable: (
         input: CreateLookupTableAsyncInput,
+        config?: { programAddress?: Address | HasAddress },
     ) => ReturnType<typeof getCreateLookupTableInstructionAsync> & SelfPlanAndSendFunctions;
     freezeLookupTable: (
         input: FreezeLookupTableInput,
+        config?: { programAddress?: Address | HasAddress },
     ) => ReturnType<typeof getFreezeLookupTableInstruction> & SelfPlanAndSendFunctions;
     extendLookupTable: (
         input: MakeOptional<ExtendLookupTableInput, 'payer'>,
+        config?: { programAddress?: Address | HasAddress },
     ) => ReturnType<typeof getExtendLookupTableInstruction> & SelfPlanAndSendFunctions;
     deactivateLookupTable: (
         input: DeactivateLookupTableInput,
+        config?: { programAddress?: Address | HasAddress },
     ) => ReturnType<typeof getDeactivateLookupTableInstruction> & SelfPlanAndSendFunctions;
     closeLookupTable: (
         input: CloseLookupTableInput,
+        config?: { programAddress?: Address | HasAddress },
     ) => ReturnType<typeof getCloseLookupTableInstruction> & SelfPlanAndSendFunctions;
 };
 
@@ -217,7 +223,7 @@ export type AddressLookupTablePluginRequirements = ClientWithRpc<GetAccountInfoA
     ClientWithTransactionPlanning &
     ClientWithTransactionSending;
 
-export function addressLookupTableProgram() {
+export function addressLookupTableProgram(config: { programAddress?: Address | HasAddress } = {}) {
     return <T extends AddressLookupTablePluginRequirements>(
         client: T,
     ): ExtendedClient<T, { addressLookupTable: AddressLookupTablePlugin }> => {
@@ -225,21 +231,49 @@ export function addressLookupTableProgram() {
             addressLookupTable: <AddressLookupTablePlugin>{
                 accounts: { addressLookupTable: addSelfFetchFunctions(client, getAddressLookupTableCodec()) },
                 instructions: {
-                    createLookupTable: input =>
-                        addSelfPlanAndSendFunctions(client, getCreateLookupTableInstructionAsync(input)),
-                    freezeLookupTable: input =>
-                        addSelfPlanAndSendFunctions(client, getFreezeLookupTableInstruction(input)),
-                    extendLookupTable: input =>
+                    createLookupTable: (input, instructionConfig) =>
                         addSelfPlanAndSendFunctions(
                             client,
-                            getExtendLookupTableInstruction({ ...input, payer: input.payer ?? client.payer }),
+                            getCreateLookupTableInstructionAsync(input, {
+                                programAddress: instructionConfig?.programAddress ?? config.programAddress,
+                            }),
                         ),
-                    deactivateLookupTable: input =>
-                        addSelfPlanAndSendFunctions(client, getDeactivateLookupTableInstruction(input)),
-                    closeLookupTable: input =>
-                        addSelfPlanAndSendFunctions(client, getCloseLookupTableInstruction(input)),
+                    freezeLookupTable: (input, instructionConfig) =>
+                        addSelfPlanAndSendFunctions(
+                            client,
+                            getFreezeLookupTableInstruction(input, {
+                                programAddress: instructionConfig?.programAddress ?? config.programAddress,
+                            }),
+                        ),
+                    extendLookupTable: (input, instructionConfig) =>
+                        addSelfPlanAndSendFunctions(
+                            client,
+                            getExtendLookupTableInstruction(
+                                { ...input, payer: input.payer ?? client.payer },
+                                { programAddress: instructionConfig?.programAddress ?? config.programAddress },
+                            ),
+                        ),
+                    deactivateLookupTable: (input, instructionConfig) =>
+                        addSelfPlanAndSendFunctions(
+                            client,
+                            getDeactivateLookupTableInstruction(input, {
+                                programAddress: instructionConfig?.programAddress ?? config.programAddress,
+                            }),
+                        ),
+                    closeLookupTable: (input, instructionConfig) =>
+                        addSelfPlanAndSendFunctions(
+                            client,
+                            getCloseLookupTableInstruction(input, {
+                                programAddress: instructionConfig?.programAddress ?? config.programAddress,
+                            }),
+                        ),
                 },
-                pdas: { addressLookupTable: findAddressLookupTablePda },
+                pdas: {
+                    addressLookupTable: (seeds, pdaConfig) =>
+                        findAddressLookupTablePda(seeds, {
+                            programAddress: pdaConfig?.programAddress ?? config.programAddress,
+                        }),
+                },
                 identifyAccount: identifyAddressLookupTableAccount,
                 identifyInstruction: identifyAddressLookupTableInstruction,
                 parseInstruction: parseAddressLookupTableInstruction,
