@@ -128,7 +128,7 @@ export async function getCreateLookupTableInstructionAsync<
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: CreateLookupTableAsyncInput<TAccountAddress, TAccountAuthority, TAccountPayer, TAccountSystemProgram>,
-    config?: { programAddress?: TProgramAddress },
+    config?: { programAddress?: TProgramAddress | { readonly address: TProgramAddress } },
 ): Promise<
     CreateLookupTableInstruction<
         TProgramAddress,
@@ -140,7 +140,8 @@ export async function getCreateLookupTableInstructionAsync<
         InstructionWithByteDelta
 > {
     // Program address.
-    const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddressInput = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddress = typeof programAddressInput === 'string' ? programAddressInput : programAddressInput.address;
 
     // Account meta helper.
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
@@ -223,7 +224,7 @@ export function getCreateLookupTableInstruction<
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: CreateLookupTableInput<TAccountAddress, TAccountAuthority, TAccountPayer, TAccountSystemProgram>,
-    config?: { programAddress?: TProgramAddress },
+    config?: { programAddress?: TProgramAddress | { readonly address: TProgramAddress } },
 ): CreateLookupTableInstruction<
     TProgramAddress,
     ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
@@ -233,7 +234,8 @@ export function getCreateLookupTableInstruction<
 > &
     InstructionWithByteDelta {
     // Program address.
-    const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddressInput = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddress = typeof programAddressInput === 'string' ? programAddressInput : programAddressInput.address;
 
     // Account meta helper.
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');

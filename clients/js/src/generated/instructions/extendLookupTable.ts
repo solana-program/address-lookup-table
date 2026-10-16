@@ -27,6 +27,7 @@ import {
     type Codec,
     type Decoder,
     type Encoder,
+    type HasAddress,
     type Instruction,
     type InstructionWithAccounts,
     type InstructionWithData,
@@ -79,7 +80,7 @@ export type ExtendLookupTableInstruction<
 
 export type ExtendLookupTableInstructionData = { discriminator: number; addresses: Array<Address> };
 
-export type ExtendLookupTableInstructionDataArgs = { addresses: Array<Address> };
+export type ExtendLookupTableInstructionDataArgs = { addresses: Array<Address | HasAddress> };
 
 export function getExtendLookupTableInstructionDataEncoder(): Encoder<ExtendLookupTableInstructionDataArgs> {
     return transformEncoder(
@@ -126,7 +127,7 @@ export function getExtendLookupTableInstruction<
     TProgramAddress extends Address = typeof ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS,
 >(
     input: ExtendLookupTableInput<TAccountAddress, TAccountAuthority, TAccountPayer, TAccountSystemProgram>,
-    config?: { programAddress?: TProgramAddress },
+    config?: { programAddress?: TProgramAddress | { readonly address: TProgramAddress } },
 ): ExtendLookupTableInstruction<
     TProgramAddress,
     ResolvedInstructionAccountMeta<TAccountAddress, InstructionAccountInputAddress<TAccountAddress>>,
@@ -136,7 +137,8 @@ export function getExtendLookupTableInstruction<
 > &
     InstructionWithByteDelta {
     // Program address.
-    const programAddress = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddressInput = config?.programAddress ?? ADDRESS_LOOKUP_TABLE_PROGRAM_ADDRESS;
+    const programAddress = typeof programAddressInput === 'string' ? programAddressInput : programAddressInput.address;
 
     // Account meta helper.
     const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');

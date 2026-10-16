@@ -38,6 +38,7 @@ import {
     type Encoder,
     type FetchAccountConfig,
     type FetchAccountsConfig,
+    type HasAddress,
     type MaybeAccount,
     type MaybeEncodedAccount,
     type Option,
@@ -66,8 +67,8 @@ export type AddressLookupTableArgs = {
     deactivationSlot: number | bigint;
     lastExtendedSlot: number | bigint;
     lastExtendedSlotStartIndex: number;
-    authority: OptionOrNullable<Address>;
-    addresses: Array<Address>;
+    authority: OptionOrNullable<Address | HasAddress>;
+    addresses: Array<Address | HasAddress>;
 };
 
 /** Gets the encoder for {@link AddressLookupTableArgs} account data. */
@@ -118,7 +119,7 @@ export function decodeAddressLookupTable<TAddress extends string = string>(
 
 export async function fetchAddressLookupTable<TAddress extends string = string>(
     rpc: Parameters<typeof fetchEncodedAccount>[0],
-    address: Address<TAddress>,
+    address: Address<TAddress> | HasAddress<TAddress>,
     config?: FetchAccountConfig,
 ): Promise<Account<AddressLookupTable, TAddress>> {
     const maybeAccount = await fetchMaybeAddressLookupTable(rpc, address, config);
@@ -128,16 +129,20 @@ export async function fetchAddressLookupTable<TAddress extends string = string>(
 
 export async function fetchMaybeAddressLookupTable<TAddress extends string = string>(
     rpc: Parameters<typeof fetchEncodedAccount>[0],
-    address: Address<TAddress>,
+    address: Address<TAddress> | HasAddress<TAddress>,
     config?: FetchAccountConfig,
 ): Promise<MaybeAccount<AddressLookupTable, TAddress>> {
-    const maybeAccount = await fetchEncodedAccount(rpc, address, config);
+    const maybeAccount = await fetchEncodedAccount(
+        rpc,
+        typeof address === 'string' ? address : address.address,
+        config,
+    );
     return decodeAddressLookupTable(maybeAccount);
 }
 
 export async function fetchAllAddressLookupTable(
     rpc: Parameters<typeof fetchEncodedAccounts>[0],
-    addresses: Array<Address>,
+    addresses: Array<Address | HasAddress>,
     config?: FetchAccountsConfig,
 ): Promise<Account<AddressLookupTable>[]> {
     const maybeAccounts = await fetchAllMaybeAddressLookupTable(rpc, addresses, config);
@@ -147,17 +152,21 @@ export async function fetchAllAddressLookupTable(
 
 export async function fetchAllMaybeAddressLookupTable(
     rpc: Parameters<typeof fetchEncodedAccounts>[0],
-    addresses: Array<Address>,
+    addresses: Array<Address | HasAddress>,
     config?: FetchAccountsConfig,
 ): Promise<MaybeAccount<AddressLookupTable>[]> {
-    const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
+    const maybeAccounts = await fetchEncodedAccounts(
+        rpc,
+        addresses.map(a => (typeof a === 'string' ? a : a.address)),
+        config,
+    );
     return maybeAccounts.map(maybeAccount => decodeAddressLookupTable(maybeAccount));
 }
 
 export async function fetchAddressLookupTableFromSeeds(
     rpc: Parameters<typeof fetchEncodedAccount>[0],
     seeds: AddressLookupTableSeeds,
-    config: FetchAccountConfig & { programAddress?: Address } = {},
+    config: FetchAccountConfig & { programAddress?: Address | HasAddress } = {},
 ): Promise<Account<AddressLookupTable>> {
     const maybeAccount = await fetchMaybeAddressLookupTableFromSeeds(rpc, seeds, config);
     assertAccountExists(maybeAccount);
@@ -167,7 +176,7 @@ export async function fetchAddressLookupTableFromSeeds(
 export async function fetchMaybeAddressLookupTableFromSeeds(
     rpc: Parameters<typeof fetchEncodedAccount>[0],
     seeds: AddressLookupTableSeeds,
-    config: FetchAccountConfig & { programAddress?: Address } = {},
+    config: FetchAccountConfig & { programAddress?: Address | HasAddress } = {},
 ): Promise<MaybeAccount<AddressLookupTable>> {
     const { programAddress, ...fetchConfig } = config;
     const [address] = await findAddressLookupTablePda(seeds, { programAddress });
