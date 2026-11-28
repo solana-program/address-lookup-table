@@ -15,8 +15,8 @@ pub enum AddressLookupTableInstruction {
     ///
     /// # Account references
     ///   0. `[WRITE]` Uninitialized address lookup table account
-    ///   1. `[SIGNER]` Account used to derive and control the new address
-    ///      lookup table.
+    ///   1. `[]` Account used to derive and control the new address lookup
+    ///      table.
     ///   2. `[SIGNER, WRITE]` Account that will fund the new address lookup
     ///      table.
     ///   3. `[]` System program for CPI.
@@ -28,7 +28,7 @@ pub enum AddressLookupTableInstruction {
         /// otherwise malicious addresses.
         recent_slot: Slot,
         /// Address tables are always initialized at program-derived
-        /// addresses using the funding address, recent blockhash, and
+        /// addresses using the authority address, the recent slot, and
         /// the user-passed `bump_seed`.
         bump_seed: u8,
     },
